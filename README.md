@@ -1,1 +1,1 @@
-![CI](https://github.com/<YOUR_GITHUB_USERNAME>/memorio-backend/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/Denozou/memorio/actions/workflows/ci.yml/badge.svg)
