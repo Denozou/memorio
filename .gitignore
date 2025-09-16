@@ -1,0 +1,19 @@
+# Java
+target/
+build/
+out/
+*.iml
+.idea/
+
+# Node
+node_modules/
+dist/
+build/
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.*
