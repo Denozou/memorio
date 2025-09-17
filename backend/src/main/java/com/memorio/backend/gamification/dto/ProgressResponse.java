@@ -1,4 +1,4 @@
-package com.memorio.backend.gamification;
+package com.memorio.backend.gamification.dto;
 import java.util.List;
 public class ProgressResponse {
     private final long totalPoints;

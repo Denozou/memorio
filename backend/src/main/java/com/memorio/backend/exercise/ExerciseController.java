@@ -2,7 +2,10 @@ package com.memorio.backend.exercise;
 import com.memorio.backend.common.error.NotFoundException;
 import com.memorio.backend.exercise.dto.*;
 import com.memorio.backend.exercise.dto.HistoryItem;
-import com.memorio.backend.exercise.dto.HistoryItem;
+import com.memorio.backend.gamification.UserBadgeRepository;
+import com.memorio.backend.gamification.UserStatsRepository;
+import com.memorio.backend.gamification.UserBadge;
+import com.memorio.backend.gamification.UserStats;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -26,13 +29,17 @@ public class ExerciseController {
     private final ExerciseSessionRepository sessions;
     private final ExerciseAttemptRepository attempts;
     private final ObjectMapper mapper;
-
+    private final UserStatsRepository userStatsRepo;
+    private final UserBadgeRepository userBadgeRepo;
     public ExerciseController(ExerciseSessionRepository sessions,
                               ExerciseAttemptRepository attempts,
-                              ObjectMapper mapper) {
+                              ObjectMapper mapper, UserStatsRepository userStatsRepo,
+                              UserBadgeRepository userBadgeRepo) {
         this.sessions = sessions;
         this.attempts = attempts;
         this.mapper = mapper;
+        this.userStatsRepo = userStatsRepo;
+        this.userBadgeRepo = userBadgeRepo;
     }
     @PostMapping("/start")
     public ResponseEntity<StartExerciseResponse> start(@Valid @RequestBody StartExerciseRequest req,
@@ -120,6 +127,18 @@ public class ExerciseController {
             session.markFinished(OffsetDateTime.now());
             sessions.save(session);
         }
+        int pointsEarned = correct * 10;
+        var stats = userStatsRepo.findById(userId).orElseGet(() -> new UserStats(userId));
+        stats.addAttempt(correct, pointsEarned);
+        userStatsRepo.save(stats);
+        List<String> newlyAwarded = new ArrayList<>();
+        if (!userBadgeRepo.existsByUserIdAndCode(userId, "FIRST_ATTEMPT")){
+            var badge = new UserBadge(UUID.randomUUID(), userId, "FIRST_ATTEMPT", OffsetDateTime.now());
+            userBadgeRepo.save(badge);
+            newlyAwarded.add("FIRST_ATTEMPT");
+
+        }
+
         var res = new SubmitExerciseResponse(
                 req.getSessionId(),
                 req.getType(),
@@ -128,7 +147,9 @@ public class ExerciseController {
                 accuracy,
                 new ArrayList<>(matched),
                 missed,
-                extraAnswers
+                extraAnswers,
+                pointsEarned,
+                newlyAwarded
         );
         return ResponseEntity.ok(res);
     }

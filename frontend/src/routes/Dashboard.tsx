@@ -29,6 +29,13 @@ type HistoryResponse = {
   total: number;
 };
 
+type Progress = {
+  totalPoints: number;
+  totalAttempts: number;
+  totalCorrect: number;
+  badges: string[];
+};
+
 export default function Dashboard() {
   /* ===== Streak state ===== */
   const [streak, setStreak] = useState<Streak | null>(null);
@@ -39,6 +46,10 @@ export default function Dashboard() {
   const [history, setHistory] = useState<HistoryItem[] | null>(null);
   const [loadingHist, setLoadingHist] = useState(false);
   const [histErr, setHistErr] = useState<string | null>(null);
+
+  const [progress, setProgress] = useState<Progress | null>(null);
+  const [loadingProg, setLoadingProg] = useState(false);
+  const [progErr, setProgErr] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -74,6 +85,20 @@ export default function Dashboard() {
       }
     })();
 
+    // Load progress (points & badges)
+    (async () => {
+      setLoadingProg(true);
+      setProgErr(null);
+      try {
+        const { data } = await api.get<Progress>("/progress");
+        setProgress(data);
+      } catch (e: any) {
+        setProgErr(e?.response?.data?.error ?? "Failed to load progress");
+      } finally {
+        setLoadingProg(false);
+      }
+    })();
+
     return () => { alive = false; };
   }, []);
 
@@ -104,6 +129,14 @@ export default function Dashboard() {
           {histErr && <div style={{ color: "#ef4444" }}>{histErr}</div>}
           {history && <HistoryList items={history} />}
           {history && history.length === 0 && <div>No sessions yet. Start one above!</div>}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader title="Progress" subtitle="Points & badges" />
+        <CardContent>
+          {loadingProg && <div>Loading progress…</div>}
+          {progErr && <div style={{ color: "#ef4444" }}>{progErr}</div>}
+          {progress && <ProgressView data={progress} />}
         </CardContent>
       </Card>
     </div>
@@ -170,6 +203,90 @@ function HistoryList({ items }: { items: HistoryItem[] }) {
   );
 }
 
+////
+
+
+function ProgressView({ data }: { data: Progress }) {
+  const accPct =
+    data.totalAttempts > 0 && data.totalCorrect >= 0
+      ? Math.round((data.totalCorrect / Math.max(1, data.totalAttempts * 6)) * 100) // rough: assume 6 targets per attempt for now
+      : 0;
+
+  return (
+    <div style={{ display: "grid", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+        <Metric label="Points" value={data.totalPoints.toString()} />
+        <Metric label="Attempts" value={data.totalAttempts.toString()} />
+        <Metric label="Correct" value={data.totalCorrect.toString()} sub={`${accPct}% est. accuracy`} />
+      </div>
+
+      <div>
+        <div style={{ fontWeight: 700, marginBottom: 8 }}>Badges</div>
+        {data.badges.length === 0 ? (
+          <div style={{ color: "#6b7280" }}>No badges yet — start a session to earn your first one!</div>
+        ) : (
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {data.badges.map((b) => (
+              <BadgePill key={b} code={b} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Metric({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 12 }}>
+      <div style={{ color: "#6b7280", fontSize: 12 }}>{label}</div>
+      <div style={{ fontSize: 20, fontWeight: 800 }}>{value}</div>
+      {sub && <div style={{ color: "#6b7280", fontSize: 12 }}>{sub}</div>}
+    </div>
+  );
+}
+
+function BadgePill({ code }: { code: string }) {
+  const pretty = code
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/(^|\s)\S/g, (m) => m.toUpperCase());
+
+  const emoji = badgeEmoji(code);
+
+  return (
+    <span
+      title={pretty}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "6px 10px",
+        borderRadius: 999,
+        border: "1px solid #e5e7eb",
+        background: "#f9fafb",
+        fontSize: 12,
+        fontWeight: 600,
+      }}
+    >
+      <span aria-hidden>{emoji}</span>
+      {pretty}
+    </span>
+  );
+}
+
+function badgeEmoji(code: string) {
+  switch (code) {
+    case "FIRST_ATTEMPT": return "🌱";
+    case "FIRST_PERFECT": return "🏆";
+    case "STREAK_7": return "🔥";
+    default: return "🎖️";
+  }
+}
+
+
+
+////
 function TypeBadge({ type }: { type: HistoryItem["type"] }) {
   const label = type
     .replace("_", " ")
