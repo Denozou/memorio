@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import {api} from "../lib/api";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
@@ -23,10 +23,14 @@ type SubmitResp = {
   type: "IMAGE_LINKING";
   total: number;
   correct: number;
-  accuracy: number;             
+  accuracy: number;
+  orderCorrect: number;      // add
+  orderAccuracy: number;     // add
   correctWords: string[];
   missedWords: string[];
   extraAnswers: string[];
+  pointsEarned: number;
+  newBadges: string[];
 };
 
 export default function ExerciseImageLinking(){
@@ -40,6 +44,44 @@ export default function ExerciseImageLinking(){
 
     const [submitting, setSubmitting] = useState(false);
     const [score, setScore] = useState<SubmitResp | null>(null);
+
+    const SHOW_MS = 1200;
+    const GAP_MS = 400;
+
+    const [playing, setPlaying] = useState(false);
+    const [index, setIndex] = useState(0);   // current word index during study
+    const [tick, setTick] = useState<"show" | "gap">("show"); // what we’re showing now
+    
+    // Effect to handle word transitions
+    useEffect(() => {
+        let timer: number;
+        
+        if (playing && words) {
+            if (tick === "show") {
+                // Currently showing a word
+                timer = setTimeout(() => {
+                    setTick("gap");
+                }, SHOW_MS);
+            } else if (tick === "gap") {
+                // Currently in gap between words
+                timer = setTimeout(() => {
+                    if (index < words.length - 1) {
+                        // Move to next word
+                        setIndex(prevIndex => prevIndex + 1);
+                        setTick("show");
+                    } else {
+                        // All words shown
+                        setPlaying(false);
+                    }
+                }, GAP_MS);
+            }
+        }
+        
+        return () => {
+            if (timer) clearTimeout(timer);
+        };
+    }, [playing, tick, index, words]);
+    
     async function startExercise(){
         setError(null);
         setLoading(true);
@@ -49,6 +91,8 @@ export default function ExerciseImageLinking(){
             setWords(data.payload.words);
             setAnswers(new Array(data.payload.words.length).fill(""));
             setPhase("study");
+            setIndex(0);
+            setPlaying(true);
         }catch(err: any){
             setError(err?.response?.data?.error ?? "Failed to start exercise");
         }finally{
@@ -56,7 +100,59 @@ export default function ExerciseImageLinking(){
         }
     }
     function finishStudy(){
+        setPlaying(false);
         setPhase("recall");
+    }
+    function pct(x: number) {
+      return Math.round((x ?? 0) * 100);
+    }
+    
+    function Metric({ label, value, sub }: { label: string; value: string; sub?: string }) {
+      return (
+        <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 12 }}>
+          <div style={{ color: "#6b7280", fontSize: 12 }}>{label}</div>
+          <div style={{ fontSize: 20, fontWeight: 800 }}>{value}</div>
+          {sub && <div style={{ color: "#6b7280", fontSize: 12 }}>{sub}</div>}
+        </div>
+      );
+    }
+    
+    function ListCard({ title, items, color }: { title: string; items: string[]; color: string }) {
+      return (
+        <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 12 }}>
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>{title}</div>
+          {items?.length ? (
+            <ul style={{ paddingLeft: 18, margin: 0, color }}>
+              {items.map((w, i) => <li key={i}>{w}</li>)}
+            </ul>
+          ) : (
+            <div style={{ color: "#6b7280" }}>—</div>
+          )}
+        </div>
+      );
+    }
+    
+    function BadgePill({ code }: { code: string }) {
+      const pretty = code.toLowerCase().replace(/_/g, " ").replace(/(^|\s)\S/g, m => m.toUpperCase());
+      const emoji = code === "FIRST_ATTEMPT" ? "🌱"
+                  : code === "FIRST_PERFECT" ? "🏆"
+                  : code.startsWith("STREAK_") ? "🔥"
+                  : "🎖️";
+      return (
+        <span style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "6px 10px",
+          borderRadius: 999,
+          border: "1px solid #e5e7eb",
+          background: "#f9fafb",
+          fontSize: 12,
+          fontWeight: 600,
+        }}>
+          <span aria-hidden>{emoji}</span>{pretty}
+        </span>
+      );
     }
     async function submitRecall() {
       if (!sessionId || !words) return;
@@ -107,17 +203,39 @@ export default function ExerciseImageLinking(){
                     <span style={{ color: "#6b7280" }}>Memorize these words</span>
                     <Timer seconds={studySeconds} onFinish={finishStudy} />
                   </div>
-                  <ul style={{ display: "grid", gap: 6, paddingLeft: 18 }}>
-                    {words.map((w, i) => <li key={i}>{w}</li>)}
-                  </ul>
-                  <Button onClick={finishStudy} variant="secondary">I’m ready</Button>
+                  <div style={{ 
+                    display: "flex", 
+                    justifyContent: "center", 
+                    alignItems: "center", 
+                    minHeight: "100px", 
+                    fontSize: "24px", 
+                    fontWeight: "bold" 
+                  }}>
+                    {playing && index < words.length && tick === "show" && (
+                      <div>{words[index]}</div>
+                    )}
+                    {playing && tick === "gap" && (
+                      <div style={{ color: "#d1d5db" }}>•••</div>
+                    )}
+                    {(!playing || index >= words.length) && (
+                      <div style={{ color: "#6b7280", fontSize: "18px" }}>
+                        {index >= words.length ? "All words shown" : "Starting..."}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ color: "#6b7280", fontSize: "14px" }}>
+                      {index}/{words.length} words shown
+                    </div>
+                    <Button onClick={finishStudy} variant="secondary">I'm ready</Button>
+                  </div>
                 </div>
               )}
     
               {phase === "recall" && words && (
                 <div style={{ display: "grid", gap: 12 }}>
-                  <p>Type the words you remember (order doesn’t matter for MVP).</p>
-                  <div style={{ display: "grid", gap: 8 }}>
+                  <p>Type the words you remember.</p>
+                  <div style={{ display: "grid", gap: 8, maxWidth: "100%", width: "100%" }}>
                     {answers.map((val, i) => (
                       <Input
                         key={i}
@@ -128,6 +246,7 @@ export default function ExerciseImageLinking(){
                           setAnswers(copy);
                         }}
                         placeholder={`Word #${i + 1}`}
+                        style={{ width: "100%", boxSizing: "border-box" }}
                       />
                     ))}
                   </div>
@@ -138,38 +257,63 @@ export default function ExerciseImageLinking(){
               )}
     
               {phase === "summary" && score && (
-                <div style={{ display: "grid", gap: 12 }}>
-                  <p>
-                    Accuracy: <b>{Math.round(score.accuracy * 100)}%</b> ({score.correct}/{score.total})
-                  </p>
+                <div style={{ display: "grid", gap: 16 }}>
+                  {/* Headline metrics */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    <Metric
+                      label="Unordered accuracy"
+                      value={`${score.correct}/${score.total}`}
+                      sub={`${pct(score.accuracy)}%`}
+                    />
+                    <Metric
+                      label="In-order accuracy"
+                      value={`${score.orderCorrect}/${score.total}`}
+                      sub={`${pct(score.orderAccuracy)}%`}
+                    />
+                  </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  {/* Points earned */}
+                  <div
+                    style={{
+                      padding: 12,
+                      border: "1px solid #e5e7eb",
+                      borderRadius: 12,
+                      background: "#fafafa",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
                     <div>
-                      <b>Correct</b>
-                      <ul style={{ paddingLeft: 18, color: "#059669" }}>
-                        {score.correctWords.length ? score.correctWords.map((w, i) => <li key={i}>{w}</li>) : <li>—</li>}
-                      </ul>
+                      <div style={{ fontSize: 12, color: "#6b7280" }}>Points earned</div>
+                      <div style={{ fontSize: 20, fontWeight: 800 }}>{score.pointsEarned}</div>
                     </div>
-                    <div>
-                      <b>Missed</b>
-                      <ul style={{ paddingLeft: 18, color: "#ef4444" }}>
-                        {score.missedWords.length ? score.missedWords.map((w, i) => <li key={i}>{w}</li>) : <li>—</li>}
-                      </ul>
+                    <div style={{ fontSize: 12, color: "#6b7280" }}>
+                      includes bonus for correct order
                     </div>
                   </div>
 
-                  <div>
-                    <b>Extra answers</b>
-                    <ul style={{ paddingLeft: 18, color: "#6b7280" }}>
-                      {score.extraAnswers.length ? score.extraAnswers.map((w, i) => <li key={i}>{w}</li>) : <li>—</li>}
-                    </ul>
+                  {/* Correct / missed / extra lists */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+                    <ListCard title="Correct" items={score.correctWords} color="#059669" />
+                    <ListCard title="Missed" items={score.missedWords} color="#ef4444" />
+                    <ListCard title="Extra answers" items={score.extraAnswers} color="#6b7280" />
                   </div>
+
+                  {/* New badges (if any) */}
+                  {!!score.newBadges?.length && (
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      {score.newBadges.map((b) => (
+                        <BadgePill key={b} code={b} />
+                      ))}
+                    </div>
+                  )}
 
                   <div style={{ display: "flex", gap: 8 }}>
                     <a href="/dashboard"><Button variant="secondary">Back to Dashboard</Button></a>
                     <Button
                       variant="ghost"
-                      onClick={() => { setPhase("idle"); setSessionId(null); setWords(null); setScore(null); }}
+                      onClick={() => { setPhase("idle"); setSessionId(null); setWords(null); setScore(null); setAnswers([]); }}
                     >
                       Start again
                     </Button>
