@@ -4,8 +4,11 @@ import com.memorio.backend.exercise.dto.*;
 import com.memorio.backend.exercise.dto.HistoryItem;
 import com.memorio.backend.gamification.UserBadgeRepository;
 import com.memorio.backend.gamification.UserStatsRepository;
+import com.memorio.backend.user.UserRepository;
 import com.memorio.backend.gamification.UserBadge;
 import com.memorio.backend.gamification.UserStats;
+import com.memorio.backend.lexicon.WordPicker;
+
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -31,15 +34,23 @@ public class ExerciseController {
     private final ObjectMapper mapper;
     private final UserStatsRepository userStatsRepo;
     private final UserBadgeRepository userBadgeRepo;
+    private final StreakService streakService;
+    private final UserRepository users;
+    private final WordPicker wordPicker;
+
     public ExerciseController(ExerciseSessionRepository sessions,
                               ExerciseAttemptRepository attempts,
                               ObjectMapper mapper, UserStatsRepository userStatsRepo,
-                              UserBadgeRepository userBadgeRepo) {
+                              UserBadgeRepository userBadgeRepo, StreakService streakService,
+                              UserRepository users, WordPicker wordPicker) {
         this.sessions = sessions;
         this.attempts = attempts;
         this.mapper = mapper;
         this.userStatsRepo = userStatsRepo;
         this.userBadgeRepo = userBadgeRepo;
+        this.streakService = streakService;
+        this.users = users;
+        this.wordPicker = wordPicker;
     }
     @PostMapping("/start")
     public ResponseEntity<StartExerciseResponse> start(@Valid @RequestBody StartExerciseRequest req,
@@ -48,10 +59,15 @@ public class ExerciseController {
         UUID sessionId = UUID.randomUUID();
         var session = new ExerciseSession(sessionId, userId, req.getType(), OffsetDateTime.now());
         sessions.save(session);
+        String language = "en";
+        int listSize = 6;
         switch (req.getType()){
             case IMAGE_LINKING -> {
-                var words = List.of("apple", "clock", "shoe", "river", "mountain", "glass");
-                var payload = new ImageLinkingPayload(words);
+                var user = users.findById(userId).orElseThrow(()->new IllegalStateException("User no found"));
+                int skillLevel = user.getSkillLevel();
+                //var words = wordPicker.pickRandom(language, listSize);
+                var words = wordPicker.pickWords(language, skillLevel, listSize);
+                var payload = Map.of("words", words);
                 var res = new StartExerciseResponse(sessionId, ExerciseType.IMAGE_LINKING, payload);
                 return ResponseEntity.ok(res);
             }
@@ -104,7 +120,16 @@ public class ExerciseController {
         }
         int total = targets.size();
         int correct = matched.size();
+        int orderCorrect = 0;
+        for (int i = 0; i < Math.min(shown.size(), (req.getAnswers() == null ? 0 : req.getAnswers().size())); i++){
+            String shownNorm = norm.apply(shown.get(i));
+            String ansNorm = norm.apply(req.getAnswers().get(i));
+            if(!shownNorm.isEmpty() && shownNorm.equals(ansNorm)){
+                orderCorrect++;
+            }
+        }
         double accuracy = total == 0 ? 0.0 : (double) correct / (double) total;
+        double orderAccuracy = total == 0 ? 0.0 : (double) orderCorrect / (double) total;
 
         List<String> missed = new ArrayList<>();
         for (String word : targets){
@@ -127,10 +152,21 @@ public class ExerciseController {
             session.markFinished(OffsetDateTime.now());
             sessions.save(session);
         }
-        int pointsEarned = correct * 10;
+        var user = users.findById(userId).orElseThrow(()->new IllegalStateException("User not found"));
+        int level = user.getSkillLevel();
+        if (orderAccuracy >= 0.85){
+            level = Math.min(level+1, 10);
+        } else if (orderAccuracy < 0.6) {
+            level = Math.max(level -1,1);
+        }
+        user.setSkillLevel(level);
+        users.save(user);
+
+        int basePoints = correct * 10;
+        int bonusOrderPoints = orderCorrect * 5;
+        int bonusPoints = 0;
         var stats = userStatsRepo.findById(userId).orElseGet(() -> new UserStats(userId));
-        stats.addAttempt(correct, pointsEarned);
-        userStatsRepo.save(stats);
+
         List<String> newlyAwarded = new ArrayList<>();
         if (!userBadgeRepo.existsByUserIdAndCode(userId, "FIRST_ATTEMPT")){
             var badge = new UserBadge(UUID.randomUUID(), userId, "FIRST_ATTEMPT", OffsetDateTime.now());
@@ -138,6 +174,19 @@ public class ExerciseController {
             newlyAwarded.add("FIRST_ATTEMPT");
 
         }
+
+        var zone = ZoneId.of("UTC");
+        int currentStreak = streakService.computeCurrentStreak(userId,zone);
+        if (currentStreak >= 7 && !userBadgeRepo.existsByUserIdAndCode(userId, "STREAK_7")){
+            var badge = new UserBadge(UUID.randomUUID(), userId, "STREAK_7", OffsetDateTime.now());
+            userBadgeRepo.save(badge);
+            newlyAwarded.add("STREAK_7");
+            bonusPoints+=100;
+
+        }
+        int pointsEarned = basePoints + bonusOrderPoints + bonusPoints;
+        stats.addAttempt(correct, pointsEarned);
+        userStatsRepo.save(stats);
 
         var res = new SubmitExerciseResponse(
                 req.getSessionId(),
@@ -149,7 +198,10 @@ public class ExerciseController {
                 missed,
                 extraAnswers,
                 pointsEarned,
-                newlyAwarded
+                newlyAwarded,
+                orderCorrect,
+                orderAccuracy,
+                level
         );
         return ResponseEntity.ok(res);
     }
