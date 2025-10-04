@@ -1,0 +1,19 @@
+# Environment variables (contains sensitive OAuth2 credentials)
+.env
+
+# IDE files
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build files
+target/
+build/
+*.jar
+*.war
+
+# Logs
+*.log
