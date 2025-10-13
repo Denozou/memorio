@@ -41,3 +41,6 @@ backend/target/
 backend/build/
 **/.idea/
 **/*.iml
+
+# LFW dataset
+lfw_funneled/
