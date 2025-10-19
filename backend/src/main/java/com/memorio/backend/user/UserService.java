@@ -25,8 +25,12 @@ public class UserService {
     }
     @Transactional
     public User createUser(String email, String rawPassword){
-
-
+        if(email == null || email.isBlank()){
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+        if(rawPassword == null || rawPassword.isBlank()){
+            throw new IllegalArgumentException("Password cannot be null or empty");
+        }
         if (users.existsByEmail(email)){
             throw new IllegalArgumentException("Email already exists");
         }

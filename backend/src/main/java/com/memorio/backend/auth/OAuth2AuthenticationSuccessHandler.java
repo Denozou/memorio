@@ -21,6 +21,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler{
@@ -28,6 +30,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private final UserIdentityRepository userIdentityRepository;
     private final JwtService jwtService;
     private final CookieUtil cookieUtil;
+    private static final Logger log = LoggerFactory.getLogger(OAuth2AuthenticationSuccessHandler.class);
     public OAuth2AuthenticationSuccessHandler(UserRepository userRepository,
                                               UserIdentityRepository userIdentityRepository,
                                               JwtService jwtService, CookieUtil cookieUtil){
@@ -51,14 +54,9 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         String name = extractStringAttribute(oauth2User, "name");
         String pictureUrl = extractPictureUrl(oauth2User, provider);
         /// ////////////////////////
-        System.out.println("=== OAuth2 Debug Info ===");
-        System.out.println("Provider: " + provider);
-        System.out.println("Provider User ID (sub): " + providerUserId);
-        System.out.println("Email: " + email);
-        System.out.println("Name: " + name);
-        System.out.println("Picture URL: " + pictureUrl);
-        System.out.println("All attributes: " + oauth2User.getAttributes());
-        System.out.println("========================");
+        log.debug("OAuth2 authenticatuion provider: {}, providerUserId: {}, email: {}, name: {}",
+                provider, providerUserId,email, name);
+        log.trace("OAuth2 attributes: {}", oauth2User.getAttributes());
         if (providerUserId == null || email == null) {
             throw new IllegalArgumentException("Missing required OAuth2 user information: providerUserId=" + providerUserId + ", email=" + email);
         }
@@ -86,13 +84,13 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
      */
     private String extractProvider(HttpServletRequest request) {
         String requestURI = request.getRequestURI();
-        System.out.println("Debug - Request URI: " + requestURI); // Debug logging
+        log.debug("Extracting provider from URI: {}", requestURI);
 
         // The callback URL format is: /login/oauth2/code/{provider}
         if(requestURI.contains("/login/oauth2/code/")){
             String[] parts = requestURI.split("/");
             String provider = parts[parts.length - 1];
-            System.out.println("Debug - Extracted provider: " + provider);
+            log.debug("Extracted provider: {}", provider);
             return provider;
         }
 
@@ -100,11 +98,11 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         if(requestURI.contains("/oauth2/authorization/")){
             String[] parts = requestURI.split("/");
             String provider = parts[parts.length - 1];
-            System.out.println("Debug - Extracted provider (fallback): " + provider);
+            log.debug("Extracted provider(fallback): {}", provider);
             return provider;
         }
 
-        System.out.println("Debug - Could not extract provider from URI: " + requestURI);
+        log.warn("Debug - Could not extract provider from URI: {}", requestURI);
         return "unknown";
     }
 

@@ -17,6 +17,13 @@ public class StreakService {
 
 
     public int computeCurrentStreak (UUID userId, ZoneId zone) {
+        if(userId == null){
+            throw new IllegalArgumentException("userId cannot be null");
+        }
+        if(zone == null){
+            throw new IllegalArgumentException("zone cannot be null");
+        }
+
         var page = sessions.findByUserIdOrderByStartedAtDesc(userId, PageRequest.of(0, 400));
         if (page.isEmpty()) return 0;
 
