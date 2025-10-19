@@ -11,6 +11,7 @@ import java.util.UUID;
 public interface PersonRepository extends JpaRepository<Person, UUID> {
     Optional<Person> findByPersonName(String personName);
     List<Person> findByIsActiveTrue();
+    long countByIsActiveTrue();
     List<Person> findByIsActiveTrueAndDifficultyLevel(int difficultyLevel);
     List<Person> findByIsActiveTrueAndDifficultyLevelLessThanEqual(int maxDifficultyLevel);
     long countByIsActiveTrueAndDifficultyLevel(int difficultyLevel);

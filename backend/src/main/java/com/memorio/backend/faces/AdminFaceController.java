@@ -36,7 +36,7 @@ public class AdminFaceController {
         boolean hasData = faceDataImportService.isDataImported();
         long totalPersons = personRepository.count();
         long totalImages = faceImageRepository.count();
-        long activePersons = personRepository.findByIsActiveTrue().size();
+        long activePersons = personRepository.countByIsActiveTrue();
 
         Map<String, Object> status = Map.of(
                 "hasData", hasData,
