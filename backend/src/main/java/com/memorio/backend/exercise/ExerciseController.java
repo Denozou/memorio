@@ -8,6 +8,9 @@ import com.memorio.backend.user.UserRepository;
 import com.memorio.backend.gamification.UserBadge;
 import com.memorio.backend.gamification.UserStats;
 import com.memorio.backend.lexicon.WordPicker;
+import com.memorio.backend.faces.FacePickerService;
+import com.memorio.backend.faces.Person;
+
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -37,12 +40,13 @@ public class ExerciseController {
     private final StreakService streakService;
     private final UserRepository users;
     private final WordPicker wordPicker;
+    private final FacePickerService facePicker;
 
     public ExerciseController(ExerciseSessionRepository sessions,
                               ExerciseAttemptRepository attempts,
                               ObjectMapper mapper, UserStatsRepository userStatsRepo,
                               UserBadgeRepository userBadgeRepo, StreakService streakService,
-                              UserRepository users, WordPicker wordPicker) {
+                              UserRepository users, WordPicker wordPicker, FacePickerService facePicker) {
         this.sessions = sessions;
         this.attempts = attempts;
         this.mapper = mapper;
@@ -51,6 +55,8 @@ public class ExerciseController {
         this.streakService = streakService;
         this.users = users;
         this.wordPicker = wordPicker;
+        this.facePicker = facePicker;
+
     }
     @PostMapping("/start")
     public ResponseEntity<StartExerciseResponse> start(@Valid @RequestBody StartExerciseRequest req,
@@ -70,8 +76,9 @@ public class ExerciseController {
                 int skillLevel = user.getSkillLevel();
                 //var words = wordPicker.pickRandom(language, listSize);
                 var words = wordPicker.pickWords(language, skillLevel, listSize);
+                TimingConfig timing = calculateTimingForWords(words.size(), skillLevel);
                 var payload = Map.of("words", words);
-                var res = new StartExerciseResponse(sessionId, ExerciseType.IMAGE_LINKING, payload, skillLevel);
+                var res = new StartExerciseResponse(sessionId, ExerciseType.IMAGE_LINKING, payload, skillLevel, timing);
                 return ResponseEntity.ok(res);
             }
             case DAILY_CHALLENGE -> {
@@ -81,7 +88,28 @@ public class ExerciseController {
                 return ResponseEntity.ok(res);
             }
             case NAMES_FACES -> {
-                throw new IllegalArgumentException("Exercise type not implemented yet: " + req.getType());
+                var user = users.findById(userId).orElseThrow(()-> new IllegalStateException("User not found"));
+
+                int skillLevel = user.getSkillLevel();
+                int faceCount = getFaceCountForLevel(skillLevel);
+
+                List<Person> persons = facePicker.pickFaces(skillLevel, faceCount);
+
+                if(persons.isEmpty()){
+                    throw new IllegalStateException("No faces available for exercise");
+                }
+
+                List<FaceData> faces = persons.stream()
+                        .map(p-> new FaceData(
+                                p.getPersonName(),
+                                p.getDisplayName(),
+                                "/api/faces/primary/" + p.getPersonName()
+                        )).toList();
+
+                TimingConfig timing = calculateTimingForFaces(faceCount, skillLevel);
+                var payload = new FaceNamePayload(faces);
+                var res = new StartExerciseResponse(sessionId, ExerciseType.NAMES_FACES, payload, skillLevel, timing);
+                return ResponseEntity.ok(res);
             }
             default -> throw new IllegalArgumentException("Unknown exercise type: " + req.getType());
         }
@@ -93,7 +121,10 @@ public class ExerciseController {
         UUID userId = UUID.fromString(auth.getName());
         var session = sessions.findByIdAndUserId(req.getSessionId(), userId).
                 orElseThrow(() -> new NotFoundException("Session not found"));
-        if (req.getType() != ExerciseType.IMAGE_LINKING && req.getType() != ExerciseType.DAILY_CHALLENGE){
+        if (req.getType() != ExerciseType.IMAGE_LINKING
+                && req.getType() != ExerciseType.DAILY_CHALLENGE
+                && req.getType() != ExerciseType.NAMES_FACES
+        ){
             throw new IllegalArgumentException("Scoring not implemented for type: " + req.getType());
         }
         var shown = req.getShownWords();
@@ -305,5 +336,60 @@ public class ExerciseController {
     private int getWordCountForLevel(int skillLevel){
         int level = Math.max(1, Math.min(skillLevel, 10));
         return 6 + (level *6);
+    }
+
+    private int getFaceCountForLevel(int skillLevel){
+        int level = Math.max(1, Math.min(skillLevel,10));
+        int count = 4 + (level-1); //4 at level1
+        return Math.min(count, 9); //9 faces max (Even experts struggle beyond 7±2 items (Miller's Law))
+    }
+
+    private TimingConfig calculateTimingForWords(int wordCount, int skillLevel){
+        double timePerWord;
+        if (skillLevel <= 2){
+            timePerWord = 3;
+        } else if (skillLevel <= 4) {
+            timePerWord = 2.5;
+        } else if  (skillLevel <=6){
+            timePerWord = 2.0;
+        }else {
+            timePerWord = 1.5;
+        }
+
+        double calculatedTime = wordCount * timePerWord;
+        int studySeconds = (int) Math.max(20, Math.min(90, calculatedTime));
+        int totalStudyTimeMs = studySeconds * 1000;
+        int totalCycleTime = totalStudyTimeMs / wordCount;
+
+        double gapRatio = 0.2;
+        int showTime = (int) (totalCycleTime * (1-gapRatio));
+
+        if(showTime < 800){
+            showTime = 800;
+        }else if (showTime > 3000){
+            showTime = 3000;
+        }
+
+        int gapTime = (int) (showTime * gapRatio);
+        return new TimingConfig(studySeconds, showTime, gapTime);
+    }
+
+    private TimingConfig calculateTimingForFaces(int faceCount, int skillLevel){
+        double timePerFace;
+        if(skillLevel <=2){
+            timePerFace = 10.0;
+        } else if (skillLevel <= 4) {
+            timePerFace = 8.0;
+        }else if (skillLevel <=6){
+            timePerFace = 6.5;
+        }else {
+            timePerFace = 5.0;
+        }
+        double calculatedTime = faceCount * timePerFace;
+        int studySeconds =(int) Math.max(30, Math.min(120, calculatedTime));
+        int faceShowMs = 5000;
+        int gapMs = 500;
+
+        return new TimingConfig(studySeconds, faceShowMs, gapMs);
     }
 }

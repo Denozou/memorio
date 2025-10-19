@@ -81,7 +81,7 @@ public class AuthController {
             return ResponseEntity.ok(Map.of(
                     "message", "Token refreshed successfully"
             ));
-        } catch (JwtException e) {
+        } catch (JwtException | IllegalArgumentException e) {
             // signature/expired/malformed
             cookieUtil.clearAuthCookies(response);
             return ResponseEntity.status(401).body(Map.of("error", "invalid or expired refresh token"));
@@ -90,42 +90,36 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request,HttpServletResponse response){
-        try{
-            if (!request.getPassword().equals(request.getConfirmPassword())){
-                return ResponseEntity.badRequest().body(Map.of("error", "Passwords do not match"));
-            }
 
-            var user = auth.registerUser(
-                    request.getDisplayName(),
-                    request.getEmail(),
-                    request.getPassword(),
-                    request.getPreferredLanguage()
-            );
-            String subject = user.getId().toString();
-            String access = jwt.generateAccessToken(subject, user.getEmail(), List.of(user.getRole().name()));
-            String refresh = jwt.generateRefreshToken(subject);
-
-            cookieUtil.setAccessTokenCookie(response, access);
-            cookieUtil.setRefreshTokenCookie(response, refresh);
-
-
-
-            return ResponseEntity.ok(Map.of(
-                    "message", "Registration successful",
-                    "user", Map.of(
-                            "id", user.getId(),
-                            "email", user.getEmail(),
-                            "displayName", user.getDisplayName(),
-                            "role", user.getRole().name()
-                    )
-            ));
-        }catch (RuntimeException e){
-            if(e.getMessage().contains("already exists")){
-                return ResponseEntity.status(409).body(Map.of("error", "An account with this email already exists"));
-
-            }
-            return ResponseEntity.status(500).body(Map.of("error", "Registration failed"));
+        if (!request.getPassword().equals(request.getConfirmPassword())){
+            return ResponseEntity.badRequest().body(Map.of("error", "Passwords do not match"));
         }
+
+        var user = auth.registerUser(
+                request.getDisplayName(),
+                request.getEmail(),
+                request.getPassword(),
+                request.getPreferredLanguage()
+        );
+        String subject = user.getId().toString();
+        String access = jwt.generateAccessToken(subject, user.getEmail(), List.of(user.getRole().name()));
+        String refresh = jwt.generateRefreshToken(subject);
+
+        cookieUtil.setAccessTokenCookie(response, access);
+        cookieUtil.setRefreshTokenCookie(response, refresh);
+
+
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Registration successful",
+                "user", Map.of(
+                        "id", user.getId(),
+                        "email", user.getEmail(),
+                        "displayName", user.getDisplayName(),
+                        "role", user.getRole().name()
+                )
+        ));
+
     }
 
     @GetMapping("/check")
@@ -149,7 +143,7 @@ public class AuthController {
                             "role", user.getRole().name()
                     )
             ));
-        }catch (Exception e){
+        }catch (JwtException | IllegalArgumentException e){
             return ResponseEntity.status(401).body(Map.of("error", "Invalid token"));
         }
     }

@@ -10,7 +10,12 @@ type StartResp = {
     sessionId: string;
     type: "IMAGE_LINKING";
     payload:{words: string[]};
-    skillLevel?: number; // Add skill level to response
+    skillLevel?: number;
+    timingConfig?: {          // NEW: timing from backend
+        studySeconds: number;
+        itemShowMs: number;
+        gapMs: number;
+    };
 };
 type SubmitReq = {
   sessionId: string;
@@ -47,64 +52,11 @@ export default function ExerciseImageLinking(){
     const [submitting, setSubmitting] = useState(false);
     const [score, setScore] = useState<SubmitResp | null>(null);
 
-    // Dynamic study time calculation based on word count
-    const calculateStudyTime = (wordCount: number, skillLevel: number | null = null) => {
-        // Base time per word varies by skill level - beginners get more time
-        const getTimePerWord = (level: number | null) => {
-            if (!level) return 2.0; // Default for unknown level
+    //studySeconds = words ? calculateStudyTime(words.length, skillLevel) : 40;
 
-            // More time for beginners, less for advanced users
-            if (level <= 2) return 2.5;      // Beginners: 2.5s per word
-            if (level <= 4) return 2.0;      // Intermediate: 2.0s per word
-            if (level <= 6) return 1.7;      // Advanced: 1.7s per word
-            return 1.5;                      // Expert: 1.5s per word
-        };
-
-        const baseTimePerWord = getTimePerWord(skillLevel);
-        const bufferTime = 10;
-        const calculatedTime = (wordCount * baseTimePerWord) + bufferTime;
-
-        // Set reasonable bounds
-        const minStudyTime = 20; // Minimum 20 seconds
-        const maxStudyTime = 90; // Increased max for beginners with many words
-
-        return Math.max(minStudyTime, Math.min(maxStudyTime, calculatedTime));
-    };
-
-    // Calculate dynamic study time based on current word count and skill level
-    const studySeconds = words ? calculateStudyTime(words.length, skillLevel) : 40;
-
-    // Dynamic timing calculation based on word count
-    const calculateTiming = (wordCount: number) => {
-        const totalStudyTimeMs = studySeconds * 1000;
-        const totalCycleTime = totalStudyTimeMs / wordCount; // Time per word + gap
-
-        // Set minimum and maximum constraints for readability
-        const minShowTime = 800;  // Minimum 0.8s per word
-        const maxShowTime = 2500; // Maximum 2.5s per word
-        const gapRatio = 0.2;     // Gap should be 20% of show time
-
-        let showTime = totalCycleTime * (1 - gapRatio);
-
-        // Apply constraints
-        if (showTime < minShowTime) {
-            showTime = minShowTime;
-        } else if (showTime > maxShowTime) {
-            showTime = maxShowTime;
-        }
-
-        const gapTime = showTime * gapRatio;
-
-        return {
-            showMs: Math.round(showTime),
-            gapMs: Math.round(gapTime)
-        };
-    };
-
-    // Calculate dynamic timing based on current word count
-    const timing = words ? calculateTiming(words.length) : { showMs: 1600, gapMs: 400 };
-    const SHOW_MS = timing.showMs;
-    const GAP_MS = timing.gapMs;
+    const [studySeconds, setStudySeconds] = useState<number>(40);
+    const [itemShowMs, setItemShowMs] = useState<number>(1600);
+    const [gapMs, setGapMs] = useState<number>(400);
 
     const [playing, setPlaying] = useState(false);
     const [index, setIndex] = useState(0);   // current word index during study
@@ -119,7 +71,7 @@ export default function ExerciseImageLinking(){
                 // Currently showing a word
                 timer = setTimeout(() => {
                     setTick("gap");
-                }, SHOW_MS);
+                }, itemShowMs);
             } else if (tick === "gap") {
                 // Currently in gap between words
                 timer = setTimeout(() => {
@@ -131,14 +83,14 @@ export default function ExerciseImageLinking(){
                         // All words shown
                         setPlaying(false);
                     }
-                }, GAP_MS);
+                }, gapMs);
             }
         }
 
         return () => {
             if (timer) clearTimeout(timer);
         };
-    }, [playing, tick, index, words]);
+    }, [playing, tick, index, words, itemShowMs, gapMs]);
 
     async function startExercise(){
         setError(null);
@@ -152,6 +104,11 @@ export default function ExerciseImageLinking(){
             setIndex(0);
             setPlaying(true);
             setSkillLevel(data.skillLevel ?? null);
+             if (data.timingConfig) {
+                 setStudySeconds(data.timingConfig.studySeconds);
+                 setItemShowMs(data.timingConfig.itemShowMs);
+                 setGapMs(data.timingConfig.gapMs);
+             }
         }catch(err: any){
             setError(err?.response?.data?.error ?? "Failed to start exercise");
         }finally{

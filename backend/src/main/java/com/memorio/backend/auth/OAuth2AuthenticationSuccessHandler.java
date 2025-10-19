@@ -192,7 +192,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             HttpServletResponse response
             ) throws IOException
     {
-        String frontEndUrl = "http://localhost:5173";
+        String frontEndUrl = "http://localhost:5173/";
         String redirectUrl = frontEndUrl + "auth/oauth2/success";
         response.sendRedirect(redirectUrl);
 

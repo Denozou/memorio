@@ -1,5 +1,6 @@
 package com.memorio.backend.auth;
 
+import com.memorio.backend.common.error.DuplicateEmailException;
 import com.memorio.backend.user.User;
 import com.memorio.backend.user.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,7 +37,7 @@ public class AuthService {
     public User registerUser(String displayName, String email, String rawPassword,
                              String preferredLanguage){
         if (users.findByEmail(email).isPresent()){
-            throw new RuntimeException("User with this email already exists");
+            throw new DuplicateEmailException(email);
         }
 
         User user = new User();

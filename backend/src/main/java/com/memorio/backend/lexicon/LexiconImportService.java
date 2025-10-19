@@ -15,6 +15,7 @@ public class LexiconImportService {
 
     private final WordRepository wordRepo;
     private static final int MAX_FILE_SIZE = 10 * 1024 * 1024;
+    private static final int MAX_LINES = 100000;
     private static final int BATCH_SIZE = 500;
 
     public LexiconImportService(WordRepository wordRepo){
@@ -42,6 +43,9 @@ public class LexiconImportService {
                 String line;
                 while ((line = br.readLine()) != null){
                     totalLines++;
+                    if(totalLines > MAX_LINES){
+                        throw new IllegalArgumentException("File exceeds maximum allowed lines: " + MAX_LINES);
+                    }
                     String text = line.trim();
                     if (text.isEmpty()){
                         skipped++;

@@ -9,7 +9,7 @@ public class HistoryResponse {
     private final long total;
 
     public HistoryResponse(List<HistoryItem> items, int limit, int offset, long total){
-        this.items = items;
+        this.items = items != null ? items : List.of();
         this.limit = limit;
         this.offset = offset;
         this.total = total;

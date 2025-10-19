@@ -46,7 +46,7 @@ public class FaceImageController {
 
         FaceImage faceImage = faceImageOpt.get();
 
-        if (!faceImage.getPerson().isActive()){
+        if (faceImage.getPerson() == null || !faceImage.getPerson().isActive()){
             return ResponseEntity.notFound().build();
         }
 

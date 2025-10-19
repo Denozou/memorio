@@ -26,6 +26,11 @@ public class JwtService {
                        @Value("${security.jwt.issuer}") String issuer,
                        @Value("${security.jwt.access-token-minutes}") long accessTokenMinutes,
                        @Value("${security.jwt.refresh-token-minutes:10080}") long refreshTokenMinutes){
+        byte[] secretBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if(secretBytes.length < 32){
+            throw new IllegalArgumentException("JWT secret must be at least 32 bytes. Current length: " +
+                    secretBytes.length + " bytes");
+        }
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.issuer = issuer;
         this.accessTokenMinutes = accessTokenMinutes;

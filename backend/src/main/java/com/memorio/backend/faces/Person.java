@@ -13,7 +13,6 @@ import java.util.UUID;
 public class Person {
     @Id
     @UuidGenerator
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", columnDefinition = "uuid")
     private UUID id;
 
@@ -75,12 +74,21 @@ public class Person {
 
 
     public void addFaceImage(FaceImage faceImage){
+        if (faceImage == null) {
+            return;
+        }
         faceImages.add(faceImage);
         faceImage.setPerson(this);
     }
 
     public void removeFaceImage(FaceImage faceImage){
-        faceImages.remove(faceImage);
-        faceImage.setPerson(null);
+        if(faceImage == null){
+            return;
+        }
+        if(faceImages.remove(faceImage)){
+            faceImage.setPerson(null);
+        }
+
+
     }
 }

@@ -18,11 +18,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter{
     private final JwtService jwt;
     private final CookieUtil cookieUtil;
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
     public JwtAuthFilter (JwtService jwt, CookieUtil cookieUtil){
         this.jwt = jwt;
         this.cookieUtil = cookieUtil;
@@ -63,8 +66,9 @@ public class JwtAuthFilter extends OncePerRequestFilter{
                 );
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
                 SecurityContextHolder.getContext().setAuthentication(auth);
-            }catch(JwtException ignored){
-
+            }catch(JwtException e){
+                log.warn("JWT validation failed URI: {}, IP: {}, Exception: {}",
+                        req.getRequestURI(), req.getRemoteAddr(), e.getMessage());
             }
         }
 

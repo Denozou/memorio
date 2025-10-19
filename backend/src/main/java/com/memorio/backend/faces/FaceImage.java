@@ -1,8 +1,10 @@
 package com.memorio.backend.faces;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.sql.Types;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -11,30 +13,40 @@ import java.util.UUID;
 public class FaceImage {
     @Id
     @UuidGenerator
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", columnDefinition = "uuid")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "person_id", nullable = false)
     private Person person;
+
     @Column(name = "filename", nullable = false, length = 150)
     private String filename;
-    @Lob
-    @Column(name = "image_data", nullable = false)
+
+    //@Lob
+    @JdbcTypeCode(Types.VARBINARY)
+    @Column(name = "image_data", nullable = false, columnDefinition = "bytea")
     private byte[] imageData;
+
+
     @Column(name = "content_type", nullable = false, length = 50)
     private String contentType;
+
     @Column(name = "file_size", nullable = false)
     private long fileSize;
+
     @Column(name = "width")
     private Integer width;
+
     @Column(name = "height")
     private Integer height;
+
     @Column(name = "is_primary", nullable = false)
     private boolean isPrimary = false;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private OffsetDateTime createdAt;
+
     @Column(name = "updated_at", insertable = false, updatable = false)
     private OffsetDateTime updatedAt;
 

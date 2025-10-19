@@ -1,6 +1,5 @@
 package com.memorio.backend.faces;
 
-import com.memorio.backend.lexicon.LexiconImportService;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -14,8 +13,6 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,7 +49,7 @@ public class FaceDataImportService {
 
         final ImportResult batchResult = new ImportResult();
         try {
-            final List<Path> remaining = unimportedPersonDirs(datasetDir);
+            final List<Path> remaining = new ArrayList<>(unimportedPersonDirs(datasetDir));
             if(remaining.isEmpty()){
                 logger.info("Nothing to import: all people appear to be in the database");
                 return batchResult;
@@ -126,11 +123,16 @@ public class FaceDataImportService {
 
         for (Path imageFile : imageFiles){
             try{
+                logger.debug("Starting import for image file: {}", imageFile);
                 FaceImage faceImage = createFaceImage(person, imageFile, !hasPrimary);
+                logger.debug("Created image entity, attempting to save to databasse");
                 faceImageRepository.save(faceImage);
+                logger.debug("Successfully saved FaceImage to db for file: {}", imageFile.getFileName());
                 importedImages++;
                 if (!hasPrimary) hasPrimary = true; // First successfully-saved image becomes primary.
             }catch (Exception e){
+                logger.error("Failed to import image: {} - Exception: {}, message: {}",
+                        imageFile, e.getClass().getSimpleName(), e.getMessage(), e);
                 logger.warn("Failed to import image: {}", imageFile, e);
             }
         }
@@ -197,19 +199,40 @@ public class FaceDataImportService {
     }
 
     private FaceImage createFaceImage(Person person, Path imageFile, boolean isPrimary) throws IOException{
+        logger.debug("Creating FaceImage for file: {}", imageFile);
+
         final String filename = imageFile.getFileName().toString();
+        logger.debug("Peocessing filename: {}", filename);
+        if(!Files.exists(imageFile)){
+            throw new IOException("image file does not exist: " + imageFile);
+        }
+
+        if(!Files.isReadable(imageFile)){
+            throw new IOException("Image file is not readable: "+ imageFile);
+        }
+
         final byte[] imageData = Files.readAllBytes(imageFile);
+        logger.debug("Read {} bytes from image file: {}", imageData.length, filename);
+
+        if(imageData.length == 0){
+            throw new IOException("image file is empty: " + imageFile);
+        }
+
 
         final BufferedImage bufferedImage = ImageIO.read(imageFile.toFile());
+        if(bufferedImage == null){
+            logger.warn("ImageIO.read returned null for file: {} - file may be corrupted or unsupported format", imageData);
+        }
         final Integer width = (bufferedImage != null) ? bufferedImage.getWidth() : null;
         final Integer height = (bufferedImage != null) ? bufferedImage.getHeight() : null;
-
+        logger.debug("Image dimensions: {}x{} for file {}", width, height, filename);
         final String contentType = detectContentType(imageFile, filename);
+        logger.debug("Detected content type : {} for file: {}", contentType, filename);
         FaceImage faceImage = new FaceImage(person, filename, imageData, contentType);
         faceImage.setWidth(width);
         faceImage.setHeight(height);
         faceImage.setPrimary(isPrimary);
-
+        logger.debug("Successfully created FAceImage entity for file: {}", filename);
         return faceImage;
     }
 
@@ -295,5 +318,3 @@ public class FaceDataImportService {
 
 
 }
-
-

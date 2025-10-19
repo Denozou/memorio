@@ -10,7 +10,6 @@ import java.util.UUID;
 public class UserIdentity {
     @Id
     @UuidGenerator
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", columnDefinition = "uuid")
     private UUID id;
 

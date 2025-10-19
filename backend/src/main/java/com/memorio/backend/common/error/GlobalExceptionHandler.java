@@ -46,10 +46,18 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(message, req.getRequestURI()));
     }
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFount(
+    public ResponseEntity<ErrorResponse> handleNotFound(
             NotFoundException ex, HttpServletRequest req
     ){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage(), req.getRequestURI()));
+    }
+
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateEmail(DuplicateEmailException ex,
+                                                              HttpServletRequest req){
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                new ErrorResponse("An account with this email already exists", req.getRequestURI())
+        );
     }
 
 }
