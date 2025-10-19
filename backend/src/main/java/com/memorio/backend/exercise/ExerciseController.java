@@ -27,6 +27,7 @@ import org.springframework.data.domain.PageRequest;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.LinkedHashSet;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/exercises")
@@ -258,10 +259,33 @@ public class ExerciseController {
         int page = offset / limit;
         Pageable pageable = PageRequest.of(page, limit);
         var pageResult = sessions.findByUserIdOrderByStartedAtDesc(userId, pageable);
+        var sessionsList = pageResult.getContent();
+        if(sessionsList.isEmpty()){
+            return ResponseEntity.ok(new HistoryResponse(List.of(), limit, offset, 0L));
+        }
+
+        List<UUID> sessionIds= sessionsList.stream()
+                .map(ExerciseSession::getId)
+                .toList();
+        var countResults = attempts.countBySessionIds(sessionIds);
+        var countsMap = countResults.stream()
+                .collect(Collectors.toMap(
+                        ExerciseAttemptRepository.SessionAttemptCount::getSessionId,
+                        ExerciseAttemptRepository.SessionAttemptCount::getAttemptCount
+                ));
+
+        var lastAttemptResults = attempts.findLastAttemptsBySessionIds(sessionIds);
+        var lastAttemptsMap = lastAttemptResults.stream()
+                .collect(Collectors.toMap(
+                        ExerciseAttemptRepository.SessionLastAttempt::getSessionId,
+                        Function.identity()
+                ));
+
+
         var items = new ArrayList<HistoryItem>(pageResult.getNumberOfElements());
-        for (var s : pageResult.getContent()){
-            long attemotCount = attempts.countBySessionId(s.getId());
-            var last = attempts.findFirstBySessionIdOrderByCreatedAtDesc(s.getId()); // projection
+        for (var s : sessionsList){
+            long attemptCount = countsMap.getOrDefault(s.getId(), 0L);
+            var last = lastAttemptsMap.get(s.getId()); // projection
 
             Integer lastCorrect = last == null ? null : last.getCorrect();
             Integer lastTotal   = last == null ? null : last.getTotal();
@@ -271,7 +295,7 @@ public class ExerciseController {
                     s.getType(),
                     s.getStartedAt(),
                     s.getFinishedAt(),
-                    attemotCount,
+                    attemptCount,
                     lastCorrect,
                     lastTotal,
                     lastAcc
