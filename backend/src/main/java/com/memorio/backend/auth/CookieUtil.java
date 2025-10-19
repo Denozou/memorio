@@ -23,11 +23,17 @@ public class CookieUtil {
     }
 
     public void setAccessTokenCookie(HttpServletResponse response, String token){
+        if (token == null || token.isBlank()){
+            throw new IllegalArgumentException("Access token cannotbe null or empty");
+        }
         Cookie cookie = createSecureCookie(ACCESS_TOKEN_COOKIE, token, accessTokenMinutes * 60);
         response.addCookie(cookie);
     }
 
     public void setRefreshTokenCookie(HttpServletResponse response, String token){
+        if(token == null || token.isBlank()){
+            throw new IllegalArgumentException("Refresh token cannot be null or empty");
+        }
         Cookie cookie = createSecureCookie(REFRESH_TOKEN_COOKIE, token, refreshTokenMinutes *60);
         response.addCookie(cookie);
     }
