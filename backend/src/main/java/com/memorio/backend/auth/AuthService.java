@@ -13,6 +13,8 @@ import com.memorio.backend.user.User;
 public class AuthService {
     private final UserRepository users;
     private final PasswordEncoder passwordEncoder;
+    private static final String DUMMY_PASSWORD_HASH=
+            "$2a$10$dummyHashForTimingAttackPreventionDummyHashForTimingAttack";
 
     public AuthService(UserRepository users, PasswordEncoder passwordEncoder) {
         this.users = users;
@@ -20,8 +22,12 @@ public class AuthService {
     }
     @Transactional(readOnly = true)
     public boolean checkCredentials (String email, String rawPassword){
-        return users.findByEmail(email).map(u -> passwordEncoder.matches(rawPassword, u.getPasswordHash())).
-                orElse(false);
+        Optional<User>userOpt = users.findByEmail(email);
+       String hashToCompare = userOpt
+               .map(User::getPasswordHash)
+               .orElse(DUMMY_PASSWORD_HASH);
+       boolean matches = passwordEncoder.matches(rawPassword, hashToCompare);
+       return userOpt.isPresent() && matches;
     }
 
     @Transactional
