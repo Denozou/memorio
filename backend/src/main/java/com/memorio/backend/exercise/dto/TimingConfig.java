@@ -7,6 +7,17 @@ public class TimingConfig {
 
 
     public TimingConfig(int studySeconds, int itemShowMs, int gapMs){
+        if(studySeconds <= 0){
+            throw new IllegalArgumentException("studySeconds must be positive: " + studySeconds);
+        }
+        if(itemShowMs <= 0){
+            throw new IllegalArgumentException("itemShowMs must be positive: " + itemShowMs);
+        }
+        if(gapMs < 0){
+            throw new IllegalArgumentException("gapMs cannot be negative: " + gapMs);
+        }
+
+
         this.studySeconds = studySeconds;
         this.itemShowMs = itemShowMs;
         this.gapMs = gapMs;
