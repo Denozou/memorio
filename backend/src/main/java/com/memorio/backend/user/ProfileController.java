@@ -1,7 +1,7 @@
 package com.memorio.backend.user;
 import com.memorio.backend.gamification.ProgressController;
 import com.memorio.backend.user.dto.LanguageDto;
-
+import com.memorio.backend.common.security.AuthenticationUtil;
 import com.memorio.backend.user.dto.LinkedProviderDto;
 import com.memorio.backend.user.dto.UpdateProfileRequest;
 import com.memorio.backend.user.dto.UserProfileResponse;
@@ -30,7 +30,7 @@ public class ProfileController {
     @Transactional
     public ResponseEntity<UserProfileResponse> getProfile(Authentication auth){
         try{
-            UUID userId = UUID.fromString(auth.getName());
+            UUID userId = AuthenticationUtil.extractUserId(auth);
             User user = users.findById(userId).orElseThrow(()->new RuntimeException("User not found"));
 
             List<LinkedProviderDto> linkedProviders = user.getIdentities().stream()
@@ -62,7 +62,7 @@ public class ProfileController {
     public ResponseEntity<UserProfileResponse> updateProfile(Authentication auth,
                                                              @RequestBody UpdateProfileRequest request){
         try{
-            UUID userId = UUID.fromString(auth.getName());
+            UUID userId = AuthenticationUtil.extractUserId(auth);
             User user = users.findById(userId).orElseThrow(()->new RuntimeException("User not found"));
             if (request.getDisplayName() != null){
                 user.setDisplayName(request.getDisplayName());
@@ -105,14 +105,14 @@ public class ProfileController {
     }
     @GetMapping("/language")
     public ResponseEntity<?> getLanguage(Authentication auth){
-        UUID userId = UUID.fromString(auth.getName());
+        UUID userId = AuthenticationUtil.extractUserId(auth);
         var u = users.findById(userId).orElseThrow();
         String lang = u.getPreferredLanguage() != null ? u.getPreferredLanguage() : "en";
         return ResponseEntity.ok(Map.of("language", lang));
     }
     @PutMapping("/language")
     public ResponseEntity<?> setLanguage(Authentication auth, @RequestBody @Valid LanguageDto req){
-        UUID userId = UUID.fromString(auth.getName());
+        UUID userId = AuthenticationUtil.extractUserId(auth);
         var u = users.findById(userId).orElseThrow();
         u.setPreferredLanguage(req.getLanguage().toLowerCase());
         users.save(u);

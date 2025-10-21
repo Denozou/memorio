@@ -3,7 +3,7 @@ import com.memorio.backend.gamification.dto.ProgressResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
+import com.memorio.backend.common.security.AuthenticationUtil;
 import java.util.UUID;
 import java.util.stream.Collectors;
 @RestController
@@ -19,7 +19,7 @@ public class ProgressController {
 
     @GetMapping
     public ResponseEntity<ProgressResponse> get(Authentication auth){
-        var userId =  UUID.fromString(auth.getName());
+        var userId =  AuthenticationUtil.extractUserId(auth);
         var stats = statsRepo.findById(userId).orElseGet(() -> new UserStats(userId));
         var badges = badgeRepo.findByUserId(userId).stream().map(UserBadge::getCode).collect(Collectors.toList());
         var resp = new ProgressResponse(

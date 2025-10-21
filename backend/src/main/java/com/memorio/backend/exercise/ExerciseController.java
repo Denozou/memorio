@@ -10,7 +10,7 @@ import com.memorio.backend.gamification.UserStats;
 import com.memorio.backend.lexicon.WordPicker;
 import com.memorio.backend.faces.FacePickerService;
 import com.memorio.backend.faces.Person;
-
+import com.memorio.backend.common.security.AuthenticationUtil;
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -62,7 +62,7 @@ public class ExerciseController {
     @PostMapping("/start")
     public ResponseEntity<StartExerciseResponse> start(@Valid @RequestBody StartExerciseRequest req,
                                                        Authentication auth){
-        UUID userId = UUID.fromString(auth.getName());
+        UUID userId = AuthenticationUtil.extractUserId(auth);
         UUID sessionId = UUID.randomUUID();
         var session = new ExerciseSession(sessionId, userId, req.getType(), OffsetDateTime.now());
         sessions.save(session);
@@ -119,7 +119,7 @@ public class ExerciseController {
     @PostMapping("/submit")
     public ResponseEntity<SubmitExerciseResponse> submit(@Valid @RequestBody SubmitExerciseRequest req,
                                                          Authentication auth){
-        UUID userId = UUID.fromString(auth.getName());
+        UUID userId = AuthenticationUtil.extractUserId(auth);
         var session = sessions.findByIdAndUserId(req.getSessionId(), userId).
                 orElseThrow(() -> new NotFoundException("Session not found"));
         if (req.getType() != ExerciseType.IMAGE_LINKING
@@ -255,7 +255,7 @@ public class ExerciseController {
         limit = Math.max(1, Math.min(limit,100));
         offset = Math.max(0, offset);
 
-        var userId = UUID.fromString(auth.getName());
+        var userId = AuthenticationUtil.extractUserId(auth);
         int page = offset / limit;
         Pageable pageable = PageRequest.of(page, limit);
         var pageResult = sessions.findByUserIdOrderByStartedAtDesc(userId, pageable);
@@ -314,7 +314,7 @@ public class ExerciseController {
                                                  Authentication auth){
 
         var zone = safeZoneId(tz);
-        var userId = UUID.fromString(auth.getName());
+        var userId = AuthenticationUtil.extractUserId(auth);
         var page = sessions.findByUserIdOrderByStartedAtDesc(userId, PageRequest.of(0, 400));
         var days = new LinkedHashSet<LocalDate>();
         for (var s : page.getContent()){

@@ -1,4 +1,5 @@
 package com.memorio.backend.user;
+import com.memorio.backend.common.security.AuthenticationUtil;
 import com.memorio.backend.user.dto.UserResponse;
 import com.memorio.backend.user.dto.CreateUserRequest;
 import jakarta.validation.Valid;
@@ -40,7 +41,7 @@ public class UserController {
     @GetMapping("/me")
     // amazonq-ignore-next-line
     public ResponseEntity<UserResponse> me(Authentication auth){
-        UUID userId = UUID.fromString(auth.getName());
+        UUID userId = AuthenticationUtil.extractUserId(auth);
         User u = service.getUser(userId);
         UserResponse body = new UserResponse(u.getId(), u.getEmail(), u.getCreatedAt());
         return ResponseEntity.ok(body);
