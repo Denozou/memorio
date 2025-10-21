@@ -1,19 +1,23 @@
 package com.memorio.backend.auth.dto;
 
+import com.memorio.backend.common.validation.PasswordMatches;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-
+@PasswordMatches
 public class RegisterRequest {
     @NotBlank(message = "Display name is required")
     @Size(min=2, max = 100, message = "Display name must be between 2 and 100 characters")
     private String displayName;
+
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
     private String email;
+
     @NotBlank(message = "Password is required")
     @Size(min = 8, message = "Password should be at least 8 characters long")
     private String password;
+
     @NotBlank(message = "Password confirmation is required")
     private String confirmPassword;
 

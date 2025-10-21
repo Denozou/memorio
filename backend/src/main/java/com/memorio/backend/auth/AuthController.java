@@ -91,9 +91,6 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request,HttpServletResponse response){
 
-        if (!request.getPassword().equals(request.getConfirmPassword())){
-            return ResponseEntity.badRequest().body(Map.of("error", "Passwords do not match"));
-        }
 
         var user = auth.registerUser(
                 request.getDisplayName(),

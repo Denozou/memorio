@@ -175,7 +175,15 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
                 user.getId(), provider
         );
         if (existingIdentity.isPresent()){
-            return existingIdentity.get();
+            UserIdentity identity = existingIdentity.get();
+            if(!identity.getProviderUserId().equals(providerUserId)){
+                log.warn("Provider user ID mismatch for user {} and provider {}: " +
+                        "expected {}, got {}", user.getId(), provider,
+                        identity.getProviderUserId(), providerUserId);
+
+                throw new IllegalArgumentException("Provider account mismatch");
+            }
+            return identity;
         } else{
             UserIdentity newIdentity = new UserIdentity();
             newIdentity.setUser(user);
