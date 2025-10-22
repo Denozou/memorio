@@ -5,7 +5,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.HttpHeaders;
+import org.springframework.core.env.Profiles;
 
 @Component
 public class CookieUtil {
@@ -26,24 +28,24 @@ public class CookieUtil {
         if (token == null || token.isBlank()){
             throw new IllegalArgumentException("Access token cannotbe null or empty");
         }
-        Cookie cookie = createSecureCookie(ACCESS_TOKEN_COOKIE, token, accessTokenMinutes * 60);
-        response.addCookie(cookie);
+        ResponseCookie cookie = createSecureCookie(ACCESS_TOKEN_COOKIE, token, accessTokenMinutes * 60);
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     public void setRefreshTokenCookie(HttpServletResponse response, String token){
         if(token == null || token.isBlank()){
             throw new IllegalArgumentException("Refresh token cannot be null or empty");
         }
-        Cookie cookie = createSecureCookie(REFRESH_TOKEN_COOKIE, token, refreshTokenMinutes *60);
-        response.addCookie(cookie);
+        ResponseCookie cookie = createSecureCookie(REFRESH_TOKEN_COOKIE, token, refreshTokenMinutes *60);
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     public void clearAuthCookies (HttpServletResponse response){
-        Cookie accessCookie = createSecureCookie(ACCESS_TOKEN_COOKIE, "", 0);
-        Cookie refreshCookie = createSecureCookie(REFRESH_TOKEN_COOKIE, "", 0);
+        ResponseCookie accessCookie = createSecureCookie(ACCESS_TOKEN_COOKIE, "", 0);
+        ResponseCookie refreshCookie = createSecureCookie(REFRESH_TOKEN_COOKIE, "", 0);
 
-        response.addCookie(accessCookie);
-        response.addCookie(refreshCookie);
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
     }
     public String getAccessTokenFromCookies(HttpServletRequest request){
         return getCookieValue(request, ACCESS_TOKEN_COOKIE);
@@ -53,14 +55,16 @@ public class CookieUtil {
         return getCookieValue(request, REFRESH_TOKEN_COOKIE);
     }
 
-    private Cookie createSecureCookie(String name, String value, int maxAgeSeconds){
-        Cookie cookie = new Cookie(name, value);
-        cookie.setHttpOnly(true);
-        boolean isProduction = !environment.acceptsProfiles("dev", "development", "local");
-        cookie.setSecure(isProduction); // ДЛЯ ПРОДУ ЗМІНИТИ НА TRUE || set TRUE for production
-        cookie.setPath("/"); // для проду треба буде поставити посилання на свій домен
-        cookie.setMaxAge(maxAgeSeconds);
-        return cookie;
+    private ResponseCookie createSecureCookie(String name, String value, int maxAgeSeconds){
+        boolean isProduction = !environment.acceptsProfiles(Profiles.of("dev","development", "local"));
+
+        return ResponseCookie.from(name,value)
+                .httpOnly(true)
+                .secure(isProduction)  // ДЛЯ ПРОДУ ЗМІНИТИ НА TRUE || set TRUE for production
+                .path("/") // для проду треба буде поставити посилання на свій домен
+                .maxAge(maxAgeSeconds)
+                .sameSite("Lax")
+                .build();
     }
 
     private String getCookieValue (HttpServletRequest request, String cookieName){
