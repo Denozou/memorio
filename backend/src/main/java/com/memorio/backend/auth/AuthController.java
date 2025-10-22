@@ -74,9 +74,10 @@ public class AuthController {
             String newAccess = jwt.generateAccessToken(
                     user.getId().toString(), user.getEmail(), List.of(user.getRole().name())
             );
+            String newRefresh = jwt.generateRefreshToken(user.getId().toString());
 
             cookieUtil.setAccessTokenCookie(response, newAccess);
-
+            cookieUtil.setRefreshTokenCookie(response, newRefresh);
 
             return ResponseEntity.ok(Map.of(
                     "message", "Token refreshed successfully"

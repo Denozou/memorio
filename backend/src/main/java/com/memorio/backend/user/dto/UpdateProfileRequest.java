@@ -4,10 +4,12 @@ import jakarta.validation.constraints.Size;
 public class UpdateProfileRequest {
     @Size(max = 100, message = "Display name must be less then 100 characters")
     private String displayName;
+
     @Email(message = "Email must be valid")
     private String email;
 
     private String pictureUrl;
+
     @Size(min = 2, max = 8, message = "Language code must be between 2 and 8 characters")
     private String preferredLanguage;
 

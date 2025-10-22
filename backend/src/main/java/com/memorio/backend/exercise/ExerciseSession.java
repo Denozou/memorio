@@ -3,6 +3,7 @@ import jakarta.persistence.*;
 
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.util.Objects;
 import java.util.UUID;
 @Entity
 @Table(name = "exercise_sessions")
@@ -19,16 +20,16 @@ public class ExerciseSession {
     @Column(name = "started_at", nullable = false)
     private OffsetDateTime startedAt;
 
-    @Column(name = "finished_at", nullable = false)
+    @Column(name = "finished_at", nullable = true)
     private OffsetDateTime finishedAt;
 
     protected ExerciseSession(){}
     public ExerciseSession (UUID id, UUID userId, ExerciseType type,
                             OffsetDateTime startedAt){
-        this.id = id;
-        this.userId = userId;
-        this.type = type;
-        this.startedAt = startedAt;
+        this.id = Objects.requireNonNull(id, "id cannot be null");
+        this.userId = Objects.requireNonNull(userId, "userId cannot be null");
+        this.type = Objects.requireNonNull(type, "type cannot be null");
+        this.startedAt = Objects.requireNonNull(startedAt, "startedAt cannot be null");
 
     }
 
@@ -39,7 +40,7 @@ public class ExerciseSession {
     public OffsetDateTime getFinishedAt(){return finishedAt;}
 
     public void markFinished(OffsetDateTime when){
-        this.finishedAt = when;
+        this.finishedAt = Objects.requireNonNull(when, "Finish time cannot be null");
     }
 
 }
