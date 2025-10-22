@@ -45,7 +45,9 @@ public class AuthController {
 
         boolean ok = auth.checkCredentials(req.getEmail(), req.getPassword());
         if (!ok) {
-            return ResponseEntity.status(401).body(null);
+            return ResponseEntity.status(401).body(
+                    new ErrorResponse("Invalid email or password")
+            );
         }
 
         var user = auth.findByEmail(req.getEmail()).orElseThrow(); // should exist since creds are ok
@@ -77,7 +79,9 @@ public class AuthController {
 
         String refreshToken = cookieUtil.getRefreshTokenFromCookies(request);
         if (refreshToken == null || refreshToken.isBlank()) {
-            return ResponseEntity.status(401).body(null);
+            return ResponseEntity.status(401).body(
+                    new ErrorResponse("Invalid email or password")
+            );
         }
 
         try {
@@ -141,10 +145,12 @@ public class AuthController {
     }
 
     @GetMapping("/check")
-    public ResponseEntity<CheckAuthResponse> checkAuth(HttpServletRequest request){
+    public ResponseEntity<?> checkAuth(HttpServletRequest request){
         String token = cookieUtil.getAccessTokenFromCookies(request);
         if (token == null){
-            return ResponseEntity.status(401).body(null);
+            return ResponseEntity.status(401).body(
+                    new ErrorResponse("Invalid email or password")
+            );
 
         }
 
