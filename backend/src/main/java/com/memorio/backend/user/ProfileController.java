@@ -60,7 +60,7 @@ public class ProfileController {
     @PutMapping("/profile")
     @Transactional
     public ResponseEntity<UserProfileResponse> updateProfile(Authentication auth,
-                                                             @RequestBody UpdateProfileRequest request){
+                                                             @RequestBody @Valid UpdateProfileRequest request){
         try{
             UUID userId = AuthenticationUtil.extractUserId(auth);
             User user = users.findById(userId).orElseThrow(()->new RuntimeException("User not found"));

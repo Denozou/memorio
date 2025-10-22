@@ -70,7 +70,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
                 List.of(user.getRole().name())
         );
         String refreshToken = jwtService.generateRefreshToken(user.getId().toString());
-        Instant expiresAt = jwtService.getExpiration(accessToken);
+        //Instant expiresAt = jwtService.getExpiration(accessToken);
 
         cookieUtil.setAccessTokenCookie(response, accessToken);
         cookieUtil.setRefreshTokenCookie(response, refreshToken);
