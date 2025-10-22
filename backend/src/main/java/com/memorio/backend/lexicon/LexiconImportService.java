@@ -31,7 +31,7 @@ public class LexiconImportService {
             throw new IllegalArgumentException("File is empty or exceeds maximum size");
         }
         try{
-            Set<String>existingLower = new HashSet<>(wordRepo.findAllLowerTextsByLanguage(language));
+            Set<String>seenInFile = new HashSet<>();
             int baseRank = Optional.ofNullable(wordRepo.findMaxRankByLanguage(language)).orElse(0);
             List<Word> batch = new ArrayList<>();
             int totalLines = 0;
@@ -52,8 +52,13 @@ public class LexiconImportService {
                         continue;
                     }
                     String key = text.toLowerCase(Locale.ROOT);
-                    if (existingLower.contains(key)){
+                    if(seenInFile.contains(key)){
                         skipped++;
+                        continue;
+                    }
+                    if(wordRepo.existsByLanguageAndTextIgnoreCase(language, text)){
+                        skipped++;
+                        seenInFile.add(key);
                         continue;
                     }
                     Word w = new Word(
@@ -66,7 +71,7 @@ public class LexiconImportService {
                             OffsetDateTime.now()
                     );
                     batch.add(w);
-                    existingLower.add(key);
+                    seenInFile.add(key);
                     inserted++;
                     if(batch.size() >= BATCH_SIZE){
                         wordRepo.saveAll(batch);
