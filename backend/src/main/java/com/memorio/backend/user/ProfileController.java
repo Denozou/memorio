@@ -1,4 +1,5 @@
 package com.memorio.backend.user;
+import com.memorio.backend.common.error.NotFoundException;
 import com.memorio.backend.gamification.ProgressController;
 import com.memorio.backend.user.dto.LanguageDto;
 import com.memorio.backend.common.security.AuthenticationUtil;
@@ -27,35 +28,31 @@ public class ProfileController {
         this.userIdentityRepository = userIdentityRepository;
     }
     @GetMapping("/profile")
-    @Transactional
+    @Transactional(readOnly = true)
     public ResponseEntity<UserProfileResponse> getProfile(Authentication auth){
-        try{
-            UUID userId = AuthenticationUtil.extractUserId(auth);
-            User user = users.findById(userId).orElseThrow(()->new RuntimeException("User not found"));
+        UUID userId = AuthenticationUtil.extractUserId(auth);
+        User user = users.findById(userId).orElseThrow(
+                ()->new NotFoundException("User not found"));
 
-            List<LinkedProviderDto> linkedProviders = user.getIdentities().stream()
-                    .map(identity-> new LinkedProviderDto(
-                            identity.getProvider(),
-                            identity.getProviderUserId(),
-                            identity.getCreatedAt()
-                    )).collect(Collectors.toList());
+        List<LinkedProviderDto> linkedProviders = user.getIdentities().stream()
+                .map(identity-> new LinkedProviderDto(
+                        identity.getProvider(),
+                        identity.getProviderUserId(),
+                        identity.getCreatedAt()
+                )).collect(Collectors.toList());
 
-            UserProfileResponse response = new UserProfileResponse(
-                    user.getId(),
-                    user.getEmail(),
-                    user.getDisplayName(),
-                    user.getPictureUrl(),
-                    user.getRole(),
-                    user.getSkillLevel(),
-                    user.getPreferredLanguage(),
-                    user.getCreatedAt(),
-                    linkedProviders
-
-            );
-            return ResponseEntity.ok(response);
-        }catch (Exception e){
-            throw new RuntimeException("Failed to get user profile", e);
-        }
+        UserProfileResponse response = new UserProfileResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getDisplayName(),
+                user.getPictureUrl(),
+                user.getRole(),
+                user.getSkillLevel(),
+                user.getPreferredLanguage(),
+                user.getCreatedAt(),
+                linkedProviders
+        );
+        return ResponseEntity.ok(response);
     }
     @PutMapping("/profile")
     @Transactional

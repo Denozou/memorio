@@ -43,6 +43,11 @@ public class ExerciseController {
     private final WordPicker wordPicker;
     private final FacePickerService facePicker;
 
+    private static final double LEVEL_UP_THRESHOLD = 0.85;
+    private static  final double LEVEL_DOWN_THRESHOLD = 0.6;
+    private static final int MAX_SKILL_LEVEL = 10;
+    private static final int MIN_SKILL_LEVEL = 1;
+
     public ExerciseController(ExerciseSessionRepository sessions,
                               ExerciseAttemptRepository attempts,
                               ObjectMapper mapper, UserStatsRepository userStatsRepo,
@@ -189,10 +194,10 @@ public class ExerciseController {
         }
         var user = users.findById(userId).orElseThrow(()->new IllegalStateException("User not found"));
         int level = user.getSkillLevel();
-        if (orderAccuracy >= 0.85){
-            level = Math.min(level+1, 10);
-        } else if (orderAccuracy < 0.6) {
-            level = Math.max(level -1,1);
+        if (orderAccuracy >= LEVEL_UP_THRESHOLD){
+            level = Math.min(level+1, MAX_SKILL_LEVEL);
+        } else if (orderAccuracy < LEVEL_DOWN_THRESHOLD) {
+            level = Math.max(level -1,MIN_SKILL_LEVEL);
         }
         user.setSkillLevel(level);
         users.save(user);
