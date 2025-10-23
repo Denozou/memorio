@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { api } from "../lib/api";
-import Button from "../components/ui/Button";
-import Input from "../components/ui/Input";
-import { Card, CardContent, CardHeader } from "../components/ui/Card";
+import { Link, useNavigate } from "react-router-dom";
+import { LogOut, Menu, X, AlertCircle, ArrowRight } from "lucide-react";
 import Timer from "../components/ui/Timer";
+import ThemeToggle from "../components/ThemeToggle";
 
 /* ===== Types ===== */
 type FaceData = {
@@ -50,6 +50,8 @@ type SubmitResp = {
 };
 
 export default function ExerciseNamesFaces() {
+  const nav = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [faces, setFaces] = useState<FaceData[] | null>(null);
@@ -156,368 +158,390 @@ export default function ExerciseNamesFaces() {
     setShowingFace(true);
   }
 
+  async function handleLogout() {
+    try {
+      await api.post("/auth/logout");
+      nav("/login");
+    } catch (e) {
+      console.error("Logout failed", e);
+      nav("/login");
+    }
+  }
+
   function pct(x: number) {
     return Math.round((x ?? 0) * 100);
   }
 
   return (
-    <div style={{ 
-      fontFamily: "system-ui", 
-      padding: "16px", 
-      display: "grid", 
-      gap: 16, 
-      maxWidth: 800, 
-      margin: "0 auto",
-      minHeight: "100vh"
-    }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-        <h1 style={{ margin: 0, fontSize: "clamp(24px, 5vw, 32px)" }}>Names & Faces</h1>
-        <a href="/dashboard"><Button variant="ghost">← Dashboard</Button></a>
-      </div>
-
-      <Card>
-        <CardHeader
-          title={
-            phase === "idle" ? "Start a new session"
-            : phase === "study" ? "Study Phase"
-            : phase === "recall" ? "Recall Phase"
-            : "Results"
-          }
-          subtitle={sessionId ? `Session: ${sessionId.substring(0, 8)}...` : undefined}
-        />
-        <CardContent>
-          {error && (
-            <div style={{ 
-              color: "#ef4444", 
-              marginBottom: 12, 
-              padding: 12, 
-              background: "#fef2f2", 
-              borderRadius: 8,
-              border: "1px solid #fecaca"
-            }}>
-              {error}
+    <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 dark:from-slate-950 dark:to-slate-900 antialiased">
+      {/* Header */}
+      <header className="sticky top-0 z-40 border-b border-slate-200/60 dark:border-slate-800 bg-white/80 dark:bg-slate-950/70 backdrop-blur">
+        <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            <Link to="/dashboard" className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 shadow-md" aria-hidden />
+              <span className="font-semibold tracking-tight text-slate-900 dark:text-slate-50">Memorio</span>
+            </Link>
+            
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-6">
+              <Link to="/dashboard" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
+                Dashboard
+              </Link>
+              <Link to="/profile" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
+                Profile
+              </Link>
             </div>
-          )}
 
-          {/* ===== IDLE PHASE ===== */}
-          {phase === "idle" && (
-            <div style={{ display: "grid", gap: 16 }}>
-              <div style={{ 
-                padding: 16, 
-                background: "#f0f9ff", 
-                borderRadius: 12, 
-                border: "1px solid #bfdbfe" 
-              }}>
-                <h3 style={{ margin: "0 0 8px 0", color: "#1e40af" }}>How it works</h3>
-                <ul style={{ margin: 0, paddingLeft: 20, color: "#1e3a8a" }}>
-                  <li>Study faces and names for a limited time</li>
-                  <li>Try to remember as many names as possible</li>
-                  <li>Type the names in the recall phase</li>
-                  <li>Get points based on accuracy and order</li>
-                </ul>
-              </div>
-              <Button onClick={startExercise} loading={loading} variant="primary" style={{ padding: "12px 24px", fontSize: 16 }}>
-                Start Exercise
-              </Button>
-            </div>
-          )}
-
-          {/* ===== STUDY PHASE ===== */}
-          {phase === "study" && faces && (
-            <div style={{ display: "grid", gap: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-                <span style={{ color: "#6b7280", fontSize: 14 }}>Memorize these faces and names</span>
-                <Timer seconds={studySeconds} onFinish={finishStudy} />
-              </div>
-
-              <DifficultyIndicator level={skillLevel} itemCount={faces.length} />
-
-              {/* Face display area */}
-              <div style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                minHeight: "400px",
-                padding: 24,
-                background: "#f9fafb",
-                borderRadius: 16,
-                border: "1px solid #e5e7eb"
-              }}>
-                {showingFace && currentIndex < faces.length ? (
-                  <FaceCard face={faces[currentIndex]} />
-                ) : (
-                  <div style={{ color: "#9ca3af", fontSize: 18 }}>•••</div>
-                )}
-              </div>
-
-              {/* Progress indicator */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-                <div style={{ color: "#6b7280", fontSize: 14 }}>
-                  {currentIndex + 1} / {faces.length} faces shown
-                </div>
-                <Button onClick={finishStudy} variant="secondary">I'm ready to recall</Button>
-              </div>
-
-              {/* Thumbnail strip for review */}
-              <div style={{ 
-                display: "grid", 
-                gridTemplateColumns: "repeat(auto-fit, minmax(80px, 1fr))", 
-                gap: 8,
-                padding: 12,
-                background: "white",
-                borderRadius: 12,
-                border: "1px solid #e5e7eb"
-              }}>
-                {faces.map((face, idx) => (
-                  <div 
-                    key={idx}
-                    style={{
-                      opacity: idx <= currentIndex ? 1 : 0.3,
-                      transition: "opacity 0.3s",
-                      textAlign: "center"
-                    }}
-                  >
-                    <img
-                      src={`${import.meta.env.VITE_API_URL || "http://localhost:8080"}${face.imageUrl}`}
-                      alt={idx <= currentIndex ? face.displayName : "Not shown yet"}
-                      style={{
-                        width: "100%",
-                        aspectRatio: "1",
-                        objectFit: "cover",
-                        borderRadius: 8,
-                        border: idx === currentIndex ? "2px solid #3b82f6" : "1px solid #e5e7eb"
-                      }}
-                      loading="lazy"
-                    />
-                    <div style={{ 
-                      fontSize: 11, 
-                      marginTop: 4, 
-                      color: idx <= currentIndex ? "#374151" : "#9ca3af",
-                      fontWeight: idx === currentIndex ? 600 : 400
-                    }}>
-                      {idx <= currentIndex ? face.displayName : "?"}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ===== RECALL PHASE ===== */}
-          {phase === "recall" && faces && (
-            <div style={{ display: "grid", gap: 16 }}>
-              <DifficultyIndicator level={skillLevel} itemCount={faces.length} />
-              
-              <p style={{ color: "#6b7280", margin: 0 }}>
-                Type the names you remember. Order matters for bonus points!
-              </p>
-
-              {/* Face grid with input fields */}
-              <div style={{ 
-                display: "grid", 
-                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", 
-                gap: 16 
-              }}>
-                {faces.map((face, idx) => (
-                  <div 
-                    key={idx}
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 8,
-                      padding: 12,
-                      background: "white",
-                      border: "1px solid #e5e7eb",
-                      borderRadius: 12
-                    }}
-                  >
-                    <img
-                      src={`${import.meta.env.VITE_API_URL || "http://localhost:8080"}${face.imageUrl}`}
-                      alt={`Face ${idx + 1}`}
-                      style={{
-                        width: "100%",
-                        aspectRatio: "1",
-                        objectFit: "cover",
-                        borderRadius: 8
-                      }}
-                      loading="lazy"
-                    />
-                    <Input
-                      value={answers[idx]}
-                      onChange={e => {
-                        const copy = answers.slice();
-                        copy[idx] = e.target.value;
-                        setAnswers(copy);
-                      }}
-                      placeholder={`Name #${idx + 1}`}
-                      style={{ width: "100%" }}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <Button 
-                variant="primary" 
-                onClick={submitRecall} 
-                disabled={submitting} 
-                loading={submitting}
-                style={{ padding: "12px 24px", fontSize: 16 }}
+            <div className="hidden md:flex items-center gap-3">
+              <ThemeToggle />
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 rounded-xl border border-slate-300/70 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2"
               >
-                Submit Answers
-              </Button>
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
             </div>
-          )}
 
-          {/* ===== SUMMARY PHASE ===== */}
-          {phase === "summary" && score && faces && (
-            <div style={{ display: "grid", gap: 16 }}>
-              {/* Headline metrics */}
-              <div style={{ 
-                display: "grid", 
-                gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", 
-                gap: 12 
-              }}>
-                <Metric
-                  label="Unordered accuracy"
-                  value={`${score.correct}/${score.total}`}
-                  sub={`${pct(score.accuracy)}%`}
-                />
-                <Metric
-                  label="In-order accuracy"
-                  value={`${score.orderCorrect}/${score.total}`}
-                  sub={`${pct(score.orderAccuracy)}%`}
-                />
-              </div>
+            {/* Mobile Menu Button */}
+            <div className="md:hidden flex items-center gap-2">
+              <ThemeToggle />
+              <button
+                className="p-2 rounded-lg border border-slate-300/70 dark:border-slate-700"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
 
-              {/* Points earned */}
-              <div style={{
-                padding: 16,
-                border: "1px solid #e5e7eb",
-                borderRadius: 12,
-                background: "#fafafa",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                flexWrap: "wrap",
-                gap: 12
-              }}>
-                <div>
-                  <div style={{ fontSize: 12, color: "#6b7280" }}>Points earned</div>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: "#059669" }}>
-                    +{score.pointsEarned}
-                  </div>
-                </div>
-                <div style={{ fontSize: 12, color: "#6b7280" }}>
-                  includes bonus for correct order
-                </div>
-              </div>
-
-              {/* Correct / missed / extra lists */}
-              <div style={{ 
-                display: "grid", 
-                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", 
-                gap: 12 
-              }}>
-                <ListCard title="✓ Correct" items={score.correctWords} color="#059669" />
-                <ListCard title="✗ Missed" items={score.missedWords} color="#ef4444" />
-                <ListCard title="⚠ Extra answers" items={score.extraAnswers} color="#6b7280" />
-              </div>
-
-              {/* New badges */}
-              {!!score.newBadges?.length && (
-                <div style={{ 
-                  padding: 16, 
-                  background: "#fef3c7", 
-                  borderRadius: 12, 
-                  border: "1px solid #fbbf24" 
-                }}>
-                  <div style={{ fontWeight: 700, marginBottom: 8, color: "#92400e" }}>
-                    🎉 New Badges Earned!
-                  </div>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    {score.newBadges.map((b) => (
-                      <BadgePill key={b} code={b} />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Review section - show faces with correct answers */}
-              <div style={{ 
-                padding: 16, 
-                background: "#f9fafb", 
-                borderRadius: 12, 
-                border: "1px solid #e5e7eb" 
-              }}>
-                <h3 style={{ margin: "0 0 12px 0", fontSize: 16, fontWeight: 700 }}>Review</h3>
-                <div style={{ 
-                  display: "grid", 
-                  gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", 
-                  gap: 12 
-                }}>
-                  {faces.map((face, idx) => {
-                    const userAnswer = answers[idx]?.trim().toLowerCase();
-                    const correctAnswer = face.displayName.trim().toLowerCase();
-                    const isCorrect = userAnswer === correctAnswer;
-                    
-                    return (
-                      <div 
-                        key={idx}
-                        style={{
-                          padding: 12,
-                          background: "white",
-                          border: `2px solid ${isCorrect ? "#10b981" : "#ef4444"}`,
-                          borderRadius: 12
-                        }}
-                      >
-                        <img
-                          src={`${import.meta.env.VITE_API_URL || "http://localhost:8080"}${face.imageUrl}`}
-                          alt={face.displayName}
-                          style={{
-                            width: "100%",
-                            aspectRatio: "1",
-                            objectFit: "cover",
-                            borderRadius: 8,
-                            marginBottom: 8
-                          }}
-                          loading="lazy"
-                        />
-                        <div style={{ fontSize: 14, fontWeight: 600, color: "#374151" }}>
-                          {face.displayName}
-                        </div>
-                        {!isCorrect && userAnswer && (
-                          <div style={{ fontSize: 12, color: "#ef4444", marginTop: 4 }}>
-                            You wrote: {answers[idx] || "(empty)"}
-                          </div>
-                        )}
-                        {!userAnswer && (
-                          <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>
-                            (no answer)
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <a href="/dashboard" style={{ flex: "1 1 auto" }}>
-                  <Button variant="secondary" style={{ width: "100%" }}>Back to Dashboard</Button>
-                </a>
-                <Button
-                  variant="ghost"
-                  onClick={resetExercise}
-                  style={{ flex: "1 1 auto" }}
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden py-3 border-t border-slate-200/70 dark:border-slate-800">
+              <div className="flex flex-col gap-2">
+                <Link to="/dashboard" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
+                  Dashboard
+                </Link>
+                <Link to="/profile" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
+                  Profile
+                </Link>
+                <button
+                  onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
+                  className="py-2 text-left text-slate-600 dark:text-slate-300 flex items-center gap-2"
                 >
-                  Try Again
-                </Button>
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </nav>
+      </header>
+
+      {/* Main Content */}
+      <main className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        {/* Page Title */}
+        <div className="mb-8">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50">
+            👤 Names & Faces
+          </h1>
+          <p className="mt-2 text-slate-600 dark:text-slate-300">
+            {phase === "idle" && "Memorize faces and recall their names"}
+            {phase === "study" && "Study Phase - Memorize these faces"}
+            {phase === "recall" && "Recall Phase - Type the names you remember"}
+            {phase === "summary" && "Results - See how you did"}
+          </p>
+          {sessionId && (
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Session: {sessionId.substring(0, 8)}...
+            </p>
+          )}
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 text-sm text-red-600 dark:text-red-400 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {/* ===== IDLE PHASE ===== */}
+        {phase === "idle" && (
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 shadow-lg p-6 sm:p-8 space-y-6">
+            <div className="rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-6">
+              <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-3">How it works</h3>
+              <ul className="space-y-2 text-blue-800 dark:text-blue-200">
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-600 dark:text-blue-400 mt-0.5">•</span>
+                  <span>Study faces and names for a limited time</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-600 dark:text-blue-400 mt-0.5">•</span>
+                  <span>Try to remember as many names as possible</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-600 dark:text-blue-400 mt-0.5">•</span>
+                  <span>Type the names in the recall phase</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-600 dark:text-blue-400 mt-0.5">•</span>
+                  <span>Get points based on accuracy and order</span>
+                </li>
+              </ul>
+            </div>
+            <button
+              onClick={startExercise}
+              disabled={loading}
+              className="w-full px-6 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-lg shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Starting...
+                </>
+              ) : (
+                <>
+                  Start Exercise
+                  <ArrowRight className="w-5 h-5" />
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* ===== STUDY PHASE ===== */}
+        {phase === "study" && faces && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <span className="text-sm text-slate-600 dark:text-slate-300">Memorize these faces and names</span>
+              <Timer seconds={studySeconds} onFinish={finishStudy} />
+            </div>
+
+            <DifficultyIndicator level={skillLevel} itemCount={faces.length} />
+
+            {/* Face display area */}
+            <div className="flex flex-col items-center justify-center min-h-[400px] p-6 sm:p-12 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700">
+              {showingFace && currentIndex < faces.length ? (
+                <FaceCard face={faces[currentIndex]} />
+              ) : (
+                <div className="text-slate-400 dark:text-slate-500 text-2xl">•••</div>
+              )}
+            </div>
+
+            {/* Progress indicator */}
+            <div className="flex justify-between items-center flex-wrap gap-4">
+              <div className="text-sm text-slate-600 dark:text-slate-300">
+                {currentIndex + 1} / {faces.length} faces shown
+              </div>
+              <button
+                onClick={finishStudy}
+                className="px-5 py-2.5 rounded-xl border border-slate-300/70 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                I'm ready to recall
+              </button>
+            </div>
+
+            {/* Thumbnail strip for review */}
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 sm:gap-3 p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+              {faces.map((face, idx) => (
+                <div 
+                  key={idx}
+                  className="text-center transition-opacity duration-300"
+                  style={{ opacity: idx <= currentIndex ? 1 : 0.3 }}
+                >
+                  <img
+                    src={`${import.meta.env.VITE_API_URL || "http://localhost:8080"}${face.imageUrl}`}
+                    alt={idx <= currentIndex ? face.displayName : "Not shown yet"}
+                    className={`w-full aspect-square object-cover rounded-lg ${
+                      idx === currentIndex 
+                        ? "ring-2 ring-indigo-500 dark:ring-indigo-400" 
+                        : "border border-slate-200 dark:border-slate-700"
+                    }`}
+                    loading="lazy"
+                  />
+                  <div className={`text-xs mt-1 ${
+                    idx <= currentIndex 
+                      ? "text-slate-700 dark:text-slate-300 font-semibold" 
+                      : "text-slate-400 dark:text-slate-500"
+                  }`}>
+                    {idx <= currentIndex ? face.displayName : "?"}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ===== RECALL PHASE ===== */}
+        {phase === "recall" && faces && (
+          <div className="space-y-6">
+            <DifficultyIndicator level={skillLevel} itemCount={faces.length} />
+            
+            <p className="text-slate-600 dark:text-slate-300 text-sm">
+              Type the names you remember. Order matters for bonus points!
+            </p>
+
+            {/* Face grid with input fields */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {faces.map((face, idx) => (
+                <div 
+                  key={idx}
+                  className="flex flex-col gap-3 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl"
+                >
+                  <img
+                    src={`${import.meta.env.VITE_API_URL || "http://localhost:8080"}${face.imageUrl}`}
+                    alt={`Face ${idx + 1}`}
+                    className="w-full aspect-square object-cover rounded-lg"
+                    loading="lazy"
+                  />
+                  <input
+                    type="text"
+                    value={answers[idx]}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      const copy = answers.slice();
+                      copy[idx] = e.target.value;
+                      setAnswers(copy);
+                    }}
+                    placeholder={`Name #${idx + 1}`}
+                    className="w-full px-4 py-2.5 rounded-lg border border-slate-300/70 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={submitRecall}
+              disabled={submitting}
+              className="w-full px-6 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-lg shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {submitting ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  Submit Answers
+                  <ArrowRight className="w-5 h-5" />
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* ===== SUMMARY PHASE ===== */}
+        {phase === "summary" && score && faces && (
+          <div className="space-y-6">
+            {/* Headline metrics */}
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Metric
+                label="Unordered accuracy"
+                value={`${score.correct}/${score.total}`}
+                sub={`${pct(score.accuracy)}%`}
+              />
+              <Metric
+                label="In-order accuracy"
+                value={`${score.orderCorrect}/${score.total}`}
+                sub={`${pct(score.orderAccuracy)}%`}
+              />
+            </div>
+
+            {/* Points earned */}
+            <div className="flex items-center justify-between flex-wrap gap-4 p-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+              <div>
+                <div className="text-xs text-slate-600 dark:text-slate-400">Points earned</div>
+                <div className="text-3xl font-extrabold text-green-600 dark:text-green-400">
+                  +{score.pointsEarned}
+                </div>
+              </div>
+              <div className="text-xs text-slate-600 dark:text-slate-400">
+                includes bonus for correct order
+              </div>
+            </div>
+
+            {/* Correct / missed / extra lists */}
+            <div className="grid sm:grid-cols-3 gap-4">
+              <ListCard title="✓ Correct" items={score.correctWords} color="green" />
+              <ListCard title="✗ Missed" items={score.missedWords} color="red" />
+              <ListCard title="⚠ Extra answers" items={score.extraAnswers} color="gray" />
+            </div>
+
+            {/* New badges */}
+            {!!score.newBadges?.length && (
+              <div className="p-6 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+                <div className="font-bold mb-3 text-amber-900 dark:text-amber-100">
+                  🎉 New Badges Earned!
+                </div>
+                <div className="flex gap-3 flex-wrap">
+                  {score.newBadges.map((b) => (
+                    <BadgePill key={b} code={b} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Review section - show faces with correct answers */}
+            <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50 mb-4">Review</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {faces.map((face, idx) => {
+                  const userAnswer = answers[idx]?.trim().toLowerCase();
+                  const correctAnswer = face.displayName.trim().toLowerCase();
+                  const isCorrect = userAnswer === correctAnswer;
+                  
+                  return (
+                    <div 
+                      key={idx}
+                      className={`p-3 bg-white dark:bg-slate-900 rounded-xl border-2 ${
+                        isCorrect 
+                          ? "border-green-500 dark:border-green-400" 
+                          : "border-red-500 dark:border-red-400"
+                      }`}
+                    >
+                      <img
+                        src={`${import.meta.env.VITE_API_URL || "http://localhost:8080"}${face.imageUrl}`}
+                        alt={face.displayName}
+                        className="w-full aspect-square object-cover rounded-lg mb-2"
+                        loading="lazy"
+                      />
+                      <div className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+                        {face.displayName}
+                      </div>
+                      {!isCorrect && userAnswer && (
+                        <div className="text-xs text-red-600 dark:text-red-400 mt-1">
+                          You wrote: {answers[idx] || "(empty)"}
+                        </div>
+                      )}
+                      {!userAnswer && (
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          (no answer)
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link to="/dashboard" className="flex-1">
+                <button className="w-full px-5 py-3 rounded-xl border border-slate-300/70 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                  Back to Dashboard
+                </button>
+              </Link>
+              <button
+                onClick={resetExercise}
+                className="flex-1 px-5 py-3 rounded-xl border border-slate-300/70 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
@@ -526,37 +550,13 @@ export default function ExerciseNamesFaces() {
 
 function FaceCard({ face }: { face: FaceData }) {
   return (
-    <div style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      gap: 16,
-      maxWidth: 400,
-      width: "100%"
-    }}>
+    <div className="flex flex-col items-center gap-4 max-w-md w-full">
       <img
         src={`${import.meta.env.VITE_API_URL || "http://localhost:8080"}${face.imageUrl}`}
         alt={face.displayName}
-        style={{
-          width: "100%",
-          maxWidth: 300,
-          aspectRatio: "1",
-          objectFit: "cover",
-          borderRadius: 16,
-          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-          border: "2px solid white"
-        }}
+        className="w-full max-w-xs aspect-square object-cover rounded-2xl shadow-lg border-4 border-white dark:border-slate-800"
       />
-      <div style={{
-        fontSize: 28,
-        fontWeight: 700,
-        color: "#111827",
-        textAlign: "center",
-        padding: "8px 16px",
-        background: "white",
-        borderRadius: 12,
-        boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-      }}>
+      <div className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-50 text-center px-6 py-3 bg-white dark:bg-slate-800 rounded-xl shadow-md">
         {face.displayName}
       </div>
     </div>
@@ -567,9 +567,9 @@ function DifficultyIndicator({ level, itemCount }: { level: number | null; itemC
   if (!level) return null;
 
   const getDifficultyColor = (level: number) => {
-    if (level <= 3) return "#10b981"; // Green for easy
-    if (level <= 6) return "#f59e0b"; // Yellow for medium
-    return "#ef4444"; // Red for hard
+    if (level <= 3) return "bg-green-500";
+    if (level <= 6) return "bg-amber-500";
+    return "bg-red-500";
   };
 
   const getDifficultyLabel = (level: number) => {
@@ -578,40 +578,18 @@ function DifficultyIndicator({ level, itemCount }: { level: number | null; itemC
     return "Hard";
   };
 
-  const color = getDifficultyColor(level);
+  const colorClass = getDifficultyColor(level);
   const label = getDifficultyLabel(level);
 
   return (
-    <div style={{
-      display: "flex",
-      alignItems: "center",
-      gap: 12,
-      padding: "12px 16px",
-      borderRadius: 12,
-      border: "1px solid #e5e7eb",
-      background: "#f9fafb",
-      flexWrap: "wrap"
-    }}>
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 8
-      }}>
-        <div style={{
-          width: 12,
-          height: 12,
-          borderRadius: "50%",
-          backgroundColor: color
-        }} />
-        <span style={{ fontWeight: 600, fontSize: 14 }}>
+    <div className="flex items-center justify-between flex-wrap gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+      <div className="flex items-center gap-3">
+        <div className={`w-3 h-3 rounded-full ${colorClass}`} />
+        <span className="font-semibold text-sm text-slate-900 dark:text-slate-50">
           Level {level} - {label}
         </span>
       </div>
-      <div style={{
-        marginLeft: "auto",
-        color: "#6b7280",
-        fontSize: 14
-      }}>
+      <div className="text-sm text-slate-600 dark:text-slate-400">
         {itemCount} faces to memorize
       </div>
     </div>
@@ -620,24 +598,30 @@ function DifficultyIndicator({ level, itemCount }: { level: number | null; itemC
 
 function Metric({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 12 }}>
-      <div style={{ color: "#6b7280", fontSize: 12 }}>{label}</div>
-      <div style={{ fontSize: 20, fontWeight: 800 }}>{value}</div>
-      {sub && <div style={{ color: "#6b7280", fontSize: 12 }}>{sub}</div>}
+    <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 bg-white dark:bg-slate-900">
+      <div className="text-xs text-slate-600 dark:text-slate-400">{label}</div>
+      <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-50">{value}</div>
+      {sub && <div className="text-xs text-slate-600 dark:text-slate-400">{sub}</div>}
     </div>
   );
 }
 
-function ListCard({ title, items, color }: { title: string; items: string[]; color: string }) {
+function ListCard({ title, items, color }: { title: string; items: string[]; color: "green" | "red" | "gray" }) {
+  const colorClasses = {
+    green: "text-green-600 dark:text-green-400",
+    red: "text-red-600 dark:text-red-400",
+    gray: "text-slate-600 dark:text-slate-400"
+  };
+
   return (
-    <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 12 }}>
-      <div style={{ fontWeight: 700, marginBottom: 8, fontSize: 14 }}>{title}</div>
+    <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 bg-white dark:bg-slate-900">
+      <div className="font-bold mb-2 text-sm text-slate-900 dark:text-slate-50">{title}</div>
       {items?.length ? (
-        <ul style={{ paddingLeft: 18, margin: 0, color, fontSize: 14 }}>
+        <ul className={`pl-5 m-0 text-sm ${colorClasses[color]}`}>
           {items.map((w, i) => <li key={i}>{w}</li>)}
         </ul>
       ) : (
-        <div style={{ color: "#9ca3af", fontSize: 14 }}>—</div>
+        <div className="text-slate-400 dark:text-slate-500 text-sm">—</div>
       )}
     </div>
   );
@@ -650,18 +634,9 @@ function BadgePill({ code }: { code: string }) {
               : code.startsWith("STREAK_") ? "🔥"
               : "🎖️";
   return (
-    <span style={{
-      display: "inline-flex",
-      alignItems: "center",
-      gap: 6,
-      padding: "8px 12px",
-      borderRadius: 999,
-      border: "1px solid #e5e7eb",
-      background: "white",
-      fontSize: 13,
-      fontWeight: 600,
-    }}>
-      <span aria-hidden>{emoji}</span>{pretty}
+    <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-amber-200 dark:border-amber-700 bg-white dark:bg-amber-900/20 text-sm font-semibold text-amber-900 dark:text-amber-100">
+      <span aria-hidden>{emoji}</span>
+      {pretty}
     </span>
   );
 }

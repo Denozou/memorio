@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
-import Button from "../components/ui/Button";
-import { Card, CardContent, CardHeader } from "../components/ui/Card";
+import { Link, useNavigate } from "react-router-dom";
+import { Flame, TrendingUp, Award, Clock, LogOut, Menu, X } from "lucide-react";
+import ThemeToggle from "../components/ThemeToggle";
 
 /* ===== Types ===== */
 type Streak = {
@@ -13,7 +14,7 @@ type Streak = {
 
 type HistoryItem = {
   sessionId: string;
-  type: "IMAGE_LINKING" | "NAMES_FACES" | "OBJECT_STORY" | "DAILY_CHALLENGE";
+  type: "WORD_LINKING" | "NAMES_FACES" | "OBJECT_STORY" | "DAILY_CHALLENGE";
   startedAt: string;        // ISO datetime
   finishedAt: string | null;
   attemptCount: number;
@@ -37,6 +38,9 @@ type Progress = {
 };
 
 export default function Dashboard() {
+  const nav = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   /* ===== Streak state ===== */
   const [streak, setStreak] = useState<Streak | null>(null);
   const [loadingStreak, setLoadingStreak] = useState(false);
@@ -102,101 +106,262 @@ export default function Dashboard() {
     return () => { alive = false; };
   }, []);
 
+  async function handleLogout() {
+    try {
+      await api.post("/auth/logout");
+      nav("/login");
+    } catch (e) {
+      console.error("Logout failed", e);
+      nav("/login");
+    }
+  }
+
   return (
-    <div style={{ fontFamily: "system-ui", padding: 24, display: "grid", gap: 16 }}>
-      <h1>Dashboard</h1>
+    <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 dark:from-slate-950 dark:to-slate-900 antialiased">
+      {/* Header */}
+      <header className="sticky top-0 z-40 border-b border-slate-200/60 dark:border-slate-800 bg-white/80 dark:bg-slate-950/70 backdrop-blur">
+        <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            <Link to="/dashboard" className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 shadow-md" aria-hidden />
+              <span className="font-semibold tracking-tight text-slate-900 dark:text-slate-50">Memorio</span>
+            </Link>
+            
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-6">
+              <Link to="/dashboard" className="text-sm text-slate-900 dark:text-slate-50 font-medium">
+                Dashboard
+              </Link>
+              <Link to="/profile" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
+                Profile
+              </Link>
+            </div>
 
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-        <a href="/exercise/image-linking"><Button variant="primary">Start Image Linking</Button></a>
-        <a href="/profile"><Button variant="secondary">Profile</Button></a>
-      </div>
+            <div className="hidden md:flex items-center gap-3">
+              <ThemeToggle />
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 rounded-xl border border-slate-300/70 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </div>
 
-      {/* ===== Streak Card ===== */}
-      <Card>
-        <CardHeader title="Your streak" subtitle="Keep the chain going 🔥" />
-        <CardContent>
-          {loadingStreak && <div>Loading streak…</div>}
-          {streakErr && <div style={{ color: "#ef4444" }}>{streakErr}</div>}
-          {streak && <StreakBadge data={streak} />}
-        </CardContent>
-      </Card>
+            {/* Mobile Menu Button */}
+            <div className="md:hidden flex items-center gap-2">
+              <ThemeToggle />
+              <button
+                className="p-2 rounded-lg border border-slate-300/70 dark:border-slate-700"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
 
-      {/* ===== Recent Sessions Card ===== */}
-      <Card>
-        <CardHeader title="Recent sessions" subtitle="Your last 5 results" />
-        <CardContent>
-          {loadingHist && <div>Loading history…</div>}
-          {histErr && <div style={{ color: "#ef4444" }}>{histErr}</div>}
-          {history && <HistoryList items={history} />}
-          {history && history.length === 0 && <div>No sessions yet. Start one above!</div>}
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader title="Progress" subtitle="Points & badges" />
-        <CardContent>
-          {loadingProg && <div>Loading progress…</div>}
-          {progErr && <div style={{ color: "#ef4444" }}>{progErr}</div>}
-          {progress && <ProgressView data={progress} />}
-        </CardContent>
-      </Card>
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden py-3 border-t border-slate-200/70 dark:border-slate-800">
+              <div className="flex flex-col gap-2">
+                <Link to="/dashboard" className="py-2 text-slate-900 dark:text-slate-50 font-medium" onClick={() => setMobileMenuOpen(false)}>
+                  Dashboard
+                </Link>
+                <Link to="/profile" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
+                  Profile
+                </Link>
+                <button
+                  onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
+                  className="py-2 text-left text-slate-600 dark:text-slate-300 flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              </div>
+            </div>
+          )}
+        </nav>
+      </header>
+
+      {/* Main Content */}
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        {/* Page Title */}
+        <div className="mb-8">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50">
+            Dashboard
+          </h1>
+          <p className="mt-2 text-slate-600 dark:text-slate-300">
+            Track your progress and continue learning
+          </p>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid sm:grid-cols-2 gap-4 mb-8">
+          <Link
+            to="/exercise/word-linking"
+            className="group rounded-2xl border border-slate-200 dark:border-slate-800 bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/30 dark:to-violet-950/30 p-6 hover:shadow-lg transition-all"
+          >
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center text-white text-xl">
+                🔗
+              </div>
+              <div>
+                <h3 className="font-semibold text-slate-900 dark:text-slate-50 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  Word Linking
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Memorize and recall word sequences</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            to="/exercise/names-faces"
+            className="group rounded-2xl border border-slate-200 dark:border-slate-800 bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 p-6 hover:shadow-lg transition-all"
+          >
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-violet-600 dark:bg-violet-500 flex items-center justify-center text-white text-xl">
+                👤
+              </div>
+              <div>
+                <h3 className="font-semibold text-slate-900 dark:text-slate-50 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                  Names & Faces
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Remember people's names</p>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid lg:grid-cols-3 gap-6 mb-8">
+          {/* Streak Card */}
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 shadow-sm p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                <Flame className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+              </div>
+              <h2 className="font-semibold text-slate-900 dark:text-slate-50">Streak</h2>
+            </div>
+            {loadingStreak && <div className="text-sm text-slate-500">Loading...</div>}
+            {streakErr && <div className="text-sm text-red-600 dark:text-red-400">{streakErr}</div>}
+            {streak && (
+              <div>
+                <div className="text-3xl font-extrabold text-slate-900 dark:text-slate-50">
+                  {streak.currentStreak}
+                  <span className="text-lg font-normal text-slate-500 dark:text-slate-400 ml-2">
+                    {streak.currentStreak === 1 ? "day" : "days"}
+                  </span>
+                </div>
+                <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                  Longest: <span className="font-semibold">{streak.longestStreak}</span> days
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Progress Card */}
+          <div className="lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 shadow-sm p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <h2 className="font-semibold text-slate-900 dark:text-slate-50">Progress</h2>
+            </div>
+            {loadingProg && <div className="text-sm text-slate-500">Loading...</div>}
+            {progErr && <div className="text-sm text-red-600 dark:text-red-400">{progErr}</div>}
+            {progress && (
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-50">
+                    {progress.totalPoints}
+                  </div>
+                  <div className="text-sm text-slate-600 dark:text-slate-300">Points</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-50">
+                    {progress.totalAttempts}
+                  </div>
+                  <div className="text-sm text-slate-600 dark:text-slate-300">Attempts</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-50">
+                    {progress.totalCorrect}
+                  </div>
+                  <div className="text-sm text-slate-600 dark:text-slate-300">Correct</div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Badges Section */}
+        {progress && progress.badges.length > 0 && (
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 shadow-sm p-6 mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                <Award className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <h2 className="font-semibold text-slate-900 dark:text-slate-50">Badges</h2>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {progress.badges.map((badge) => (
+                <BadgePill key={badge} code={badge} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Recent Sessions */}
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 shadow-sm p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-10 w-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+              <Clock className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+            </div>
+            <h2 className="font-semibold text-slate-900 dark:text-slate-50">Recent Sessions</h2>
+          </div>
+          {loadingHist && <div className="text-sm text-slate-500">Loading...</div>}
+          {histErr && <div className="text-sm text-red-600 dark:text-red-400">{histErr}</div>}
+          {history && history.length === 0 && (
+            <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+              No sessions yet. Start an exercise above!
+            </div>
+          )}
+          {history && history.length > 0 && <HistoryList items={history} />}
+        </div>
+      </main>
     </div>
   );
 }
 
 /* ===== Small components/helpers ===== */
 
-function StreakBadge({ data }: { data: Streak }) {
-  const d = data.lastActiveDate ? new Date(data.lastActiveDate + "T00:00:00") : null;
-
-  return (
-    <div style={{
-      display: "flex",
-      alignItems: "center",
-      gap: 16,
-      padding: 12,
-      border: "1px solid #e5e7eb",
-      borderRadius: 14,
-    }}>
-      <div style={{
-        width: 56, height: 56, borderRadius: 12, display: "grid",
-        placeItems: "center", fontSize: 24, border: "1px solid #e5e7eb"
-      }}>
-        🔥
-      </div>
-      <div style={{ display: "grid", gap: 4 }}>
-        <div style={{ fontSize: 18, fontWeight: 700 }}>
-          {data.currentStreak} day{data.currentStreak === 1 ? "" : "s"} streak
-        </div>
-        <div style={{ color: "#6b7280" }}>
-          Longest: <b>{data.longestStreak}</b>
-          {d && <> · Last active: {d.toLocaleDateString()}</>}
-          <> · TZ: {data.timezone}</>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function HistoryList({ items }: { items: HistoryItem[] }) {
   return (
-    <div style={{ display: "grid", gap: 8 }}>
+    <div className="space-y-3">
       {items.map((s) => (
-        <div key={s.sessionId}
-             style={{
-               display: "grid",
-               gridTemplateColumns: "1.2fr 1fr 1fr 1fr",
-               gap: 8,
-               alignItems: "center",
-               padding: "10px 12px",
-               border: "1px solid #e5e7eb",
-               borderRadius: 12
-             }}>
-          <div><TypeBadge type={s.type} /></div>
-          <div style={{ color: "#6b7280" }}>{formatDateTime(s.startedAt)}</div>
-          <div style={{ fontWeight: 600 }}>{scoreText(s.lastCorrect, s.lastTotal, s.lastAccuracy)}</div>
-          <div style={{ textAlign: "right" }}>
-            <a href={`/exercise/image-linking`}><Button variant="ghost">Retry</Button></a>
+        <div
+          key={s.sessionId}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <TypeBadge type={s.type} />
+            <div>
+              <div className="font-semibold text-slate-900 dark:text-slate-50">
+                {scoreText(s.lastCorrect, s.lastTotal, s.lastAccuracy)}
+              </div>
+              <div className="text-sm text-slate-500 dark:text-slate-400">
+                {formatDateTime(s.startedAt)}
+              </div>
+            </div>
           </div>
+          <Link
+            to={s.type === "WORD_LINKING" ? "/exercise/word-linking" : "/exercise/names-faces"}
+            className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
+          >
+            Try again →
+          </Link>
         </div>
       ))}
     </div>
@@ -206,45 +371,6 @@ function HistoryList({ items }: { items: HistoryItem[] }) {
 ////
 
 
-function ProgressView({ data }: { data: Progress }) {
-  const accPct =
-    data.totalAttempts > 0 && data.totalCorrect >= 0
-      ? Math.round((data.totalCorrect / Math.max(1, data.totalAttempts * 6)) * 100) // rough: assume 6 targets per attempt for now
-      : 0;
-
-  return (
-    <div style={{ display: "grid", gap: 12 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-        <Metric label="Points" value={data.totalPoints.toString()} />
-        <Metric label="Attempts" value={data.totalAttempts.toString()} />
-        <Metric label="Correct" value={data.totalCorrect.toString()} sub={`${accPct}% est. accuracy`} />
-      </div>
-
-      <div>
-        <div style={{ fontWeight: 700, marginBottom: 8 }}>Badges</div>
-        {data.badges.length === 0 ? (
-          <div style={{ color: "#6b7280" }}>No badges yet — start a session to earn your first one!</div>
-        ) : (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {data.badges.map((b) => (
-              <BadgePill key={b} code={b} />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function Metric({ label, value, sub }: { label: string; value: string; sub?: string }) {
-  return (
-    <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 12 }}>
-      <div style={{ color: "#6b7280", fontSize: 12 }}>{label}</div>
-      <div style={{ fontSize: 20, fontWeight: 800 }}>{value}</div>
-      {sub && <div style={{ color: "#6b7280", fontSize: 12 }}>{sub}</div>}
-    </div>
-  );
-}
 
 function BadgePill({ code }: { code: string }) {
   const pretty = code
@@ -257,17 +383,7 @@ function BadgePill({ code }: { code: string }) {
   return (
     <span
       title={pretty}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-        padding: "6px 10px",
-        borderRadius: 999,
-        border: "1px solid #e5e7eb",
-        background: "#f9fafb",
-        fontSize: 12,
-        fontWeight: 600,
-      }}
+      className="inline-flex items-center gap-2 px-3 py-2 rounded-full border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/30 text-sm font-semibold text-amber-900 dark:text-amber-100"
     >
       <span aria-hidden>{emoji}</span>
       {pretty}
@@ -286,19 +402,13 @@ function badgeEmoji(code: string) {
 
 
 
-////
 function TypeBadge({ type }: { type: HistoryItem["type"] }) {
   const label = type
     .replace("_", " ")
     .toLowerCase()
     .replace(/(^|\s)\S/g, (m) => m.toUpperCase());
   return (
-    <span style={{
-      padding: "4px 8px",
-      borderRadius: 999,
-      border: "1px solid #e5e7eb",
-      fontSize: 12
-    }}>
+    <span className="px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300">
       {label}
     </span>
   );

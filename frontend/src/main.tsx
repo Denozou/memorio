@@ -7,8 +7,10 @@ import SignUp from "./routes/SignUp";
 import Dashboard from "./routes/Dashboard";
 import Profile from "./routes/Profile";
 import ProtectedRoute from "./routes/ProtectedRoute";
-import ExerciseImageLinking from "./routes/ExerciseImageLinking";
+import ExerciseWordLinking from "./routes/ExerciseWordLinking";
+import ExerciseNamesFaces from "./routes/ExerciseNamesFaces";
 import OAuth2Success from "./routes/OAuth2Success";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import "./index.css";
 
 import LandingPage from "./routes/LandingPage";
@@ -20,9 +22,14 @@ const router = createBrowserRouter([
   { path: "/landing", element: <LandingPage /> },
   { path: "/dashboard", element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
   { path: "/profile", element: <ProtectedRoute><Profile /></ProtectedRoute> },
-  { path: "/exercise/image-linking", element: <ProtectedRoute><ExerciseImageLinking /></ProtectedRoute> },
+  { path: "/exercise/word-linking", element: <ProtectedRoute><ExerciseWordLinking /></ProtectedRoute> },
+  { path: "/exercise/names-faces", element: <ProtectedRoute><ExerciseNamesFaces /></ProtectedRoute> },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode><RouterProvider router={router} /></React.StrictMode>
+  <React.StrictMode>
+    <ThemeProvider>
+      <RouterProvider router={router} />
+    </ThemeProvider>
+  </React.StrictMode>
 );
