@@ -14,6 +14,7 @@ import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
@@ -27,12 +28,15 @@ public class AuthController {
     private final JwtService jwt;
     private final CookieUtil cookieUtil;
     private final RateLimitService rateLimitService;
+    private final LoginAttemptService loginAttemptService;
+
     public AuthController (AuthService auth, JwtService jwt,
-                           CookieUtil cookieUtil, RateLimitService rateLimitService){
+                           CookieUtil cookieUtil, RateLimitService rateLimitService, LoginAttemptService loginAttemptService){
         this.auth = auth;
         this.jwt = jwt;
         this.cookieUtil = cookieUtil;
         this.rateLimitService = rateLimitService;
+        this.loginAttemptService = loginAttemptService;
     }
 
     @PostMapping("/login")
@@ -43,13 +47,20 @@ public class AuthController {
                    .body(new ErrorResponse("Too many login attempts. Please try again later"));
        }
 
+       if(loginAttemptService.isBlocked(req.getEmail())){
+           return ResponseEntity.status(403)
+                   .body(new ErrorResponse("Account temporarily locked due to too many failed attempts." +
+                           "Try again in 15 minutes"));
+       }
+
         boolean ok = auth.checkCredentials(req.getEmail(), req.getPassword());
         if (!ok) {
+            loginAttemptService.loginFailed(req.getEmail());
             return ResponseEntity.status(401).body(
                     new ErrorResponse("Invalid email or password")
             );
         }
-
+        loginAttemptService.loginSucceeded(req.getEmail());
         var user = auth.findByEmail(req.getEmail()).orElseThrow(); // should exist since creds are ok
         String subject = user.getId().toString();
         String access = jwt.generateAccessToken(subject, user.getEmail(), List.of(user.getRole().name()));

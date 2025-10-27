@@ -36,7 +36,7 @@ public class RateLimitService {
 
 
     private String getClientIP(HttpServletRequest request){
-        String xfHeader = request.getHeader("X-Forwarded-for");
+        String xfHeader = request.getHeader("X-Forwarded-For");
         if (xfHeader == null || xfHeader.isEmpty()){
             return  request.getRemoteAddr();
         }

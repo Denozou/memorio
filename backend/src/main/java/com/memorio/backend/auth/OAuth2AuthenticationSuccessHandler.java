@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
@@ -30,14 +31,17 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private final UserIdentityRepository userIdentityRepository;
     private final JwtService jwtService;
     private final CookieUtil cookieUtil;
+    private final String frontendUrl;
     private static final Logger log = LoggerFactory.getLogger(OAuth2AuthenticationSuccessHandler.class);
     public OAuth2AuthenticationSuccessHandler(UserRepository userRepository,
                                               UserIdentityRepository userIdentityRepository,
-                                              JwtService jwtService, CookieUtil cookieUtil){
+                                              JwtService jwtService, CookieUtil cookieUtil,
+                                              @Value("${frontend.url}") String frontendUrl){
         this.userRepository = userRepository;
         this.userIdentityRepository = userIdentityRepository;
         this.jwtService = jwtService;
         this.cookieUtil = cookieUtil;
+        this.frontendUrl = frontendUrl;
     }
     @Override
     @Transactional
@@ -198,8 +202,8 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             HttpServletResponse response
             ) throws IOException
     {
-        String frontEndUrl = "http://localhost:5173/";
-        String redirectUrl = frontEndUrl + "auth/oauth2/success";
+        String redirectUrl = frontendUrl + "/auth/oauth2/success";
+        log.debug("Redirecting to frontend: {}", redirectUrl);
         response.sendRedirect(redirectUrl);
 
     }
