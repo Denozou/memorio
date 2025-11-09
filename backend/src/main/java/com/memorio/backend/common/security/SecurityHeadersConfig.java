@@ -18,9 +18,9 @@ public class SecurityHeadersConfig {
             HttpServletResponse httpResponse = (HttpServletResponse) response;
 
             httpResponse.setHeader("X-Frame-Options", "DENY");
-            httpResponse.setHeader("X-Content_Type-Options", "nosniff");
+            httpResponse.setHeader("X-Content-Type-Options", "nosniff");
             httpResponse.setHeader("X-XSS-Protection", "1; mode=block");
-            httpResponse.setHeader("Content-Security_Policy",
+            httpResponse.setHeader("Content-Security-Policy",
           "default-src 'self' http://localhost:5173; " +
                 "script-src 'self' 'unsafe-inline' http://localhost:5173; " +
                 "style-src 'self' 'unsafe-inline' http://localhost:5173; " +
@@ -28,7 +28,7 @@ public class SecurityHeadersConfig {
                 "font-src 'self' data: http://localhost:5173; " +
                 "connect-src 'self' http://localhost:5173");
 
-            httpResponse.setHeader("Referer_Policy", "strict-origin-when-cross-origin");
+            httpResponse.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
             httpResponse.setHeader("Permissions-Policy",
                     "geolocation=(), microphone=(), camera=()");
 
