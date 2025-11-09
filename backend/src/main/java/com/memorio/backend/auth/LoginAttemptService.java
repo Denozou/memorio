@@ -17,14 +17,12 @@ public class LoginAttemptService {
     }
 
     public void loginFailed(String email){
-        LoginAttempt attempt = attemptsCache.get(email);
-        if(attempt == null){
-            attempt = new LoginAttempt();
-            attemptsCache.put(email,attempt);
-        }
-        attempt.incrementAttempts();
-        if(attempt.getAttempts() >= MAX_ATTEMPTS){
-            attempt.setLockedUntil(LocalDateTime.now().plusMinutes(LOCKOUT_DURATION_MINUTES));
+        LoginAttempt attempt = attemptsCache.computeIfAbsent(email, k-> new LoginAttempt());
+        synchronized (attempt){//  Synchronize modifications to prevent lost updates
+            attempt.incrementAttempts();
+            if(attempt.getAttempts() >= MAX_ATTEMPTS){
+                attempt.setLockedUntil(LocalDateTime.now().plusMinutes(LOCKOUT_DURATION_MINUTES));
+            }
         }
     }
 
@@ -34,12 +32,14 @@ public class LoginAttemptService {
         if(attempt == null){
             return false;
         }
-        if(attempt.getLockedUntil() != null){
-            if(LocalDateTime.now().isBefore(attempt.getLockedUntil())){
-                return true;
-            }else{
-                attemptsCache.remove(email);
-                return  false;
+        synchronized (attempt){
+            if(attempt.getLockedUntil() != null){
+                if(LocalDateTime.now().isBefore(attempt.getLockedUntil())){
+                    return true;
+                }else{
+                    attemptsCache.remove(email);
+                    return  false;
+                }
             }
         }
         return  false;
