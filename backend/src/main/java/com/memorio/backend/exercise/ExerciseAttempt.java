@@ -11,11 +11,10 @@ public class ExerciseAttempt {
     private UUID sessionId;
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
-    @Lob
     @Column(name = "shown_words_json", nullable = false)
     private String shownWordsJson;
 
-    @Lob
+    //@Lob
     @Column(name = "answers_json", nullable = false)
     private String answersJson;
     @Column(nullable = false)

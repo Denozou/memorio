@@ -50,7 +50,8 @@ public class ProfileController {
                 user.getSkillLevel(),
                 user.getPreferredLanguage(),
                 user.getCreatedAt(),
-                linkedProviders
+                linkedProviders,
+                user.isTwoFactorEnabled()
         );
         return ResponseEntity.ok(response);
     }
@@ -91,8 +92,8 @@ public class ProfileController {
                     user.getSkillLevel(),
                     user.getPreferredLanguage(),
                     user.getCreatedAt(),
-                    linkedProviders
-
+                    linkedProviders,
+                    user.isTwoFactorEnabled()
             );
             return ResponseEntity.ok(response);
 
@@ -108,13 +109,18 @@ public class ProfileController {
         return ResponseEntity.ok(Map.of("language", lang));
     }
     @PutMapping("/language")
+    @Transactional
     public ResponseEntity<?> setLanguage(Authentication auth, @RequestBody @Valid LanguageDto req){
         UUID userId = AuthenticationUtil.extractUserId(auth);
         var u = users.findById(userId).orElseThrow();
-        u.setPreferredLanguage(req.getLanguage().toLowerCase());
+        String language = req.getLanguage();
+        if (language == null || language.isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Language is required"));
+        }
+        u.setPreferredLanguage(language.toLowerCase());
         users.save(u);
         return ResponseEntity.ok(Map.of("language", u.getPreferredLanguage()));
     }
-
 
 }

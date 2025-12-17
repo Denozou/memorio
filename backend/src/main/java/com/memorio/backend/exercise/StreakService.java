@@ -27,8 +27,9 @@ public class StreakService {
         var page = sessions.findByUserIdOrderByStartedAtDesc(userId, PageRequest.of(0, 400));
         if (page.isEmpty()) return 0;
 
+        //from last 400 exercise sessions extracct unique dates
         var days = new LinkedHashSet<LocalDate>();
-        for (var s : page.getContent()) {
+        for (var s : page.getContent()) { // dt - date time, s- session
             var dt = (s.getFinishedAt() != null ? s.getFinishedAt() : s.getStartedAt());
             if (dt == null) continue;
             days.add(dt.atZoneSameInstant(zone).toLocalDate());
@@ -38,7 +39,7 @@ public class StreakService {
         sorted.sort((a,b) -> b.compareTo(a));
 
         int current = 1;
-        LocalDate last = sorted.get(0);
+        LocalDate last = sorted.get(0); //last processedd date
         for (int i = 1; i<sorted.size(); i++){
             LocalDate d = sorted.get(i);
             if(d.plusDays(1).equals(last)){

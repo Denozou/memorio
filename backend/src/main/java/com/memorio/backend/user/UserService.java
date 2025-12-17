@@ -19,10 +19,12 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
         this.entityManager = entityManager;
     }
+
     @Transactional(readOnly = true)
     public long countUsers(){
         return users.count();
     }
+
     @Transactional
     public User createUser(String email, String rawPassword){
         if(email == null || email.isBlank()){
@@ -41,18 +43,25 @@ public class UserService {
         u.setRole(Role.USER);
 
         User saved = users.save(u);
-        users.flush(); //INSERT is ran
+        users.flush();
 
         return users.findById(saved.getId())
                 .orElseThrow(() -> new IllegalStateException("just-saved user not found"));
     }
+
     @Transactional(readOnly = true)
     public User getUser(UUID id){
+        if (id == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
         return users.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     @Transactional(readOnly = true)
     public User getByEmail(String email){
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
         return users.findByEmail(email).orElseThrow(() -> new NotFoundException("User Not found"));
     }
 }

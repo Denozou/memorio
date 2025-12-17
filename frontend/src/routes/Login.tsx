@@ -1,8 +1,10 @@
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import {api} from "../lib/api";
 import {useNavigate, useSearchParams, Link} from "react-router-dom";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import ThemeToggle from "../components/ThemeToggle";
+import LanguageSelector from "../components/LanguageSelector";
 
 type LoginResp = {
     message: string;
@@ -14,7 +16,14 @@ type LoginResp = {
     };
 };
 
+type TwoFactorRequiredResp = {
+    message: string;
+    tempToken: string;
+    twoFactorRequired: boolean;
+};
+
 export default function Login(){
+    const { t } = useTranslation();
     const nav = useNavigate();
     const [searchParams] = useSearchParams();
 
@@ -23,23 +32,31 @@ export default function Login(){
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<string|null>(null);
     const [busy, setBusy] = useState(false);
-    useState(()=> {
+    
+    useEffect(() => {
       const oauthError = searchParams.get('error');
       if (oauthError === 'oauth2_failed'){
-        setError('Google sign-in failed. Please try again');
+        setError(t('auth.oauth2Failed'));
       }else if (oauthError === 'oauth2_missing_tokens'){
-        setError('Google sign-in was incomplete. Please try again');
+        setError(t('auth.oauth2Missing'));
       }
-    });
+    }, [searchParams]);
     async function onSubmit(e: React.FormEvent){
         e.preventDefault();
         setBusy(true);
         setError(null);
         try{
-            await api.post<LoginResp>("/auth/login", {email, password});
+            const response = await api.post<LoginResp | TwoFactorRequiredResp>("/auth/login", {email, password});
+            
+            // Check if 2FA is required
+            if ('twoFactorRequired' in response.data && response.data.twoFactorRequired) {
+                nav("/auth/2fa/verify", { state: { tempToken: response.data.tempToken } });
+                return;
+            }
+            
             nav("/dashboard");
         }catch(err: any){
-            const msg = err?.response?.data?.message ?? "Login failed";
+            const msg = err?.response?.data?.message ?? t('auth.loginFailed');
             setError(msg);
         }finally{
             setBusy(false);
@@ -56,9 +73,10 @@ export default function Login(){
                 <span className="font-semibold tracking-tight text-slate-900 dark:text-slate-50">Memorio</span>
               </Link>
               <div className="flex items-center gap-3">
+                <LanguageSelector variant="compact" />
                 <ThemeToggle />
                 <Link to="/signup" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                  Sign up
+                  {t('common.signup')}
                 </Link>
               </div>
             </div>
@@ -69,10 +87,10 @@ export default function Login(){
         <main className="mx-auto max-w-md px-4 sm:px-6 py-12 sm:py-16">
           <div className="text-center mb-8">
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50">
-              Welcome back
+              {t('auth.welcomeBack')}
             </h1>
             <p className="mt-2 text-slate-600 dark:text-slate-300">
-              Sign in to continue your learning journey
+              {t('auth.signInToContinue')}
             </p>
           </div>
 
@@ -81,7 +99,7 @@ export default function Login(){
               {/* Email Input */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-slate-900 dark:text-slate-50 mb-2">
-                  Email
+                  {t('common.email')}
                 </label>
                 <input
                   id="email"
@@ -98,7 +116,7 @@ export default function Login(){
               {/* Password Input */}
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-slate-900 dark:text-slate-50 mb-2">
-                  Password
+                  {t('common.password')}
                 </label>
                 <div className="relative">
                   <input
@@ -120,6 +138,14 @@ export default function Login(){
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
+                <div className="text-right">
+                  <Link 
+                    to="/auth/forgot-password" 
+                    className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+                  >
+                    {t('auth.forgotPassword')}
+                  </Link>
+                </div>
               </div>
 
               {/* Error Message */}
@@ -138,11 +164,11 @@ export default function Login(){
                 {busy ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Signing in...
+                    {t('common.loading')}
                   </>
                 ) : (
                   <>
-                    Sign in
+                    {t('common.login')}
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -151,7 +177,7 @@ export default function Login(){
               {/* Divider */}
               <div className="flex items-center gap-3 my-6">
                 <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-                <span className="text-sm text-slate-500 dark:text-slate-400">or continue with</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">{t('auth.orContinueWith')}</span>
                 <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
               </div>
 
@@ -167,7 +193,7 @@ export default function Login(){
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
-                  Continue with Google
+                  {t('auth.continueWithGoogle')}
                 </a>
 
                 <a
@@ -177,16 +203,16 @@ export default function Login(){
                   <svg className="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                   </svg>
-                  Continue with Facebook
+                  {t('auth.continueWithFacebook')}
                 </a>
               </div>
             </form>
 
             {/* Sign Up Link */}
             <p className="mt-6 text-center text-sm text-slate-600 dark:text-slate-300">
-              Don't have an account?{" "}
+              {t('auth.dontHaveAccount')}{" "}
               <Link to="/signup" className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
-                Sign up
+                {t('common.signup')}
               </Link>
             </p>
           </div>

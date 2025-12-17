@@ -3,7 +3,7 @@ import { isAuthenticated, logout } from './auth';
 import { api } from './api';
 
 class SessionManager {
-  private refreshTimer: NodeJS.Timeout | null = null;
+  private refreshTimer: ReturnType<typeof setTimeout> | null = null;
   private isRefreshing = false;
 
   public async start() {

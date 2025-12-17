@@ -32,7 +32,6 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    // amazonq-ignore-next-line
     public ResponseEntity<UserResponse> get(@PathVariable UUID id){
         User u = service.getUser(id);
         UserResponse body = new UserResponse(u.getId(), u.getEmail(), u.getCreatedAt());

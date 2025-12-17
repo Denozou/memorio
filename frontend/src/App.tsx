@@ -1,6 +1,4 @@
-import { useState, useEffect } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useEffect } from 'react'
 import { Toaster } from 'sonner';
 import { isAuthenticated } from './lib/auth';
 import { sessionManager } from './lib/sessionManager';
@@ -9,8 +7,12 @@ export default function App() {
   useEffect(() => {
     // Start session management if user is authenticated
     const checkAuthAndStartSession = async () => {
-      if (await isAuthenticated()) {
-        sessionManager.start();
+      try {
+        if (await isAuthenticated()) {
+          sessionManager.start();
+        }
+      } catch (error) {
+        console.error('Error checking authentication:', error);
       }
     };
 

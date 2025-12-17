@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { Link, useNavigate } from "react-router-dom";
-import { LogOut, Menu, X, Edit2, XCircle, Check } from "lucide-react";
+import { LogOut, Menu, X, Edit2, XCircle, Check, Shield } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import ThemeToggle from "../components/ThemeToggle";
+import LanguageSelector from "../components/LanguageSelector";
 
 // Types
 interface LinkedProvider {
@@ -21,6 +23,7 @@ interface UserProfile {
   preferredLanguage: string | null;
   createdAt: string;
   linkedProviders: LinkedProvider[];
+  twoFactorEnabled: boolean;
 }
 
 interface UpdateProfileRequest {
@@ -33,23 +36,23 @@ interface UpdateProfileRequest {
 const LANG_LABELS: Record<string, string> = {
   en: "English",
   pl: "Polski",
-  // add more as you import more languages
+  //додати більше, як додам інші мови
 };
 
 const PROVIDER_ICONS: Record<string, string> = {
   google: "",
   facebook: "",
 
-  // add more providers as needed
+  
 };
 
 const PROVIDER_NAMES: Record<string, string> = {
   google: "Google",
   facebook: "Facebook",
-  // add more providers as needed
 };
 
 export default function Profile() {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -61,13 +64,9 @@ export default function Profile() {
 
   // Form state
   const [formData, setFormData] = useState<UpdateProfileRequest>({});
-  const [languages, setLanguages] = useState<Array<{ code: string; label: string }>>([
-    { code: "en", label: "English" }
-  ]);
 
   useEffect(() => {
     loadProfile();
-    loadLanguages();
   }, []);
 
   const loadProfile = async () => {
@@ -85,20 +84,6 @@ export default function Profile() {
       setError(err?.response?.data?.message || "Failed to load profile");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadLanguages = async () => {
-    try {
-      const response = await api.get<Array<{ code: string; count: number }>>("/lexicon/languages");
-      const opts = response.data.map(r => ({
-        code: r.code,
-        label: LANG_LABELS[r.code] ?? r.code
-      }));
-      if (opts.length > 0) setLanguages(opts);
-    } catch (err) {
-      // fallback: keep 'en' only
-      setLanguages([{ code: "en", label: "English" }]);
     }
   };
 
@@ -153,7 +138,7 @@ export default function Profile() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 dark:from-slate-950 dark:to-slate-900 flex items-center justify-center">
-        <div className="text-lg text-slate-500 dark:text-slate-400">Loading profile...</div>
+        <div className="text-lg text-slate-500 dark:text-slate-400">{t('common.loading')}</div>
       </div>
     );
   }
@@ -182,10 +167,16 @@ export default function Profile() {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-6">
               <Link to="/dashboard" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                Dashboard
+                {t('common.dashboard')}
+              </Link>
+              <Link to="/leaderboard" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
+                Leaderboard
+              </Link>
+              <Link to="/learning" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
+                Learning
               </Link>
               <Link to="/profile" className="text-sm text-slate-900 dark:text-slate-50 font-medium">
-                Profile
+                {t('common.profile')}
               </Link>
             </div>
 
@@ -196,7 +187,7 @@ export default function Profile() {
                 className="px-4 py-2 rounded-xl border border-slate-300/70 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2"
               >
                 <LogOut className="w-4 h-4" />
-                Logout
+                {t('common.logout')}
               </button>
             </div>
 
@@ -218,17 +209,23 @@ export default function Profile() {
             <div className="md:hidden py-3 border-t border-slate-200/70 dark:border-slate-800">
               <div className="flex flex-col gap-2">
                 <Link to="/dashboard" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
-                  Dashboard
+                  {t('common.dashboard')}
+                </Link>
+                <Link to="/leaderboard" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
+                  Leaderboard
+                </Link>
+                <Link to="/learning" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
+                  Learning
                 </Link>
                 <Link to="/profile" className="py-2 text-slate-900 dark:text-slate-50 font-medium" onClick={() => setMobileMenuOpen(false)}>
-                  Profile
+                  {t('common.profile')}
                 </Link>
                 <button
                   onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
                   className="py-2 text-left text-slate-600 dark:text-slate-300 flex items-center gap-2"
                 >
                   <LogOut className="w-4 h-4" />
-                  Logout
+                  {t('common.logout')}
                 </button>
               </div>
             </div>
@@ -242,10 +239,10 @@ export default function Profile() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50">
-              Profile
+              {t('profile.title')}
             </h1>
             <p className="mt-2 text-slate-600 dark:text-slate-300">
-              Manage your account settings and preferences
+              {t('profile.preferences')}
             </p>
           </div>
           {!editing && (
@@ -254,7 +251,7 @@ export default function Profile() {
               className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-md hover:shadow-lg transition-all"
             >
               <Edit2 className="w-4 h-4" />
-              Edit
+              {t('common.edit')}
             </button>
           )}
         </div>
@@ -288,11 +285,11 @@ export default function Profile() {
                   {profile.email}
                 </p>
                 <div className="text-sm text-white/80 mt-2 flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                  <span>Member since {formatDate(profile.createdAt)}</span>
+                  <span>{t('profile.memberSince')} {formatDate(profile.createdAt)}</span>
                   <span>•</span>
                   <span className="px-2 py-0.5 rounded-full bg-white/20 text-xs font-medium">{profile.role}</span>
                   <span>•</span>
-                  <span>Level {profile.skillLevel}</span>
+                  <span>{t('profile.skillLevel')} {profile.skillLevel}</span>
                 </div>
               </div>
             </div>
@@ -304,13 +301,13 @@ export default function Profile() {
               {/* Basic Information */}
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50 mb-4">
-                  Basic Information
+                  {t('profile.accountInfo')}
                 </h3>
                 <div className="space-y-4">
                   {/* Display Name */}
                   <div>
                     <label className="block text-sm font-medium text-slate-900 dark:text-slate-50 mb-2">
-                      Display Name
+                      {t('common.displayName')}
                     </label>
                     {editing ? (
                       <input
@@ -330,7 +327,7 @@ export default function Profile() {
                   {/* Email */}
                   <div>
                     <label className="block text-sm font-medium text-slate-900 dark:text-slate-50 mb-2">
-                      Email
+                      {t('common.email')}
                     </label>
                     {editing ? (
                       <input
@@ -346,28 +343,64 @@ export default function Profile() {
                     )}
                   </div>
 
-                  {/* Preferred Language */}
+                  {/* Language Selector - Changes both UI and exercise content */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-900 dark:text-slate-50 mb-2">
-                      Preferred Language
-                    </label>
-                    {editing ? (
-                      <select
-                        value={formData.preferredLanguage || "en"}
-                        onChange={(e) => setFormData({...formData, preferredLanguage: e.target.value})}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-300/70 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      >
-                        {languages.map(lang => (
-                          <option key={lang.code} value={lang.code}>
-                            {lang.label}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <div className="py-3 text-sm text-slate-900 dark:text-slate-50">
-                        {LANG_LABELS[profile.preferredLanguage || "en"] || profile.preferredLanguage || "English"}
+                    <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-3">
+                      {t('profile.language')}
+                    </h4>
+                    <LanguageSelector />
+                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                      {t('profile.languageDesc')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Two-Factor Authentication */}
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50 mb-4">
+                  {t('profile.twoFactor')}
+                </h3>
+                <div className="p-4 sm:p-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${profile.twoFactorEnabled ? 'bg-green-100 dark:bg-green-900/30' : 'bg-slate-200 dark:bg-slate-700'}`}>
+                        <Shield className={`w-6 h-6 ${profile.twoFactorEnabled ? 'text-green-600 dark:text-green-400' : 'text-slate-500 dark:text-slate-400'}`} />
                       </div>
-                    )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-medium text-slate-900 dark:text-slate-50">
+                          {t('profile.twoFactor')}
+                        </h4>
+                        {profile.twoFactorEnabled && (
+                          <span className="px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium">
+                            {t('profile.twoFactorEnabled')}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
+                        {profile.twoFactorEnabled 
+                          ? "Your account is protected with two-factor authentication. You'll need to enter a code from your authenticator app when signing in."
+                          : "Add an extra layer of security to your account by requiring a verification code in addition to your password."
+                        }
+                      </p>
+                      {profile.twoFactorEnabled ? (
+                        <button
+                          onClick={() => nav("/auth/2fa/disable")}
+                          className="px-4 py-2 rounded-lg border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        >
+                          {t('profile.disable2FA')}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => nav("/auth/2fa/setup")}
+                          className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium shadow-sm hover:shadow transition-all"
+                        >
+                          {t('profile.enable2FA')}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -375,7 +408,7 @@ export default function Profile() {
               {/* Linked Accounts */}
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50 mb-4">
-                  Linked Accounts
+                  {t('profile.linkedAccounts')}
                 </h3>
                 {profile.linkedProviders.length > 0 ? (
                   <div className="space-y-3">
@@ -392,18 +425,18 @@ export default function Profile() {
                             {PROVIDER_NAMES[provider.provider.toLowerCase()] || provider.provider}
                           </div>
                           <div className="text-xs text-slate-500 dark:text-slate-400">
-                            Connected on {formatDate(provider.connectedAt)}
+                            {t('profile.connectedAt')} {formatDate(provider.connectedAt)}
                           </div>
                         </div>
                         <div className="px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium">
-                          Connected
+                          {t('profile.connectedAt')}
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
                   <div className="text-center py-8 text-slate-500 dark:text-slate-400 text-sm bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
-                    No linked accounts yet
+                    {t('profile.noLinkedAccounts')}
                   </div>
                 )}
               </div>
@@ -417,7 +450,7 @@ export default function Profile() {
                     className="flex-1 sm:flex-initial px-5 py-3 rounded-xl border border-slate-300/70 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     <XCircle className="w-4 h-4" />
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                   <button
                     onClick={handleSave}
@@ -427,12 +460,12 @@ export default function Profile() {
                     {saving ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Saving...
+                        {t('common.loading')}
                       </>
                     ) : (
                       <>
                         <Check className="w-4 h-4" />
-                        Save Changes
+                        {t('profile.saveChanges')}
                       </>
                     )}
                   </button>

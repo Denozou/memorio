@@ -56,7 +56,7 @@ public class FaceImage {
                      String contentType){
         this.person = person;
         this.filename = filename;
-        this.imageData = imageData;
+        this.imageData = imageData != null ? imageData.clone() : null;
         this.contentType = contentType;
         this.fileSize = imageData != null ? imageData.length : 0;
     }
@@ -77,10 +77,12 @@ public class FaceImage {
     public void setFilename(String filename){
         this.filename = filename;
     }
-    public byte[] getImageData(){return imageData;}
+    public byte[] getImageData(){
+        return imageData != null ? imageData.clone() : null;
+    }
     public void setImageData(byte[] imageData){
-        this.imageData = imageData;
-        this.fileSize = imageData != null ? imageData.length : 0;
+        this.imageData = imageData!= null ? imageData.clone() : null;
+        this.fileSize = this.imageData != null ? this.imageData.length : 0;
 
     }
     public String getContentType(){return contentType;}

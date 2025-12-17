@@ -16,6 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Duration;
 import java.util.List;
@@ -47,6 +48,10 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/auth/verify-email").permitAll()
+                        .requestMatchers("/auth/password-reset/**").permitAll()
+                        .requestMatchers("/auth/2fa/verify").permitAll()
+                        .requestMatchers("/auth/2fa/**").authenticated()
                         .requestMatchers("/oauth2/**").permitAll()
                         .requestMatchers("/login/oauth2/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
@@ -89,9 +94,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource(){
+    CorsConfigurationSource corsConfigurationSource(@Value("${frontend.url}") String frontendUrl){
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(List.of(frontendUrl));
         config.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "OPTIONS", "PUT"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setExposedHeaders(List.of("Authorization"));

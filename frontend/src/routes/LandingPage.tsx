@@ -2,11 +2,6 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle2, Menu, X, Star, Shield, Zap } from "lucide-react";
 
-// Single-file, responsive landing page for Memorio
-// - TailwindCSS for styling
-// - Framer Motion for subtle animations
-// - Mobile-first, keyboard-accessible
-// - Sections: Nav, Hero, Logos, Features, Product, Testimonials, Pricing, FAQ, CTA, Footer
 
 export default function LandingPage() {
   const [open, setOpen] = React.useState(false);
@@ -86,9 +81,9 @@ export default function LandingPage() {
               <a href="#faq" className="hover:opacity-80">FAQ</a>
             </div>
             <div className="hidden md:flex items-center gap-3">
-              <button className="px-3 py-2 rounded-xl border border-slate-300/70 dark:border-slate-700 text-sm">Sign in</button>
+              <button className="px-3 py-2 rounded-xl border border-slate-300/70 dark:border-slate-700 text-sm"><a href="/login">Sign in</a></button>
               <button className="px-4 py-2 rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-sm font-medium flex items-center gap-2 shadow">
-                Get started <ArrowRight className="w-4 h-4" />
+                <a href="/signup">Get started</a> <ArrowRight className="w-4 h-4" />
               </button>
             </div>
             <button

@@ -1,11 +1,11 @@
 package com.memorio.backend.exercise.dto;
 
-public class NumberPegHint {
+public class NumberPegData {
 
     private final Integer digit;
     private final String hintWord;
 
-    public NumberPegHint(Integer digit, String hintWord){
+    public NumberPegData(Integer digit, String hintWord){
         this.digit = digit;
         this.hintWord = hintWord;
     }

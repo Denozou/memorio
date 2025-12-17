@@ -1,1 +1,428 @@
 @import "tailwindcss";
+
+@theme {
+  --color-*: initial;
+  
+  /* Base colors */
+  --color-white: oklch(1 0 0);
+  --color-black: oklch(0 0 0);
+  
+  /* Slate colors */
+  --color-slate-50: oklch(0.984 0.003 247.858);
+  --color-slate-100: oklch(0.968 0.007 247.896);
+  --color-slate-200: oklch(0.929 0.013 255.508);
+  --color-slate-300: oklch(0.869 0.022 252.894);
+  --color-slate-400: oklch(0.656 0.035 256.788);
+  --color-slate-500: oklch(0.533 0.046 257.417);
+  --color-slate-600: oklch(0.446 0.043 257.281);
+  --color-slate-700: oklch(0.372 0.044 257.287);
+  --color-slate-800: oklch(0.279 0.041 260.031);
+  --color-slate-900: oklch(0.208 0.042 265.755);
+  --color-slate-950: oklch(0.129 0.042 264.695);
+  
+  /* Indigo colors */
+  --color-indigo-50: oklch(0.962 0.024 272.314);
+  --color-indigo-100: oklch(0.929 0.043 271.785);
+  --color-indigo-200: oklch(0.866 0.075 272.67);
+  --color-indigo-300: oklch(0.778 0.115 268.766);
+  --color-indigo-400: oklch(0.671 0.165 267.116);
+  --color-indigo-500: oklch(0.585 0.183 264.695);
+  --color-indigo-600: oklch(0.506 0.181 262.881);
+  --color-indigo-700: oklch(0.449 0.151 264.364);
+  --color-indigo-800: oklch(0.384 0.115 265.755);
+  --color-indigo-900: oklch(0.331 0.087 267.116);
+  --color-indigo-950: oklch(0.227 0.058 267.116);
+  
+  /* Violet colors */
+  --color-violet-50: oklch(0.969 0.019 293.756);
+  --color-violet-100: oklch(0.943 0.037 294.588);
+  --color-violet-200: oklch(0.894 0.071 293.756);
+  --color-violet-300: oklch(0.813 0.127 293.756);
+  --color-violet-400: oklch(0.702 0.196 293.756);
+  --color-violet-500: oklch(0.608 0.230 293.756);
+  --color-violet-600: oklch(0.535 0.237 293.756);
+  --color-violet-700: oklch(0.471 0.213 293.756);
+  --color-violet-800: oklch(0.408 0.177 293.756);
+  --color-violet-900: oklch(0.355 0.143 293.756);
+  --color-violet-950: oklch(0.258 0.108 293.756);
+  
+  /* Green colors */
+  --color-green-100: oklch(0.952 0.045 155.826);
+  --color-green-200: oklch(0.906 0.090 155.826);
+  --color-green-400: oklch(0.768 0.156 155.826);
+  --color-green-500: oklch(0.697 0.158 155.826);
+  --color-green-600: oklch(0.598 0.141 155.826);
+  --color-green-700: oklch(0.528 0.124 155.826);
+  --color-green-800: oklch(0.458 0.107 155.826);
+  --color-green-900: oklch(0.398 0.090 155.826);
+  
+  /* Emerald colors */
+  --color-emerald-100: oklch(0.952 0.055 165.0);
+  --color-emerald-200: oklch(0.906 0.110 165.0);
+  --color-emerald-300: oklch(0.840 0.145 165.0);
+  --color-emerald-700: oklch(0.528 0.135 165.0);
+  --color-emerald-800: oklch(0.458 0.120 165.0);
+  --color-emerald-900: oklch(0.398 0.105 165.0);
+  
+  /* Red colors */
+  --color-red-50: oklch(0.971 0.013 17.38);
+  --color-red-200: oklch(0.898 0.062 17.696);
+  --color-red-400: oklch(0.729 0.176 22.216);
+  --color-red-600: oklch(0.577 0.195 27.325);
+  --color-red-800: oklch(0.453 0.139 27.325);
+  --color-red-900: oklch(0.393 0.121 27.325);
+  
+  /* Amber colors */
+  --color-amber-50: oklch(0.987 0.020 95.277);
+  --color-amber-100: oklch(0.962 0.055 95.277);
+  --color-amber-200: oklch(0.924 0.103 95.277);
+  --color-amber-300: oklch(0.858 0.140 95.277);
+  --color-amber-600: oklch(0.656 0.145 75.0);
+  --color-amber-700: oklch(0.590 0.127 56.288);
+  --color-amber-800: oklch(0.508 0.117 56.288);
+  --color-amber-900: oklch(0.438 0.101 56.288);
+  
+  /* Yellow colors */
+  --color-yellow-50: oklch(0.988 0.025 100.0);
+  --color-yellow-100: oklch(0.970 0.050 100.0);
+  --color-yellow-200: oklch(0.945 0.095 100.0);
+  --color-yellow-300: oklch(0.905 0.150 95.0);
+  --color-yellow-400: oklch(0.855 0.180 90.0);
+  --color-yellow-500: oklch(0.785 0.170 85.0);
+  --color-yellow-600: oklch(0.685 0.150 75.0);
+  --color-yellow-700: oklch(0.595 0.130 70.0);
+  --color-yellow-800: oklch(0.515 0.110 70.0);
+  --color-yellow-900: oklch(0.445 0.095 70.0);
+  
+  /* Orange colors */
+  --color-orange-100: oklch(0.952 0.055 65.0);
+  --color-orange-200: oklch(0.906 0.110 65.0);
+  --color-orange-300: oklch(0.840 0.145 60.0);
+  --color-orange-400: oklch(0.768 0.170 55.0);
+  --color-orange-500: oklch(0.697 0.180 50.0);
+  --color-orange-600: oklch(0.628 0.165 47.0);
+  --color-orange-700: oklch(0.590 0.150 45.0);
+  --color-orange-800: oklch(0.508 0.135 45.0);
+  --color-orange-900: oklch(0.438 0.120 45.0);
+  
+  /* Purple colors */
+  --color-purple-100: oklch(0.952 0.045 305.0);
+  --color-purple-200: oklch(0.906 0.090 305.0);
+  --color-purple-300: oklch(0.840 0.130 305.0);
+  --color-purple-400: oklch(0.738 0.180 305.0);
+  --color-purple-500: oklch(0.648 0.210 305.0);
+  --color-purple-600: oklch(0.568 0.190 305.0);
+  --color-purple-700: oklch(0.528 0.150 305.0);
+  --color-purple-800: oklch(0.458 0.135 305.0);
+  --color-purple-900: oklch(0.398 0.120 305.0);
+  
+  /* Blue colors */
+  --color-blue-50: oklch(0.970 0.014 236.62);
+  --color-blue-100: oklch(0.933 0.032 237.396);
+  --color-blue-200: oklch(0.878 0.059 236.62);
+  --color-blue-300: oklch(0.792 0.099 240.0);
+  --color-blue-400: oklch(0.680 0.149 243.0);
+  --color-blue-500: oklch(0.585 0.183 246.0);
+  --color-blue-600: oklch(0.506 0.181 248.0);
+  --color-blue-700: oklch(0.449 0.151 249.0);
+  --color-blue-800: oklch(0.406 0.115 249.094);
+  --color-blue-900: oklch(0.355 0.101 249.094);
+}
+
+@variant dark (&:where(.dark, .dark *));
+
+/* Prose styling for markdown content */
+.prose {
+  color: var(--color-slate-700);
+  max-width: 65ch;
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+
+/* Fix dark mode base color */
+.dark .prose {
+  color: var(--color-slate-300);
+}
+
+.dark .prose :where(h1, h2, h3, h4, h5, h6):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-50);
+}
+
+.dark .prose :where(h2):not(:where([class~="not-prose"] *)) {
+  border-bottom-color: var(--color-slate-700);
+}
+
+.dark .prose :where(strong):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-100);
+}
+
+.dark .prose :where(a):not(:where([class~="not-prose"] *)) {
+  color: var(--color-indigo-400);
+}
+
+.dark .prose :where(code):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-100);
+  background-color: var(--color-slate-800);
+}
+
+.dark .prose :where(blockquote):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-200);
+  border-left-color: var(--color-slate-700);
+}
+
+.dark .prose :where(ul, ol, li):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-300);
+}
+
+.dark .prose :where(hr):not(:where([class~="not-prose"] *)) {
+  border-color: var(--color-slate-700);
+}
+
+.prose :where(p):not(:where([class~="not-prose"] *)) {
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+  line-height: 1.75;
+}
+
+.prose :where(h1):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-900);
+  font-weight: 800;
+  font-size: 2.25em;
+  margin-top: 0;
+  margin-bottom: 0.8888889em;
+  line-height: 1.1111111;
+  letter-spacing: -0.025em;
+}
+
+.prose :where(h2):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-900);
+  font-weight: 700;
+  font-size: 1.75em;
+  margin-top: 2em;
+  margin-bottom: 1em;
+  line-height: 1.3333333;
+  letter-spacing: -0.025em;
+  border-bottom: 1px solid var(--color-slate-200);
+  padding-bottom: 0.3em;
+}
+
+.prose :where(h3):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-900);
+  font-weight: 600;
+  font-size: 1.375em;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
+  line-height: 1.6;
+}
+
+.prose :where(h4):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-900);
+  font-weight: 600;
+  font-size: 1.125em;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.5;
+}
+
+.prose :where(a):not(:where([class~="not-prose"] *)) {
+  color: var(--color-indigo-600);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.prose :where(a):hover:not(:where([class~="not-prose"] *)) {
+  color: var(--color-indigo-700);
+}
+
+.prose :where(strong):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-900);
+  font-weight: 600;
+}
+
+.prose :where(code):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-900);
+  font-weight: 600;
+  font-size: 0.875em;
+  background-color: var(--color-slate-100);
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+}
+
+.prose :where(pre):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-50);
+  background-color: var(--color-slate-800);
+  overflow-x: auto;
+  font-size: 0.875em;
+  line-height: 1.7142857;
+  margin-top: 1.7142857em;
+  margin-bottom: 1.7142857em;
+  border-radius: 0.5rem;
+  padding: 1em 1.5em;
+}
+
+.prose :where(pre code):not(:where([class~="not-prose"] *)) {
+  background-color: transparent;
+  border-width: 0;
+  border-radius: 0;
+  padding: 0;
+  font-weight: inherit;
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.prose :where(ul):not(:where([class~="not-prose"] *)) {
+  list-style-type: disc;
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+  padding-left: 1.625em;
+  color: var(--color-slate-700);
+}
+
+.prose :where(ol):not(:where([class~="not-prose"] *)) {
+  list-style-type: decimal;
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+  padding-left: 1.625em;
+  color: var(--color-slate-700);
+}
+
+.prose :where(li):not(:where([class~="not-prose"] *)) {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.75;
+}
+
+.prose :where(li > p):not(:where([class~="not-prose"] *)) {
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+}
+
+.prose :where(blockquote):not(:where([class~="not-prose"] *)) {
+  font-weight: 500;
+  font-style: italic;
+  color: var(--color-slate-900);
+  border-left-width: 0.25rem;
+  border-left-color: var(--color-slate-300);
+  quotes: "\201C""\201D""\2018""\2019";
+  margin-top: 1.6em;
+  margin-bottom: 1.6em;
+  padding-left: 1em;
+}
+
+.prose :where(hr):not(:where([class~="not-prose"] *)) {
+  border-color: var(--color-slate-200);
+  border-top-width: 1px;
+  margin-top: 3em;
+  margin-bottom: 3em;
+}
+
+.prose :where(table):not(:where([class~="not-prose"] *)) {
+  width: 100%;
+  table-layout: auto;
+  text-align: left;
+  margin-top: 2em;
+  margin-bottom: 2em;
+  font-size: 0.875em;
+  line-height: 1.7142857;
+}
+
+.prose :where(thead):not(:where([class~="not-prose"] *)) {
+  border-bottom-width: 1px;
+  border-bottom-color: var(--color-slate-300);
+}
+
+.prose :where(thead th):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-900);
+  font-weight: 600;
+  vertical-align: bottom;
+  padding-right: 0.5714286em;
+  padding-bottom: 0.5714286em;
+  padding-left: 0.5714286em;
+}
+
+.prose :where(tbody tr):not(:where([class~="not-prose"] *)) {
+  border-bottom-width: 1px;
+  border-bottom-color: var(--color-slate-200);
+}
+
+.prose :where(tbody td):not(:where([class~="not-prose"] *)) {
+  vertical-align: baseline;
+  padding: 0.5714286em;
+}
+
+/* Dark mode prose */
+.prose-invert {
+  color: var(--color-slate-300);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+
+.prose-invert :where(p):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-300);
+  line-height: 1.75;
+}
+
+.prose-invert :where(h1, h2, h3, h4):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-50);
+}
+
+.prose-invert :where(h2):not(:where([class~="not-prose"] *)) {
+  border-bottom-color: var(--color-slate-700);
+}
+
+.prose-invert :where(strong):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-100);
+  font-weight: 600;
+}
+
+.prose-invert :where(a):not(:where([class~="not-prose"] *)) {
+  color: var(--color-indigo-400);
+}
+
+.prose-invert :where(a):hover:not(:where([class~="not-prose"] *)) {
+  color: var(--color-indigo-300);
+}
+
+.prose-invert :where(code):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-100);
+  background-color: var(--color-slate-800);
+}
+
+.prose-invert :where(pre):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-200);
+  background-color: var(--color-slate-900);
+}
+
+.prose-invert :where(blockquote):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-200);
+  border-left-color: var(--color-slate-700);
+}
+
+.prose-invert :where(hr):not(:where([class~="not-prose"] *)) {
+  border-color: var(--color-slate-700);
+}
+
+.prose-invert :where(thead):not(:where([class~="not-prose"] *)) {
+  border-bottom-color: var(--color-slate-600);
+}
+
+.prose-invert :where(thead th):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-100);
+}
+
+.prose-invert :where(tbody tr):not(:where([class~="not-prose"] *)) {
+  border-bottom-color: var(--color-slate-700);
+}
+
+.prose-invert :where(tbody td):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-300);
+}
+
+.prose-invert :where(ul, ol):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-300);
+}
+
+.prose-invert :where(li):not(:where([class~="not-prose"] *)) {
+  color: var(--color-slate-300);
+}

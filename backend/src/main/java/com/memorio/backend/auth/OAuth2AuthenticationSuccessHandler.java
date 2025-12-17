@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,15 +83,15 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         redirectToFrontendWithTokens(response);
     }
 
-    /**
-     * Extracts the OAuth2 provider name from the request URL.
-     * For example: /login/oauth2/code/google -> "google"
-     */
+
+
+     //  /login/oauth2/code/google -> "google"
+
     private String extractProvider(HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         log.debug("Extracting provider from URI: {}", requestURI);
 
-        // The callback URL format is: /login/oauth2/code/{provider}
+        // Формат лінка callback /login/oauth2/code/{provider}
         if(requestURI.contains("/login/oauth2/code/")){
             String[] parts = requestURI.split("/");
             String provider = parts[parts.length - 1];
@@ -98,7 +99,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             return provider;
         }
 
-        // Fallback for authorization URL format: /oauth2/authorization/{provider}
+        // Fallback формат лінка для авторизації: /oauth2/authorization/{provider}
         if(requestURI.contains("/oauth2/authorization/")){
             String[] parts = requestURI.split("/");
             String provider = parts[parts.length - 1];
@@ -168,6 +169,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             newUser.setEmail(email);
             newUser.setPasswordHash(null);
             newUser.setRole(Role.USER);
+            newUser.setDisplayName(name);
             newUser.setPictureUrl(pictureUrl);
 
             return userRepository.save(newUser);
@@ -180,7 +182,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         );
         if (existingIdentity.isPresent()){
             UserIdentity identity = existingIdentity.get();
-            if(!identity.getProviderUserId().equals(providerUserId)){
+            if(!Objects.equals(identity.getProviderUserId(), providerUserId)){
                 log.warn("Provider user ID mismatch for user {} and provider {}: " +
                         "expected {}, got {}", user.getId(), provider,
                         identity.getProviderUserId(), providerUserId);

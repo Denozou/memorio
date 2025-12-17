@@ -1,5 +1,3 @@
-// Activity tracker for monitoring user interactions
-// Used by session manager to detect user activity and manage token refresh
 
 class ActivityTracker {
   private lastActivity: number = Date.now();
@@ -13,7 +11,7 @@ class ActivityTracker {
     this.isTracking = true;
     this.lastActivity = Date.now();
 
-    // Add event listeners for user activity
+    //Add event listeners for uesr activity
     this.events.forEach(event => {
       document.addEventListener(event, this.handleActivity, { passive: true });
     });
@@ -24,7 +22,7 @@ class ActivityTracker {
 
     this.isTracking = false;
 
-    // Remove event listeners
+    //Remove event listeners
     this.events.forEach(event => {
       document.removeEventListener(event, this.handleActivity);
     });

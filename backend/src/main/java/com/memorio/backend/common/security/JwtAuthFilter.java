@@ -39,7 +39,7 @@ public class JwtAuthFilter extends OncePerRequestFilter{
         String token = cookieUtil.getAccessTokenFromCookies(req);
         if(token != null && !token.isBlank()){
             try{
-                // validate + parse
+                //validate + parse
                 var claims = jwt.parseClaims(token);
                 String subject = claims.getSubject();
 
@@ -48,7 +48,7 @@ public class JwtAuthFilter extends OncePerRequestFilter{
                 List<String> roles;
                 if (rawRoles instanceof List<?> list) {
                     roles = list.stream()
-                            .map(String::valueOf)                 // toString each element
+                            .map(String::valueOf)                 // toString e ach element
                             .toList();
                 } else {
                     roles = List.of();

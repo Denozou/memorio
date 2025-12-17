@@ -14,7 +14,7 @@ public class AuthService {
     private final UserRepository users;
     private final PasswordEncoder passwordEncoder;
     private static final String DUMMY_PASSWORD_HASH=
-            "$2a$10$dummyHashForTimingAttackPreventionDummyHashForTimingAttack";
+            "$2a$10$abcdefghijklmnopqrstuv.EFVGADHIUWXJKLSTMNOPBCQRYZ01234";
 
     public AuthService(UserRepository users, PasswordEncoder passwordEncoder) {
         this.users = users;
@@ -30,7 +30,7 @@ public class AuthService {
        return userOpt.isPresent() && matches;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Optional<User> findByEmail(String email){
         return users.findByEmail(email);
     }
@@ -42,6 +42,16 @@ public class AuthService {
     @Transactional
     public User registerUser(String displayName, String email, String rawPassword,
                              String preferredLanguage){
+
+        if (displayName == null || displayName.isBlank()) {
+            throw new IllegalArgumentException("Display name cannot be null or empty");
+        }
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+        if (rawPassword == null || rawPassword.isBlank()) {
+            throw new IllegalArgumentException("Password cannot be null or empty");
+        }
         if (users.findByEmail(email).isPresent()){
             throw new DuplicateEmailException(email);
         }
@@ -51,6 +61,23 @@ public class AuthService {
         user.setEmail(email);
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
         user.setPreferredLanguage(preferredLanguage != null ? preferredLanguage : "en");
+        user.setEmailVerified(false); // New users need to verify email
+        return users.save(user);
+    }
+
+    @Transactional
+    public void updatePassword(User user, String newRawPassword) {
+        if(user == null){
+            throw new IllegalArgumentException("User cannot be null");
+        }
+        if (newRawPassword == null || newRawPassword.isBlank()) {
+            throw new IllegalArgumentException("Password cannot be null or empty");
+        }
+        user.setPasswordHash(passwordEncoder.encode(newRawPassword));
+        users.save(user);
+    }
+    @Transactional
+    public User saveUser(User user){
         return users.save(user);
     }
 }

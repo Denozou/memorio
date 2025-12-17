@@ -1,4 +1,3 @@
-// Cookie-based authentication utilities
 // Tokens are now stored in secure HttpOnly cookies and managed by the server
 
 export type AuthUser = {
@@ -8,13 +7,12 @@ export type AuthUser = {
     role: string;
 };
 
-// Check if user is authenticated by making a request to a protected endpoint
+//Checkk if uesr is authenticated by making a request to a protected endpoint
 export async function isAuthenticated(): Promise<boolean> {
     try {
-        // Make a simple request to check if we have valid authentication cookies
-        const response = await fetch('/api/auth/check', {
+        const response = await fetch('/auth/check', {
             method: 'GET',
-            credentials: 'include', // Include cookies in request
+            credentials: 'include', //Include cookies in request
         });
         return response.ok;
     } catch {
@@ -42,7 +40,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 // Clear authentication by calling logout endpoint
 export async function logout(): Promise<void> {
     try {
-        await fetch('/api/auth/logout', {
+        await fetch('/auth/logout', {
             method: 'POST',
             credentials: 'include',
         });
@@ -54,7 +52,7 @@ export async function logout(): Promise<void> {
     window.location.href = '/login';
 }
 
-// Legacy functions kept for compatibility but simplified
+
 // These are no longer needed with HttpOnly cookies but kept to avoid breaking existing code
 
 export function saveTokens(): void {

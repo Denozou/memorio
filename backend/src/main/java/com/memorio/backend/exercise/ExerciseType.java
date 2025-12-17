@@ -1,8 +1,8 @@
 package com.memorio.backend.exercise;
 
 public enum ExerciseType {
-    IMAGE_LINKING,
+    WORD_LINKING,
     NAMES_FACES,
-    OBJECT_STORY,
+    NUMBER_PEG,
     DAILY_CHALLENGE
 }

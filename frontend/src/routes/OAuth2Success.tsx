@@ -1,13 +1,14 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export default function OAuth2Success(){
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
     useEffect(() => {
         // Check if OAuth2 was successful
-        const success = searchParams.get('success');
         const error = searchParams.get('error');
 
         if (error) {
@@ -47,9 +48,9 @@ export default function OAuth2Success(){
               animation: 'spin 1s linear infinite',
               margin: '0 auto 16px'
             }} />
-            <h2 style={{ margin: 0, color: '#333' }}>Completing sign in...</h2>
+            <h2 style={{ margin: 0, color: '#333' }}>{t('auth.completingSignIn')}</h2>
             <p style={{ margin: '8px 0 0', color: '#666' }}>
-              Processing your authentication
+              {t('auth.processingAuth')}
             </p>
           </div>
 

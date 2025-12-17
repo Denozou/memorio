@@ -11,6 +11,7 @@ import com.memorio.backend.lexicon.WordPicker;
 import com.memorio.backend.faces.FacePickerService;
 import com.memorio.backend.faces.Person;
 import com.memorio.backend.common.security.AuthenticationUtil;
+import com.memorio.backend.adaptive.AdaptiveDifficultyService;
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +43,9 @@ public class ExerciseController {
     private final UserRepository users;
     private final WordPicker wordPicker;
     private final FacePickerService facePicker;
+    private final NumberPegService numberPegService;
+    private final AdaptiveDifficultyService adaptiveService;
+
 
     private static final double LEVEL_UP_THRESHOLD = 0.85;
     private static  final double LEVEL_DOWN_THRESHOLD = 0.6;
@@ -52,7 +56,8 @@ public class ExerciseController {
                               ExerciseAttemptRepository attempts,
                               ObjectMapper mapper, UserStatsRepository userStatsRepo,
                               UserBadgeRepository userBadgeRepo, StreakService streakService,
-                              UserRepository users, WordPicker wordPicker, FacePickerService facePicker) {
+                              UserRepository users, WordPicker wordPicker, FacePickerService facePicker,
+                              NumberPegService numberPegService, AdaptiveDifficultyService adaptiveService) {
         this.sessions = sessions;
         this.attempts = attempts;
         this.mapper = mapper;
@@ -62,7 +67,8 @@ public class ExerciseController {
         this.users = users;
         this.wordPicker = wordPicker;
         this.facePicker = facePicker;
-
+        this.numberPegService = numberPegService;
+        this.adaptiveService = adaptiveService;
     }
     @PostMapping("/start")
     public ResponseEntity<StartExerciseResponse> start(@Valid @RequestBody StartExerciseRequest req,
@@ -73,7 +79,7 @@ public class ExerciseController {
         sessions.save(session);
 
         switch (req.getType()){
-            case IMAGE_LINKING -> {
+            case WORD_LINKING -> {
                 var user = users.findById(userId).orElseThrow(()->new IllegalStateException("User no found"));
                 String language = (user.getPreferredLanguage() != null && !user.getPreferredLanguage().isBlank())
                         ? user.getPreferredLanguage() : "en";
@@ -84,13 +90,13 @@ public class ExerciseController {
                 var words = wordPicker.pickWords(language, skillLevel, listSize);
                 TimingConfig timing = calculateTimingForWords(words.size(), skillLevel);
                 var payload = Map.of("words", words);
-                var res = new StartExerciseResponse(sessionId, ExerciseType.IMAGE_LINKING, payload, skillLevel, timing);
+                var res = new StartExerciseResponse(sessionId, ExerciseType.WORD_LINKING, payload, skillLevel, timing);
                 return ResponseEntity.ok(res);
             }
             case DAILY_CHALLENGE -> {
                 var words = List.of("leaf", "mirror", "piano", "bridge", "star", "wheel");
-                var payload = new ImageLinkingPayload(words);
-                var res = new StartExerciseResponse(sessionId, ExerciseType.IMAGE_LINKING, payload);
+                var payload = new WordLinkingPayload(words);
+                var res = new StartExerciseResponse(sessionId, ExerciseType.WORD_LINKING, payload);
                 return ResponseEntity.ok(res);
             }
             case NAMES_FACES -> {
@@ -117,6 +123,27 @@ public class ExerciseController {
                 var res = new StartExerciseResponse(sessionId, ExerciseType.NAMES_FACES, payload, skillLevel, timing);
                 return ResponseEntity.ok(res);
             }
+            case NUMBER_PEG ->{
+                var user = users.findById(userId)
+                        .orElseThrow(()-> new IllegalStateException("User not found"));
+                String language = (user.getPreferredLanguage() != null && !user.getPreferredLanguage().isBlank()) ? user.getPreferredLanguage() :  "en";
+
+                int skillLevel = user.getSkillLevel();
+
+                List<Integer> digits = numberPegService.generateDigitSequence(skillLevel);
+                List<String> hints = digits.stream()
+                        .map(digit -> numberPegService.getHintWord(digit, language))
+                        .toList();
+
+                var payload = Map.of(
+                        "digits", digits,
+                        "hints", hints
+                );
+                TimingConfig timing = calculateTimingForDigits(digits.size(), skillLevel);
+
+                var res = new StartExerciseResponse(sessionId, ExerciseType.NUMBER_PEG, payload, skillLevel, timing);
+                return ResponseEntity.ok(res);
+            }
             default -> throw new IllegalArgumentException("Unknown exercise type: " + req.getType());
         }
     }
@@ -127,9 +154,10 @@ public class ExerciseController {
         UUID userId = AuthenticationUtil.extractUserId(auth);
         var session = sessions.findByIdAndUserId(req.getSessionId(), userId).
                 orElseThrow(() -> new NotFoundException("Session not found"));
-        if (req.getType() != ExerciseType.IMAGE_LINKING
+        if (req.getType() != ExerciseType.WORD_LINKING
                 && req.getType() != ExerciseType.DAILY_CHALLENGE
                 && req.getType() != ExerciseType.NAMES_FACES
+                && req.getType() != ExerciseType.NUMBER_PEG
         ){
             throw new IllegalArgumentException("Scoring not implemented for type: " + req.getType());
         }
@@ -138,28 +166,61 @@ public class ExerciseController {
             throw new IllegalArgumentException("shownWords must not be empty");
         }
         Function<String, String> norm = s-> s == null ? "" : s.trim().toLowerCase();
+        // For NUMBER_PEG, we need to count all digits including duplicates
+        // For other exercises, we count unique words only
+        boolean isNumberPeg = (req.getType() == ExerciseType.NUMBER_PEG);
+        
         Set<String> targets = new LinkedHashSet<>();
+        List<String> allTargets = new ArrayList<>();
         for (String word : shown){
             String n = norm.apply(word);
             if(!n.isEmpty()){
                 targets.add(n);
+                allTargets.add(n);
             }
         }
+        
+        int total;
+        int correct;
         Set<String> matched = new LinkedHashSet<>();
         List<String> extraAnswers = new ArrayList<>();
-        if (req.getAnswers() != null){
-            for (String answer: req.getAnswers()){
-                String n = norm.apply(answer);
-                if(n.isEmpty()) continue;
-                if (targets.contains(n) && !matched.contains(n)){
-                    matched.add(n);
-                }else{
-                    extraAnswers.add(n);
+        
+        if (isNumberPeg) {
+            // For NUMBER_PEG: count position-by-position matches for "correct"
+            // This handles duplicates properly
+            total = allTargets.size();
+            correct = 0;
+            List<String> shownCopy = new ArrayList<>(allTargets);
+            if (req.getAnswers() != null) {
+                for (String answer : req.getAnswers()) {
+                    String n = norm.apply(answer);
+                    if (n.isEmpty()) continue;
+                    // Check if this answer matches any remaining shown digit
+                    if (shownCopy.contains(n)) {
+                        shownCopy.remove(n); // Remove first occurrence to handle duplicates
+                        correct++;
+                        matched.add(n);
+                    } else {
+                        extraAnswers.add(n);
+                    }
                 }
             }
+        } else {
+            // For other exercises: use unique word matching
+            total = targets.size();
+            if (req.getAnswers() != null){
+                for (String answer: req.getAnswers()){
+                    String n = norm.apply(answer);
+                    if(n.isEmpty()) continue;
+                    if (targets.contains(n) && !matched.contains(n)){
+                        matched.add(n);
+                    }else{
+                        extraAnswers.add(n);
+                    }
+                }
+            }
+            correct = matched.size();
         }
-        int total = targets.size();
-        int correct = matched.size();
         int orderCorrect = 0;
         for (int i = 0; i < Math.min(shown.size(), (req.getAnswers() == null ? 0 : req.getAnswers().size())); i++){
             String shownNorm = norm.apply(shown.get(i));
@@ -193,6 +254,19 @@ public class ExerciseController {
             sessions.save(session);
         }
         var user = users.findById(userId).orElseThrow(()->new IllegalStateException("User not found"));
+        
+        // ========== ADAPTIVE DIFFICULTY: Record attempt in BKT system ==========
+        String skillType = req.getType().name();
+        boolean wasCorrect = orderAccuracy >= 0.7;  // Consider 70%+ as "correct" for BKT
+        adaptiveService.recordAttempt(
+            userId,
+            skillType,
+            null,  // No specific concept for exercises
+            wasCorrect,
+            user.getSkillLevel(),
+            session.getId()
+        );
+
         int level = user.getSkillLevel();
         if (orderAccuracy >= LEVEL_UP_THRESHOLD){
             level = Math.min(level+1, MAX_SKILL_LEVEL);
@@ -420,5 +494,29 @@ public class ExerciseController {
         int gapMs = 500;
 
         return new TimingConfig(studySeconds, faceShowMs, gapMs);
+    }
+
+    private TimingConfig calculateTimingForDigits(int digitCount, int skillLevel){
+        double timePerDigit;
+
+        if(skillLevel <= 2){
+            timePerDigit = 3.0;
+        } else if (skillLevel <= 4) {
+            timePerDigit = 2.5;
+        } else if (skillLevel <= 6) {
+            timePerDigit = 2.0;
+        }else{
+            timePerDigit = 1.5;
+        }
+
+        double calculatedTime = digitCount * timePerDigit;
+
+        int studySeconds = (int)Math.max(15, Math.min(60, calculatedTime));
+
+        int digitShowMs = skillLevel <= 3 ? 3000 : skillLevel <=6 ? 2000:1500;
+
+        int gapMs = 300;
+
+        return new TimingConfig(studySeconds, digitShowMs, gapMs);
     }
 }

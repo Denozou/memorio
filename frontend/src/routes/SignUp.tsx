@@ -2,7 +2,9 @@ import {useState} from "react";
 import {api} from "../lib/api";
 import {useNavigate, Link} from "react-router-dom";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import ThemeToggle from "../components/ThemeToggle";
+import LanguageSelector from "../components/LanguageSelector";
 
 type RegisterResp = {
     message: string;
@@ -15,6 +17,7 @@ type RegisterResp = {
 };
 
 export default function SignUp(){
+    const { t } = useTranslation();
     const nav = useNavigate();
 
     const [displayName, setDisplayName] = useState("");
@@ -33,13 +36,13 @@ export default function SignUp(){
 
         // Client-side validation
         if (password !== confirmPassword) {
-            setError("Passwords do not match");
+            setError(t('auth.passwordsDontMatch'));
             setBusy(false);
             return;
         }
 
         if (password.length < 6) {
-            setError("Password must be at least 8 characters long");
+            setError(t('auth.passwordTooShort'));
             setBusy(false);
             return;
         }
@@ -55,7 +58,7 @@ export default function SignUp(){
 
             nav("/dashboard");
         }catch(err: any){
-            const msg = err?.response?.data?.error ?? "Registration failed";
+            const msg = err?.response?.data?.error ?? t('auth.registerFailed');
             setError(msg);
         }finally{
             setBusy(false);
@@ -73,9 +76,10 @@ export default function SignUp(){
                             <span className="font-semibold tracking-tight text-slate-900 dark:text-slate-50">Memorio</span>
                         </Link>
                         <div className="flex items-center gap-3">
+                            <LanguageSelector variant="compact" />
                             <ThemeToggle />
                             <Link to="/login" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                                Sign in
+                                {t('common.signIn')}
                             </Link>
                         </div>
                     </div>

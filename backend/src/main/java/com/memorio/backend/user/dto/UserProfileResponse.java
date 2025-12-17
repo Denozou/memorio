@@ -15,11 +15,12 @@ public class UserProfileResponse {
     private String preferredLanguage;
     private OffsetDateTime createdAt;
     private List<LinkedProviderDto> linkedProviders;
+    private boolean twoFactorEnabled;
 
     public UserProfileResponse(UUID id, String email, String displayName,
                                String pictureUrl, Role role, int skillLevel,
                                String preferredLanguage, OffsetDateTime createdAt,
-                               List<LinkedProviderDto> linkedProviders){
+                               List<LinkedProviderDto> linkedProviders, boolean twoFactorEnabled){
         this.id = id;
         this.email = email;
         this.displayName = displayName;
@@ -29,6 +30,7 @@ public class UserProfileResponse {
         this.preferredLanguage = preferredLanguage;
         this.createdAt = createdAt;
         this.linkedProviders = linkedProviders;
+        this.twoFactorEnabled = twoFactorEnabled;
     }
 
     public UUID getId(){return id;}
@@ -40,4 +42,5 @@ public class UserProfileResponse {
     public String getPreferredLanguage(){return preferredLanguage;}
     public OffsetDateTime getCreatedAt(){return createdAt;}
     public List<LinkedProviderDto> getLinkedProviders(){return linkedProviders;}
+    public boolean isTwoFactorEnabled(){return twoFactorEnabled;}
 }
