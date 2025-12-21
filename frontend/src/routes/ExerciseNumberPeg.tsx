@@ -136,7 +136,7 @@ export default function ExerciseNumberPeg() {
         <nav className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
           <div className="flex h-14 sm:h-16 items-center justify-between">
             <Link to="/dashboard" className="flex items-center gap-2">
-              <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 shadow-md" aria-hidden />
+              <img src="/favicon.ico" alt="Memorio logo" className="h-7 w-7 sm:h-8 sm:w-8" />
               <span className="font-semibold tracking-tight text-slate-900 dark:text-slate-50 text-sm sm:text-base">Memorio</span>
             </Link>
             

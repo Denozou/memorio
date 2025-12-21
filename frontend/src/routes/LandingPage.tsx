@@ -71,7 +71,7 @@ export default function LandingPage() {
         <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <a href="#home" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 shadow-md" aria-hidden />
+              <img src="/favicon.ico" alt="Memorio logo" className="h-8 w-8" />
               <span className="font-semibold tracking-tight">Memorio</span>
             </a>
             <div className="hidden md:flex items-center gap-8 text-sm">
@@ -322,7 +322,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 grid md:grid-cols-4 gap-8 text-sm">
           <div>
             <div className="flex items-center gap-2">
-              <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500" aria-hidden />
+              <img src="/favicon.ico" alt="Memorio logo" className="h-7 w-7" />
               <span className="font-semibold tracking-tight">Memorio</span>
             </div>
             <p className="mt-3 text-slate-600 dark:text-slate-300">Minutes to mastery.</p>
