@@ -31,7 +31,7 @@ import LandingPage from "./routes/LandingPage";
 import IsoForestLeaderboard from "./routes/IsoForestLeaderboard";
 
 const router = createBrowserRouter([
-  { path: "/", element: <App /> },
+  { path: "/", element: <LandingPage /> },
   { path: "/login", element: <Login /> },
   { path: "/signup", element: <SignUp /> },
   { path: "/auth/oauth2/success", element: <OAuth2Success /> },
@@ -41,7 +41,6 @@ const router = createBrowserRouter([
   { path: "/auth/2fa/verify", element: <TwoFactorVerify /> },
   { path: "/auth/2fa/setup", element: <ProtectedRoute><TwoFactorSetup /></ProtectedRoute> },
   { path: "/auth/2fa/disable", element: <ProtectedRoute><TwoFactorDisable /></ProtectedRoute> },
-  { path: "/landing", element: <LandingPage /> },
   { path: "/dashboard", element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
   { path: "/profile", element: <ProtectedRoute><Profile /></ProtectedRoute> },
   { path: "/leaderboard", element: <ProtectedRoute><IsoForestLeaderboard /></ProtectedRoute> },
