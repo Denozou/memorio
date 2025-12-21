@@ -14,7 +14,7 @@ export default function RequestPasswordReset() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:8080/auth/password-reset/request', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/auth/password-reset/request`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

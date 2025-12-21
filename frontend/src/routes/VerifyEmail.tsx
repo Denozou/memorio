@@ -22,7 +22,7 @@ export default function VerifyEmail() {
 
     const verifyEmail = async (token: string) => {
         try {
-            const response = await fetch(`http://localhost:8080/auth/verify-email?token=${token}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/auth/verify-email?token=${token}`, {
                 method: 'GET',
                 credentials: 'include',
             });
