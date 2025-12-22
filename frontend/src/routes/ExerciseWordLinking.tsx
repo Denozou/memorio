@@ -156,6 +156,9 @@ export default function ExerciseWordLinking() {
               <Link to="/dashboard" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
                 Dashboard
               </Link>
+              <Link to="/leaderboard" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
+                Leaderboard
+              </Link>
               <Link to="/learning" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
                 Learning
               </Link>
