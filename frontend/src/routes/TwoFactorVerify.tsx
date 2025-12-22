@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { api } from "../lib/api";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { ArrowRight, Shield, AlertCircle } from "lucide-react";
+import { ArrowRight, Shield, AlertCircle, Brain } from "lucide-react";
 import ThemeToggle from "../components/ThemeToggle";
 
 type VerifyResp = {
@@ -112,7 +112,9 @@ export default function TwoFactorVerify() {
         <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <Link to="/" className="flex items-center gap-2">
-              <img src="/favicon.ico" alt="Memorio logo" className="h-8 w-8" />
+              <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center shadow-md">
+                <Brain className="h-5 w-5 text-white" />
+              </div>
               <span className="font-semibold tracking-tight text-slate-900 dark:text-slate-50">Memorio</span>
             </Link>
             <ThemeToggle />

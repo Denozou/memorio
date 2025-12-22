@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, Menu, X, Star, Shield, Zap } from "lucide-react";
+import { ArrowRight, CheckCircle2, Menu, X, Star, Shield, Zap, Brain } from "lucide-react";
 
 
 export default function LandingPage() {
@@ -71,7 +71,9 @@ export default function LandingPage() {
         <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <a href="#home" className="flex items-center gap-2">
-              <img src="/favicon.ico" alt="Memorio logo" className="h-8 w-8" />
+              <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center shadow-md">
+                <Brain className="h-5 w-5 text-white" />
+              </div>
               <span className="font-semibold tracking-tight">Memorio</span>
             </a>
             <div className="hidden md:flex items-center gap-8 text-sm">
@@ -322,7 +324,9 @@ export default function LandingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 grid md:grid-cols-4 gap-8 text-sm">
           <div>
             <div className="flex items-center gap-2">
-              <img src="/favicon.ico" alt="Memorio logo" className="h-7 w-7" />
+              <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center">
+                <Brain className="h-4 w-4 text-white" />
+              </div>
               <span className="font-semibold tracking-tight">Memorio</span>
             </div>
             <p className="mt-3 text-slate-600 dark:text-slate-300">Minutes to mastery.</p>
