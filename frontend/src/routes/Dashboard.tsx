@@ -165,17 +165,17 @@ export default function Dashboard() {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-6">
               <Link to="/dashboard" className="text-sm text-slate-900 dark:text-slate-50 font-medium inline-flex items-center">
-                Dashboard
+                {t('common.dashboard')}
                 <ReviewNotificationBadge />
               </Link>
               <Link to="/leaderboard" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                Leaderboard
+                {t('common.leaderboard')}
               </Link>
               <Link to="/learning" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                Learning
+                {t('common.learning')}
               </Link>
               <Link to="/profile" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                Profile
+                {t('common.profile')}
               </Link>
             </div>
 
@@ -186,7 +186,7 @@ export default function Dashboard() {
                 className="px-4 py-2 rounded-xl border border-slate-300/70 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2"
               >
                 <LogOut className="w-4 h-4" />
-                Logout
+                {t('common.logout')}
               </button>
             </div>
 
@@ -208,23 +208,23 @@ export default function Dashboard() {
             <div className="md:hidden py-3 border-t border-slate-200/70 dark:border-slate-800">
               <div className="flex flex-col gap-2">
                 <Link to="/dashboard" className="py-2 text-slate-900 dark:text-slate-50 font-medium" onClick={() => setMobileMenuOpen(false)}>
-                  Dashboard
+                  {t('common.dashboard')}
                 </Link>
                 <Link to="/leaderboard" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
-                  Leaderboard
+                  {t('common.leaderboard')}
                 </Link>
                 <Link to="/learning" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
-                  Learning
+                  {t('common.learning')}
                 </Link>
                 <Link to="/profile" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
-                  Profile
+                  {t('common.profile')}
                 </Link>
                 <button
                   onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
                   className="py-2 text-left text-slate-600 dark:text-slate-300 flex items-center gap-2"
                 >
                   <LogOut className="w-4 h-4" />
-                  Logout
+                  {t('common.logout')}
                 </button>
               </div>
             </div>
@@ -545,7 +545,7 @@ function ActivityHeatmap({ history, loading }: { history: HistoryItem[]; loading
             {/* Tooltip */}
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden sm:group-hover:block z-20">
                <div className="bg-slate-800 dark:bg-slate-700 text-white text-[10px] py-1 px-2 rounded shadow-lg whitespace-nowrap">
-                  {day.label}: {day.count === 0 ? "No activity" : `${day.count} session${day.count > 1 ? 's' : ''}`}
+                  {day.label}: {day.count === 0 ? t('dashboard.noActivityTooltip') : `${day.count} ${day.count === 1 ? t('dashboard.sessionSingular') : t('dashboard.sessionPlural')}`}
                </div>
             </div>
           </div>
@@ -590,7 +590,7 @@ function HistoryList({ items }: { items: HistoryItem[] }) {
           
           <div className="text-right shrink-0 ml-2">
              <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-50">
-                {s.lastAccuracy ? `${Math.round(s.lastAccuracy * 100)}%` : "—"}
+                {s.lastAccuracy ? `${Math.round(s.lastAccuracy * 100)}%` : t('dashboard.notFinished')}
              </div>
              <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-medium">{t('dashboard.accuracy')}</span>
           </div>

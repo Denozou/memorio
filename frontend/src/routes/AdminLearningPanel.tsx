@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { LogOut, Menu, X, BookOpen, HelpCircle, Shield, Brain } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import ThemeToggle from "../components/ThemeToggle";
 import { api } from "../lib/api";
 import ArticleManager from "../components/admin/ArticleManager";
@@ -9,6 +10,7 @@ import QuizManager from "../components/admin/QuizManager";
 type AdminTab = "articles" | "quizzes";
 
 export default function AdminLearningPanel() {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<AdminTab>("articles");
@@ -39,20 +41,23 @@ export default function AdminLearningPanel() {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-6">
               <Link to="/dashboard" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                Dashboard
+                {t('common.dashboard')}
               </Link>
               <Link to="/learning" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                Learning
+                {t('common.learning')}
               </Link>
               <Link to="/admin/learning" className="text-sm text-slate-900 dark:text-slate-50 font-medium flex items-center gap-1">
                 <Shield className="w-4 h-4" />
-                Learning Admin
+                {t('admin.learningAdmin')}
               </Link>
               <Link to="/admin/words" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                Word Admin
+                {t('admin.wordAdmin')}
+              </Link>
+              <Link to="/admin/people" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
+                {t('admin.peopleAdmin')}
               </Link>
               <Link to="/profile" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                Profile
+                {t('common.profile')}
               </Link>
             </div>
 
@@ -63,7 +68,7 @@ export default function AdminLearningPanel() {
                 className="px-4 py-2 rounded-xl border border-slate-300/70 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2"
               >
                 <LogOut className="w-4 h-4" />
-                Logout
+                {t('common.logout')}
               </button>
             </div>
 
@@ -73,7 +78,7 @@ export default function AdminLearningPanel() {
               <button
                 className="p-2 rounded-lg border border-slate-300/70 dark:border-slate-700"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+                aria-label={mobileMenuOpen ? t('exercises.closeMenu') : t('exercises.openMenu')}
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
@@ -85,27 +90,30 @@ export default function AdminLearningPanel() {
             <div className="md:hidden py-3 border-t border-slate-200/70 dark:border-slate-800">
               <div className="flex flex-col gap-2">
                 <Link to="/dashboard" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
-                  Dashboard
+                  {t('common.dashboard')}
                 </Link>
                 <Link to="/learning" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
-                  Learning
+                  {t('common.learning')}
                 </Link>
                 <Link to="/admin/learning" className="py-2 text-slate-900 dark:text-slate-50 font-medium flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                   <Shield className="w-4 h-4" />
-                  Learning Admin
+                  {t('admin.learningAdmin')}
                 </Link>
                 <Link to="/admin/words" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
-                  Word Admin
+                  {t('admin.wordAdmin')}
+                </Link>
+                <Link to="/admin/people" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
+                  {t('admin.peopleAdmin')}
                 </Link>
                 <Link to="/profile" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
-                  Profile
+                  {t('common.profile')}
                 </Link>
                 <button
                   onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
                   className="py-2 text-left text-slate-600 dark:text-slate-300 flex items-center gap-2"
                 >
                   <LogOut className="w-4 h-4" />
-                  Logout
+                  {t('common.logout')}
                 </button>
               </div>
             </div>
@@ -119,10 +127,10 @@ export default function AdminLearningPanel() {
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2 sm:gap-3">
             <Shield className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10" />
-            Admin Learning Panel
+            {t('admin.learningPanel')}
           </h1>
           <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-300">
-            Manage articles, quizzes, and learning content
+            {t('admin.manageContent')}
           </p>
         </div>
 
@@ -139,7 +147,7 @@ export default function AdminLearningPanel() {
             >
               <span className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>Articles</span>
+                <span>{t('admin.articles')}</span>
               </span>
             </button>
             <button
@@ -152,7 +160,7 @@ export default function AdminLearningPanel() {
             >
               <span className="flex items-center gap-2">
                 <HelpCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>Quizzes</span>
+                <span>{t('admin.quizzes')}</span>
               </span>
             </button>
           </div>

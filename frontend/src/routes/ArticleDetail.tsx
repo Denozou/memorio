@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Clock, BookOpen, CheckCircle, GraduationCap, LogOut, Menu, X, Layers, Brain } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import ThemeToggle from "../components/ThemeToggle";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { ArticleDetailDto } from "../types/learning";
 
 export default function ArticleDetail() {
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const nav = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -101,13 +103,13 @@ export default function ArticleDetail() {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-6">
               <Link to="/dashboard" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                Dashboard
+                {t('common.dashboard')}
               </Link>
               <Link to="/learning" className="text-sm text-slate-900 dark:text-slate-50 font-medium">
-                Learning
+                {t('common.learning')}
               </Link>
               <Link to="/profile" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                Profile
+                {t('common.profile')}
               </Link>
             </div>
 
@@ -140,20 +142,20 @@ export default function ArticleDetail() {
             <div className="md:hidden py-3 border-t border-slate-200/70 dark:border-slate-800">
               <div className="flex flex-col gap-2">
                 <Link to="/dashboard" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
-                  Dashboard
+                  {t('common.dashboard')}
                 </Link>
                 <Link to="/learning" className="py-2 text-slate-900 dark:text-slate-50 font-medium" onClick={() => setMobileMenuOpen(false)}>
-                  Learning
+                  {t('common.learning')}
                 </Link>
                 <Link to="/profile" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
-                  Profile
+                  {t('common.profile')}
                 </Link>
                 <button
                   onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
                   className="py-2 text-left text-slate-600 dark:text-slate-300 flex items-center gap-2"
                 >
                   <LogOut className="w-4 h-4" />
-                  Logout
+                  {t('common.logout')}
                 </button>
               </div>
             </div>

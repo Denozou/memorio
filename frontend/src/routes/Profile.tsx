@@ -201,10 +201,10 @@ export default function Profile() {
                 {t('common.dashboard')}
               </Link>
               <Link to="/leaderboard" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                Leaderboard
+                {t('common.leaderboard')}
               </Link>
               <Link to="/learning" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                Learning
+                {t('common.learning')}
               </Link>
               <Link to="/profile" className="text-sm text-slate-900 dark:text-slate-50 font-medium">
                 {t('common.profile')}
@@ -243,10 +243,10 @@ export default function Profile() {
                   {t('common.dashboard')}
                 </Link>
                 <Link to="/leaderboard" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
-                  Leaderboard
+                  {t('common.leaderboard')}
                 </Link>
                 <Link to="/learning" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
-                  Learning
+                  {t('common.learning')}
                 </Link>
                 <Link to="/profile" className="py-2 text-slate-900 dark:text-slate-50 font-medium" onClick={() => setMobileMenuOpen(false)}>
                   {t('common.profile')}
@@ -315,29 +315,29 @@ export default function Profile() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <StatCard
             icon={<Calendar className="w-5 h-5" />}
-            label="Days Active"
+            label={t('profile.daysActive')}
             value={accountAge}
             color="indigo"
             delay={0}
           />
           <StatCard
             icon={<Zap className="w-5 h-5" />}
-            label="Skill Level"
+            label={t('exercises.skillLevel')}
             value={profile.skillLevel}
             color="violet"
             delay={100}
           />
           <StatCard
             icon={<Target className="w-5 h-5" />}
-            label="Profile"
+            label={t('profile.profileCompletion')}
             value={`${completionPercent}%`}
             color="emerald"
             delay={200}
           />
           <StatCard
             icon={<Shield className="w-5 h-5" />}
-            label="Security"
-            value={profile.twoFactorEnabled ? "Protected" : "Basic"}
+            label={t('profile.security')}
+            value={profile.twoFactorEnabled ? t('profile.protected') : t('profile.basic')}
             valueClassName="text-xl sm:text-2xl"
             color={profile.twoFactorEnabled ? "green" : "amber"}
             delay={300}
@@ -391,7 +391,7 @@ export default function Profile() {
                       </div>
                     </div>
                     <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-xs font-bold shadow-lg border-2 border-white dark:border-slate-900 whitespace-nowrap">
-                      {completionPercent}% Complete
+                      {completionPercent}% {t('profile.complete')}
                     </div>
                   </div>
 
@@ -399,7 +399,7 @@ export default function Profile() {
                   <div className="flex-1 text-center sm:text-left min-w-0">
                     <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
                       <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-50 truncate">
-                        {profile.displayName || "No display name"}
+                        {profile.displayName || t('profile.noDisplayName')}
                       </h2>
                       {profile.twoFactorEnabled && (
                         <div className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center" title="2FA Enabled">
@@ -454,11 +454,11 @@ export default function Profile() {
                       value={formData.displayName || ""}
                       onChange={(e) => setFormData({...formData, displayName: e.target.value})}
                       className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-                      placeholder="Enter your display name"
+                      placeholder={t('profile.enterDisplayName')}
                     />
                   ) : (
                     <div className="px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-50 font-medium">
-                      {profile.displayName || <span className="text-slate-400 italic">No display name set</span>}
+                      {profile.displayName || <span className="text-slate-400 italic">{t('profile.noDisplayNameSet')}</span>}
                     </div>
                   )}
                 </div>
@@ -524,7 +524,7 @@ export default function Profile() {
                 <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center gap-3">
                     <Lock className="w-5 h-5 text-slate-400" />
-                    <span className="font-semibold text-slate-700 dark:text-slate-300 text-sm">Status</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300 text-sm">{t('profile.status')}</span>
                   </div>
                   {profile.twoFactorEnabled ? (
                     <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-300 dark:border-emerald-800">
@@ -534,15 +534,15 @@ export default function Profile() {
                   ) : (
                     <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-800">
                       <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                      <span className="text-xs font-bold text-amber-700 dark:text-amber-300">Not Active</span>
+                      <span className="text-xs font-bold text-amber-700 dark:text-amber-300">{t('profile.notActive')}</span>
                     </div>
                   )}
                 </div>
 
                 <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                   {profile.twoFactorEnabled 
-                    ? "Your account is protected with two-factor authentication. You'll need to enter a code from your authenticator app when signing in."
-                    : "Add an extra layer of security to your account by requiring a verification code in addition to your password."
+                    ? t('profile.twoFactorEnabledDesc')
+                    : t('profile.twoFactorDisabledDesc')
                   }
                 </p>
 

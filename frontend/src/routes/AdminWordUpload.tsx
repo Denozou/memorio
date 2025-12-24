@@ -5,6 +5,7 @@ import {
   Database, TrendingUp, CheckCircle, AlertCircle, 
   Download, Trash2, RefreshCw, Languages, BookOpen
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import ThemeToggle from "../components/ThemeToggle";
 import { api } from "../lib/api";
 
@@ -24,33 +25,20 @@ interface UploadResult {
   skipped: number;
 }
 
-const PARTS_OF_SPEECH = [
-  { value: "NOUN", label: "Noun", emoji: "📦" },
-  { value: "VERB", label: "Verb", emoji: "⚡" },
-  { value: "ADJ", label: "Adjective", emoji: "🎨" },
-  { value: "ADV", label: "Adverb", emoji: "🔄" },
-  { value: "PRON", label: "Pronoun", emoji: "👤" },
-  { value: "PREP", label: "Preposition", emoji: "➡️" },
-  { value: "CONJ", label: "Conjunction", emoji: "🔗" },
-  { value: "INTERJ", label: "Interjection", emoji: "❗" },
-  { value: "OTHER", label: "Other", emoji: "📝" },
+// Only nouns are suitable for the Word Linking memory exercise
+const POS_OPTIONS = [
+  { value: "NOUN", labelKey: "admin.noun", emoji: "📦" },
 ];
 
+// Only include languages with full UI translation support
+// When adding new UI translations, add them here
 const LANGUAGE_OPTIONS = [
   { code: "en", name: "English", flag: "🇬🇧" },
-  { code: "es", name: "Spanish", flag: "🇪🇸" },
-  { code: "fr", name: "French", flag: "🇫🇷" },
-  { code: "de", name: "German", flag: "🇩🇪" },
-  { code: "it", name: "Italian", flag: "🇮🇹" },
-  { code: "pt", name: "Portuguese", flag: "🇵🇹" },
-  { code: "ja", name: "Japanese", flag: "🇯🇵" },
-  { code: "zh", name: "Chinese", flag: "🇨🇳" },
-  { code: "ko", name: "Korean", flag: "🇰🇷" },
-  { code: "ar", name: "Arabic", flag: "🇸🇦" },
-  { code: "hi", name: "Hindi", flag: "🇮🇳" },
+  { code: "pl", name: "Polish", flag: "🇵🇱" },
 ];
 
 export default function AdminWordUpload() {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<AdminTab>("upload");
@@ -99,20 +87,23 @@ export default function AdminWordUpload() {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-6">
               <Link to="/dashboard" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                Dashboard
+                {t('common.dashboard')}
               </Link>
               <Link to="/learning" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                Learning
+                {t('common.learning')}
               </Link>
               <Link to="/admin/learning" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                Learning Admin
+                {t('admin.learningAdmin')}
               </Link>
               <Link to="/admin/words" className="text-sm text-slate-900 dark:text-slate-50 font-medium flex items-center gap-1">
                 <Shield className="w-4 h-4" />
-                Word Admin
+                {t('admin.wordAdmin')}
+              </Link>
+              <Link to="/admin/people" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
+                {t('admin.peopleAdmin')}
               </Link>
               <Link to="/profile" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                Profile
+                {t('common.profile')}
               </Link>
             </div>
 
@@ -123,7 +114,7 @@ export default function AdminWordUpload() {
                 className="px-4 py-2 rounded-xl border border-slate-300/70 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2"
               >
                 <LogOut className="w-4 h-4" />
-                Logout
+                {t('common.logout')}
               </button>
             </div>
 
@@ -133,7 +124,7 @@ export default function AdminWordUpload() {
               <button
                 className="p-2 rounded-lg border border-slate-300/70 dark:border-slate-700"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+                aria-label={mobileMenuOpen ? t('exercises.closeMenu') : t('exercises.openMenu')}
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
@@ -145,27 +136,30 @@ export default function AdminWordUpload() {
             <div className="md:hidden py-3 border-t border-slate-200/70 dark:border-slate-800">
               <div className="flex flex-col gap-2">
                 <Link to="/dashboard" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
-                  Dashboard
+                  {t('common.dashboard')}
                 </Link>
                 <Link to="/learning" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
-                  Learning
+                  {t('common.learning')}
                 </Link>
                 <Link to="/admin/learning" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
-                  Learning Admin
+                  {t('admin.learningAdmin')}
                 </Link>
                 <Link to="/admin/words" className="py-2 text-slate-900 dark:text-slate-50 font-medium flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                   <Shield className="w-4 h-4" />
-                  Word Admin
+                  {t('admin.wordAdmin')}
+                </Link>
+                <Link to="/admin/people" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
+                  {t('admin.peopleAdmin')}
                 </Link>
                 <Link to="/profile" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
-                  Profile
+                  {t('common.profile')}
                 </Link>
                 <button
                   onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
                   className="py-2 text-left text-slate-600 dark:text-slate-300 flex items-center gap-2"
                 >
                   <LogOut className="w-4 h-4" />
-                  Logout
+                  {t('common.logout')}
                 </button>
               </div>
             </div>
@@ -179,10 +173,10 @@ export default function AdminWordUpload() {
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2 sm:gap-3">
             <Database className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-indigo-600 dark:text-indigo-400" />
-            Word Database Manager
+            {t('admin.wordDatabaseManager')}
           </h1>
           <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-300">
-            Upload and manage words for the Word Linking exercise
+            {t('admin.wordDatabaseDesc')}
           </p>
         </div>
 
@@ -190,28 +184,28 @@ export default function AdminWordUpload() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 sm:mb-8">
           <StatCard
             icon={<Languages size={20} color="#ffffff" strokeWidth={2} style={{ stroke: '#ffffff', fill: 'none' }} />}
-            label="Languages"
+            label={t('admin.languages')}
             value={languageStats.length.toString()}
             color="indigo"
             loading={statsLoading}
           />
           <StatCard
             icon={<BookMarked size={20} color="#ffffff" strokeWidth={2} style={{ stroke: '#ffffff', fill: 'none' }} />}
-            label="Total Words"
+            label={t('admin.totalWords')}
             value={languageStats.reduce((sum, lang) => sum + lang.count, 0).toLocaleString()}
             color="emerald"
             loading={statsLoading}
           />
           <StatCard
             icon={<TrendingUp size={20} color="#ffffff" strokeWidth={2} style={{ stroke: '#ffffff', fill: 'none' }} />}
-            label="Largest Database"
+            label={t('admin.largestDatabase')}
             value={languageStats.length > 0 ? languageStats.reduce((max, lang) => lang.count > max.count ? lang : max, languageStats[0]).code.toUpperCase() : "-"}
             color="violet"
             loading={statsLoading}
           />
           <StatCard
             icon={<Database size={20} color="#ffffff" strokeWidth={2} style={{ stroke: '#ffffff', fill: 'none' }} />}
-            label="Average per Lang"
+            label={t('admin.averagePerLang')}
             value={languageStats.length > 0 ? Math.round(languageStats.reduce((sum, lang) => sum + lang.count, 0) / languageStats.length).toLocaleString() : "0"}
             color="amber"
             loading={statsLoading}
@@ -231,7 +225,7 @@ export default function AdminWordUpload() {
             >
               <span className="flex items-center gap-2">
                 <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>Upload Words</span>
+                <span>{t('admin.uploadWords')}</span>
               </span>
             </button>
             <button
@@ -244,7 +238,7 @@ export default function AdminWordUpload() {
             >
               <span className="flex items-center gap-2">
                 <Database className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>Manage Database</span>
+                <span>{t('admin.manageDatabase')}</span>
               </span>
             </button>
           </div>
@@ -294,6 +288,7 @@ function StatCard({ icon, label, value, color, loading }: {
 }
 
 function UploadPanel({ onUploadSuccess }: { onUploadSuccess: () => void }) {
+  const { t } = useTranslation();
   const [selectedLanguage, setSelectedLanguage] = useState("en");
   const [selectedPos, setSelectedPos] = useState("NOUN");
   const [file, setFile] = useState<File | null>(null);
@@ -327,12 +322,12 @@ function UploadPanel({ onUploadSuccess }: { onUploadSuccess: () => void }) {
     setResult(null);
 
     if (!selectedFile.name.endsWith(".txt")) {
-      setError("Please select a .txt file");
+      setError(t('admin.pleaseSelectTxtFile'));
       return;
     }
 
     if (selectedFile.size > 10 * 1024 * 1024) {
-      setError("File size must be less than 10MB");
+      setError(t('admin.fileSizeTooLarge'));
       return;
     }
 
@@ -341,7 +336,7 @@ function UploadPanel({ onUploadSuccess }: { onUploadSuccess: () => void }) {
 
   async function handleUpload() {
     if (!file) {
-      setError("Please select a file");
+      setError(t('admin.pleaseSelectFile'));
       return;
     }
 
@@ -369,14 +364,14 @@ function UploadPanel({ onUploadSuccess }: { onUploadSuccess: () => void }) {
       setFile(null);
       onUploadSuccess();
     } catch (e: any) {
-      setError(e?.response?.data?.error || e?.message || "Failed to upload words");
+      setError(e?.response?.data?.error || e?.message || t('admin.failedToUploadWords'));
     } finally {
       setUploading(false);
     }
   }
 
   const selectedLangObj = LANGUAGE_OPTIONS.find(l => l.code === selectedLanguage);
-  const selectedPosObj = PARTS_OF_SPEECH.find(p => p.value === selectedPos);
+  const selectedPosObj = POS_OPTIONS.find(p => p.value === selectedPos);
 
   return (
     <div className="space-y-6">
@@ -385,12 +380,12 @@ function UploadPanel({ onUploadSuccess }: { onUploadSuccess: () => void }) {
         <div className="flex gap-3">
           <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 text-sm sm:text-base">Upload Instructions</h3>
+            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 text-sm sm:text-base">{t('admin.uploadInstructions')}</h3>
             <ul className="text-xs sm:text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
-              <li>File must be a plain <code className="px-1 py-0.5 bg-blue-100 dark:bg-blue-800 rounded">.txt</code> file</li>
-              <li>One word per line (duplicates will be skipped)</li>
-              <li>Maximum file size: 10MB, Maximum lines: 100,000</li>
-              <li>Words are case-insensitive and automatically deduplicated</li>
+              <li>{t('admin.fileMustBeTxt')}</li>
+              <li>{t('admin.oneWordPerLine')}</li>
+              <li>{t('admin.maxFileSize')}</li>
+              <li>{t('admin.wordsAutoDeduplicated')}</li>
             </ul>
           </div>
         </div>
@@ -401,7 +396,7 @@ function UploadPanel({ onUploadSuccess }: { onUploadSuccess: () => void }) {
         {/* Language Selector */}
         <div>
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-            Language
+            {t('admin.language')}
           </label>
           <select
             value={selectedLanguage}
@@ -419,16 +414,16 @@ function UploadPanel({ onUploadSuccess }: { onUploadSuccess: () => void }) {
         {/* Part of Speech Selector */}
         <div>
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-            Part of Speech
+            {t('admin.partOfSpeech')}
           </label>
           <select
             value={selectedPos}
             onChange={(e) => setSelectedPos(e.target.value)}
             className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base"
           >
-            {PARTS_OF_SPEECH.map((pos) => (
+            {POS_OPTIONS.map((pos) => (
               <option key={pos.value} value={pos.value}>
-                {pos.emoji} {pos.label}
+                {pos.emoji} {t(pos.labelKey)}
               </option>
             ))}
           </select>
@@ -438,7 +433,7 @@ function UploadPanel({ onUploadSuccess }: { onUploadSuccess: () => void }) {
       {/* File Upload Area */}
       <div>
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-          Word List File
+          {t('admin.wordListFile')}
         </label>
         <div
           className={`relative rounded-xl border-2 border-dashed transition-all ${
@@ -476,16 +471,16 @@ function UploadPanel({ onUploadSuccess }: { onUploadSuccess: () => void }) {
                 }}
                 className="text-xs sm:text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium"
               >
-                Remove file
+                {t('admin.removeFile')}
               </button>
             </div>
           ) : (
             <div className="space-y-2">
               <p className="text-sm sm:text-base font-medium text-slate-700 dark:text-slate-300">
-                Drop your .txt file here or click to browse
+                {t('admin.dropFileHere')}
               </p>
               <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                Maximum file size: 10MB
+                {t('admin.maxFileSizeShort')}
               </p>
             </div>
           )}
@@ -495,9 +490,9 @@ function UploadPanel({ onUploadSuccess }: { onUploadSuccess: () => void }) {
       {/* Upload Button */}
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between p-4 sm:p-5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
         <div className="flex items-center gap-3 text-sm">
-          <span className="font-medium text-slate-700 dark:text-slate-300">Ready to upload:</span>
+          <span className="font-medium text-slate-700 dark:text-slate-300">{t('admin.readyToUpload')}</span>
           <span className="px-3 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-50 font-mono text-xs">
-            {selectedLangObj?.flag} {selectedLangObj?.name} · {selectedPosObj?.emoji} {selectedPosObj?.label}
+            {selectedLangObj?.flag} {selectedLangObj?.name} · {selectedPosObj?.emoji} {selectedPosObj ? t(selectedPosObj.labelKey) : ''}
           </span>
         </div>
         <button
@@ -508,12 +503,12 @@ function UploadPanel({ onUploadSuccess }: { onUploadSuccess: () => void }) {
           {uploading ? (
             <>
               <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
-              Uploading...
+              {t('admin.uploading')}
             </>
           ) : (
             <>
               <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
-              Upload Words
+              {t('admin.uploadWords')}
             </>
           )}
         </button>
@@ -524,7 +519,7 @@ function UploadPanel({ onUploadSuccess }: { onUploadSuccess: () => void }) {
         <div className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
           <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-red-900 dark:text-red-100">Upload Failed</p>
+            <p className="text-sm font-medium text-red-900 dark:text-red-100">{t('admin.uploadFailed')}</p>
             <p className="text-sm text-red-700 dark:text-red-200 mt-1">{error}</p>
           </div>
         </div>
@@ -537,17 +532,17 @@ function UploadPanel({ onUploadSuccess }: { onUploadSuccess: () => void }) {
             <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="text-base sm:text-lg font-semibold text-emerald-900 dark:text-emerald-100">
-                Upload Successful!
+                {t('admin.uploadSuccessful')}
               </p>
               <p className="text-sm text-emerald-700 dark:text-emerald-200 mt-1">
-                Words have been added to the database
+                {t('admin.wordsAddedToDatabase')}
               </p>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-4">
-            <ResultStat label="Total Lines" value={result.totalLines} color="blue" />
-            <ResultStat label="Inserted" value={result.inserted} color="green" />
-            <ResultStat label="Skipped" value={result.skipped} color="amber" />
+            <ResultStat label={t('admin.totalLines')} value={result.totalLines} color="blue" />
+            <ResultStat label={t('admin.inserted')} value={result.inserted} color="green" />
+            <ResultStat label={t('admin.skipped')} value={result.skipped} color="amber" />
           </div>
         </div>
       )}
@@ -571,6 +566,7 @@ function ResultStat({ label, value, color }: { label: string; value: number; col
 }
 
 function ManagePanel({ languageStats, onRefresh }: { languageStats: LanguageStats[]; onRefresh: () => void }) {
+  const { t } = useTranslation();
   const [refreshing, setRefreshing] = useState(false);
 
   async function handleRefresh() {
@@ -586,9 +582,9 @@ function ManagePanel({ languageStats, onRefresh }: { languageStats: LanguageStat
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-50">Database Overview</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-50">{t('admin.databaseOverview')}</h2>
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-            Current word counts by language
+            {t('admin.currentWordCounts')}
           </p>
         </div>
         <button
@@ -597,7 +593,7 @@ function ManagePanel({ languageStats, onRefresh }: { languageStats: LanguageStat
           className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2 text-sm disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-          Refresh
+          {t('admin.refresh')}
         </button>
       </div>
 
@@ -605,7 +601,7 @@ function ManagePanel({ languageStats, onRefresh }: { languageStats: LanguageStat
       {sortedStats.length === 0 ? (
         <div className="text-center py-12 text-slate-500 dark:text-slate-400">
           <Database className="w-16 h-16 mx-auto mb-4 opacity-50" />
-          <p className="text-sm sm:text-base">No words in database yet. Start by uploading your first word list!</p>
+          <p className="text-sm sm:text-base">{t('admin.noWordsYet')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -637,7 +633,7 @@ function ManagePanel({ languageStats, onRefresh }: { languageStats: LanguageStat
                       {lang.count.toLocaleString()}
                     </p>
                     <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                      {percentage}% of total
+                      {percentage}% {t('admin.ofTotal')}
                     </p>
                   </div>
                 </div>
@@ -659,10 +655,9 @@ function ManagePanel({ languageStats, onRefresh }: { languageStats: LanguageStat
         <div className="flex gap-3">
           <Download className="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-slate-900 dark:text-slate-50 mb-2 text-sm sm:text-base">Word List Sources</h3>
+            <h3 className="font-semibold text-slate-900 dark:text-slate-50 mb-2 text-sm sm:text-base">{t('admin.wordListSources')}</h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-              You can obtain word lists from frequency dictionaries, language corpora, or create custom lists. 
-              Ensure words are properly formatted (one per line) and encoded in UTF-8.
+              {t('admin.wordListSourcesDesc')}
             </p>
           </div>
         </div>

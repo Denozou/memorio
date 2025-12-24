@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { api } from "../../lib/api";
 import { Plus, Edit2, Trash2, Eye, EyeOff, Search, X } from "lucide-react";
 import type { ArticleListDto } from "../../types/learning";
 import ArticleForm from "./ArticleForm";
 
 export default function ArticleManager() {
+  const { t } = useTranslation();
   const [articles, setArticles] = useState<ArticleListDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,14 +25,14 @@ export default function ArticleManager() {
       const { data } = await api.get<ArticleListDto[]>("/api/learning/articles");
       setArticles(data);
     } catch (e: any) {
-      setError(e?.response?.data?.error ?? "Failed to load articles");
+      setError(e?.response?.data?.error ?? t('admin.failedToLoad'));
     } finally {
       setLoading(false);
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Are you sure you want to delete this article? This action cannot be undone.")) {
+    if (!confirm(t('admin.confirmDelete'))) {
       return;
     }
 
@@ -38,7 +40,7 @@ export default function ArticleManager() {
       await api.delete(`/api/admin/learning/articles/${id}`);
       setArticles(articles.filter(a => a.id !== id));
     } catch (e: any) {
-      alert(e?.response?.data?.error ?? "Failed to delete article");
+      alert(e?.response?.data?.error ?? t('admin.deleteArticleFailed'));
     }
   }
 
@@ -71,7 +73,7 @@ export default function ArticleManager() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Search articles..."
+            placeholder={t('admin.searchArticles')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300/70 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
@@ -90,7 +92,7 @@ export default function ArticleManager() {
           className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm"
         >
           <Plus className="w-4 h-4" />
-          Create Article
+          {t('admin.createArticle')}
         </button>
       </div>
 
@@ -98,7 +100,7 @@ export default function ArticleManager() {
       {loading && (
         <div className="text-center py-12">
           <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-slate-500 dark:text-slate-400">Loading articles...</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{t('admin.loadingArticles')}</p>
         </div>
       )}
 
@@ -115,7 +117,7 @@ export default function ArticleManager() {
           {filteredArticles.length === 0 ? (
             <div className="text-center py-12 text-slate-500 dark:text-slate-400">
               <p className="text-sm">
-                {searchQuery ? "No articles match your search" : "No articles yet. Create your first one!"}
+                {searchQuery ? t('admin.noArticlesMatch') : t('admin.noArticlesYet')}
               </p>
             </div>
           ) : (
@@ -154,10 +156,12 @@ function ArticleCard({
   onEdit: (article: ArticleListDto) => void;
   onDelete: (id: string) => void;
 }) {
+  const { t } = useTranslation();
+  
   const categoryLabel = {
-    METHOD_OF_LOCI: "Method of Loci",
-    STORY_METHOD: "Story Method",
-    PEG_SYSTEM: "Peg System",
+    METHOD_OF_LOCI: t('admin.methodOfLoci'),
+    STORY_METHOD: t('admin.storyMethod'),
+    PEG_SYSTEM: t('admin.pegSystem'),
   }[article.techniqueCategory];
 
   const difficultyColor = {
@@ -186,12 +190,12 @@ function ArticleCard({
             {article.isPublished ? (
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium">
                 <Eye className="w-3 h-3" />
-                Published
+                {t('admin.published')}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-medium">
                 <EyeOff className="w-3 h-3" />
-                Draft
+                {t('admin.draft')}
               </span>
             )}
           </div>
@@ -203,18 +207,18 @@ function ArticleCard({
             {categoryLabel}
           </span>
           <span className={`px-2 py-1 rounded-full font-medium ${difficultyColor}`}>
-            Level {article.difficultyLevel}
+            {t('admin.level')} {article.difficultyLevel}
           </span>
           <span className="px-2 py-1 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 font-medium">
-            Seq #{article.sequenceInCategory}
+            {t('admin.seq')} #{article.sequenceInCategory}
           </span>
           {article.isIntroArticle && (
             <span className="px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 font-medium">
-              Intro
+              {t('admin.intro')}
             </span>
           )}
           <span className="px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-            {article.estimatedReadMinutes} min
+            {article.estimatedReadMinutes} {t('admin.min')}
           </span>
 
         </div>
@@ -226,14 +230,14 @@ function ArticleCard({
             className="flex-1 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
           >
             <Edit2 className="w-4 h-4" />
-            Edit
+            {t('admin.edit')}
           </button>
           <button
             onClick={() => onDelete(article.id)}
             className="flex-1 px-3 py-2 rounded-lg border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
           >
             <Trash2 className="w-4 h-4" />
-            Delete
+            {t('admin.delete')}
           </button>
         </div>
       </div>
