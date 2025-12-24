@@ -22,8 +22,17 @@ export default function ArticleManager() {
     try {
       setLoading(true);
       setError(null);
-      const { data } = await api.get<ArticleListDto[]>("/api/learning/articles");
-      setArticles(data);
+      // Add cache-busting timestamp to prevent browser caching
+      const { data } = await api.get<ArticleListDto[]>(
+        `/api/learning/articles?_t=${Date.now()}`
+      );
+      console.log("Loaded articles:", data.length, "articles");
+      const testArticle = data.find(a => a.slug === 'test-language');
+      if (testArticle) {
+        console.log("Test article found - language:", testArticle.language, "full data:", testArticle);
+      }
+      // Force React to recognize state change by creating new array
+      setArticles([...data]);
     } catch (e: any) {
       setError(e?.response?.data?.error ?? t('admin.failedToLoad'));
     } finally {
@@ -55,6 +64,7 @@ export default function ArticleManager() {
   }
 
   function handleModalClose() {
+    console.log("Modal closing - reloading articles...");
     setShowCreateModal(false);
     setEditingArticle(null);
     loadArticles();

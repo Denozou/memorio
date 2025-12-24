@@ -175,6 +175,10 @@ export default function ArticleForm({ article, onClose }: ArticleFormProps) {
         // Update existing article
         const response = await api.put(`/api/admin/learning/articles/${article.id}`, formData);
         console.log("Article updated:", response.data);
+        console.log("Updated language to:", response.data.language);
+        // Small delay to ensure backend cache is cleared
+        await new Promise(resolve => setTimeout(resolve, 200));
+        console.log("Calling onClose callback...");
         onClose();
       } else {
         // Create new article

@@ -22,6 +22,7 @@ public class ArticleListDto {
     private final Boolean isPublished;
     private final Integer sequenceInCategory;
     private final Boolean isIntroArticle;
+    private final String language;
     private final Boolean hasRead;
     private final Boolean quizCompleted;
     private final Integer quizScore;
@@ -31,7 +32,7 @@ public class ArticleListDto {
                           Integer estimatedReadMinutes, Integer requiredSkillLevel,
                           String coverImageUrl,
                           String author, String contentMarkdown, Boolean isPublished,
-                          Integer sequenceInCategory, Boolean isIntroArticle,
+                          Integer sequenceInCategory, Boolean isIntroArticle, String language,
                           Boolean hasRead, Boolean quizCompleted, Integer quizScore) {
         this.id = id;
         this.slug = slug;
@@ -47,6 +48,7 @@ public class ArticleListDto {
         this.isPublished = isPublished;
         this.sequenceInCategory = sequenceInCategory;
         this.isIntroArticle = isIntroArticle;
+        this.language = language;
         this.hasRead = hasRead;
         this.quizCompleted = quizCompleted;
         this.quizScore = quizScore;
@@ -70,6 +72,7 @@ public class ArticleListDto {
                 article.getIsPublished(),
                 article.getSequenceInCategory(),
                 article.getIsIntroArticle(),
+                article.getLanguage(),
                 null,
                 null,
                 null
@@ -95,6 +98,7 @@ public class ArticleListDto {
                 article.getIsPublished(),
                 article.getSequenceInCategory(),
                 article.getIsIntroArticle(),
+                article.getLanguage(),
                 progress != null ? progress.getHasRead() : false,
                 progress != null ? progress.getQuizCompleted() : false,
                 progress != null ? progress.getQuizScore() : null
@@ -117,6 +121,7 @@ public class ArticleListDto {
     public Boolean getIsPublished() { return isPublished; }
     public Integer getSequenceInCategory() { return sequenceInCategory; }
     public Boolean getIsIntroArticle() { return isIntroArticle; }
+    public String getLanguage() { return language; }
     public Boolean getHasRead() { return hasRead; }
     public Boolean getQuizCompleted() { return quizCompleted; }
     public Integer getQuizScore() { return quizScore; }
