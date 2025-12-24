@@ -7,12 +7,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * REST controller for learning content (articles and quizzes).
+ * Handles both authenticated and anonymous requests.
+ */
 @RestController
 @RequestMapping("/api/learning")
 public class LearningController {
@@ -20,20 +23,27 @@ public class LearningController {
     private final QuizService quizService;
     private final ArticleImageService articleImageService;
 
-    public LearningController (LearningService learningService, QuizService quizService,
-                               ArticleImageService articleImageService){
+    public LearningController(LearningService learningService, QuizService quizService,
+                              ArticleImageService articleImageService) {
         this.learningService = learningService;
         this.quizService = quizService;
         this.articleImageService = articleImageService;
     }
 
-
+    /**
+     * Get list of articles accessible to the current user.
+     * Automatically filters by user's preferred language.
+     *
+     * Response includes progress information for logged-in users.
+     */
     @GetMapping("/articles")
-    public ResponseEntity<List<ArticleListDto>> getArticles(Authentication auth){
+    public ResponseEntity<List<ArticleListDto>> getArticles(Authentication auth) {
         UUID userId = auth != null ? AuthenticationUtil.extractUserId(auth) : null;
 
-        List<Article> articles =  learningService.getAccessibleArticles(userId);
-        if(userId!=null){
+        List<Article> articles = learningService.getAccessibleArticles(userId);
+
+        if (userId != null) {
+            // Include progress for logged-in users
             List<ArticleListDto> dtos = articles.stream()
                     .map(article -> {
                         UserArticleProgress progress = learningService
@@ -41,86 +51,111 @@ public class LearningController {
                         return ArticleListDto.fromArticleWithProgress(article, progress);
                     }).collect(Collectors.toList());
             return ResponseEntity.ok(dtos);
-        }else{//public access - thus no progress
+        } else {
+            // No progress for anonymous users
             List<ArticleListDto> dtos = articles.stream()
                     .map(ArticleListDto::fromArticle)
                     .collect(Collectors.toList());
             return ResponseEntity.ok(dtos);
         }
     }
+
+    /**
+     * Get a single article by slug.
+     * Language filtering and access control handled in service layer.
+     */
     @GetMapping("/articles/{slug}")
     public ResponseEntity<ArticleDetailDto> getArticle(
-            @PathVariable String slug, Authentication auth){
+            @PathVariable String slug,
+            Authentication auth) {
 
         UUID userId = auth != null ? AuthenticationUtil.extractUserId(auth) : null;
         Article article = learningService.getArticleBySlug(slug, userId);
-        if(userId != null){
-            UserArticleProgress progress = learningService.getUserArticleProgress(userId,article.getId());
+
+        if (userId != null) {
+            UserArticleProgress progress = learningService.getUserArticleProgress(userId, article.getId());
             return ResponseEntity.ok(ArticleDetailDto.fromArticleWithProgress(article, progress));
-        }else{
+        } else {
             return ResponseEntity.ok(ArticleDetailDto.fromArticle(article));
         }
     }
 
+    /**
+     * Get articles by category, filtered by user's language.
+     */
     @GetMapping("/articles/category/{category}")
-    public ResponseEntity<List<ArticleListDto>> getArticlesByCategory(@PathVariable TechniqueCategory category,
-                                                                      Authentication auth){
+    public ResponseEntity<List<ArticleListDto>> getArticlesByCategory(
+            @PathVariable TechniqueCategory category,
+            Authentication auth) {
+
         UUID userId = auth != null ? AuthenticationUtil.extractUserId(auth) : null;
-        List<Article> articles = learningService.getArticleByCategory(category);
+        List<Article> articles = learningService.getArticleByCategory(category, userId);
 
         List<ArticleListDto> dtos = articles.stream()
                 .map(article -> {
-                    if(userId != null){
-                        UserArticleProgress progress  = learningService.getUserArticleProgress(userId,article.getId());
+                    if (userId != null) {
+                        UserArticleProgress progress = learningService.getUserArticleProgress(userId, article.getId());
                         return ArticleListDto.fromArticleWithProgress(article, progress);
-                    }else{
+                    } else {
                         return ArticleListDto.fromArticle(article);
                     }
                 }).collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
-
     }
+
+    /**
+     * Mark an article as read (creates/updates progress).
+     */
     @PostMapping("/articles/{articleId}/mark-read")
-    public ResponseEntity<Void> markAsRead(@PathVariable UUID articleId,
-                                           Authentication auth){
+    public ResponseEntity<Void> markAsRead(
+            @PathVariable UUID articleId,
+            Authentication auth) {
 
         UUID userId = AuthenticationUtil.extractUserId(auth);
         learningService.markArticleAsRead(articleId, userId);
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * Get user's overall progress statistics.
+     */
     @GetMapping("/progress")
-    public ResponseEntity<UserProgressDto> getProgress(Authentication auth){
+    public ResponseEntity<UserProgressDto> getProgress(Authentication auth) {
         UUID userId = AuthenticationUtil.extractUserId(auth);
 
         Long completed = learningService.getUserProgress(userId).stream()
-                .filter(p-> p.getQuizCompleted()).count();
+                .filter(p -> p.getQuizCompleted()).count();
 
         Double percentage = learningService.getCompletionPercentage(userId);
 
         OffsetDateTime lastActivity = learningService.getUserProgress(userId)
                 .stream()
-                .map(p->p.getUpdatedAt())
+                .map(p -> p.getUpdatedAt())
                 .max(OffsetDateTime::compareTo)
                 .orElse(null);
 
         return ResponseEntity.ok(new UserProgressDto(completed, percentage, lastActivity));
-
     }
+
+    /**
+     * Get quiz for an article.
+     */
     @GetMapping("/articles/{slug}/quiz")
     public ResponseEntity<QuizDto> getQuiz(
             @PathVariable String slug,
-            Authentication auth
-    ){
+            Authentication auth) {
+
         AuthenticationUtil.extractUserId(auth);
         QuizService.QuizWithQuestions quizData = quizService.getQuizByArticleSlug(slug);
+
         List<QuizDto.QuestionDto> questions = quizData.questions().stream()
-                .map(q-> new QuizDto.QuestionDto(
+                .map(q -> new QuizDto.QuestionDto(
                         q.question().getId(),
                         q.question().getQuestionText(),
                         q.question().getQuestionType(),
                         q.question().getDisplayOrder(),
                         q.options().stream()
-                                .map(o-> new QuizDto.OptionDto(
+                                .map(o -> new QuizDto.OptionDto(
                                         o.getId(),
                                         o.getOptionText(),
                                         o.getDisplayOrder()
@@ -136,11 +171,15 @@ public class LearningController {
         );
         return ResponseEntity.ok(dto);
     }
+
+    /**
+     * Submit quiz answers and get results.
+     */
     @PostMapping("/quiz/submit")
     public ResponseEntity<QuizResultDto> submitQuiz(
             @Valid @RequestBody SubmitQuizRequest request,
-            Authentication auth
-    ){
+            Authentication auth) {
+
         UUID userId = AuthenticationUtil.extractUserId(auth);
         QuizService.QuizResult result = quizService.submitQuiz(
                 request.getQuizId(),
@@ -159,6 +198,9 @@ public class LearningController {
         return ResponseEntity.ok(dto);
     }
 
+    /**
+     * Get article image by ID.
+     */
     @GetMapping("/images/{imageId}")
     public ResponseEntity<byte[]> getImage(@PathVariable UUID imageId) {
         ArticleImage image = articleImageService.getImage(imageId);
@@ -169,5 +211,4 @@ public class LearningController {
                 .header("Cache-Control", "public, max-age=31536000") // Cache for 1 year
                 .body(image.getImageData());
     }
-
 }

@@ -1,10 +1,15 @@
 package com.memorio.backend.admin.dto;
+
 import com.memorio.backend.learning.TechniqueCategory;
 import jakarta.validation.constraints.*;
 
-
+/**
+ * DTO for creating/updating articles via admin panel.
+ * Includes validation rules to ensure data integrity.
+ */
 public class CreateArticleRequest {
-    @NotBlank(message = "slug is required")
+
+    @NotBlank(message = "Slug is required")
     @Size(max = 100, message = "Slug must be max 100 characters long")
     private String slug;
 
@@ -18,10 +23,10 @@ public class CreateArticleRequest {
     @NotNull(message = "Technique category is required")
     private TechniqueCategory techniqueCategory;
 
-    @NotNull(message = "Difficulty levell is requiered")
+    @NotNull(message = "Difficulty level is required")
     @Min(value = 1, message = "Difficulty level must be at least 1")
     @Max(value = 5, message = "Difficulty level must be 5 at most")
-    private  Integer difficultyLevel;
+    private Integer difficultyLevel;
 
     @NotBlank(message = "Content is required")
     private String contentMarkdown;
@@ -32,12 +37,12 @@ public class CreateArticleRequest {
     private String author;
 
     @NotNull(message = "Estimated read time is required")
-    @Min(value = 1, message = "estimated read time must be at least 1 minute")
+    @Min(value = 1, message = "Estimated read time must be at least 1 minute")
     @Max(value = 120, message = "Estimated read time must be at most 120 minutes")
     private Integer estimatedReadMinutes;
 
     @Min(value = 1, message = "Required skill level must be at least 1")
-    @Max(value =10, message = "Required skill level must be 10 at most")
+    @Max(value = 10, message = "Required skill level must be 10 at most")
     private Integer requiredSkillLevel;
 
     @NotNull(message = "Sequence in category is required")
@@ -49,8 +54,17 @@ public class CreateArticleRequest {
 
     private Boolean isPublished;
 
+    // NEW FIELD: Language support
+    /**
+     * ISO 639-1 language code (e.g., "en", "pl").
+     * Determines which language this article is written in.
+     * If not provided, defaults to "en" in the service layer.
+     */
+    @NotBlank(message = "Language is required")
+    @Pattern(regexp = "^[a-z]{2}$", message = "Language must be a valid 2-letter ISO 639-1 code (e.g., 'en', 'pl')")
+    private String language;
 
-
+    // Getters
     public String getSlug() { return slug; }
     public String getTitle() { return title; }
     public String getSubtitle() { return subtitle; }
@@ -64,7 +78,9 @@ public class CreateArticleRequest {
     public Integer getSequenceInCategory() { return sequenceInCategory; }
     public Boolean getIsIntroArticle() { return isIntroArticle; }
     public Boolean getIsPublished() { return isPublished; }
+    public String getLanguage() { return language; }
 
+    // Setters
     public void setSlug(String slug) { this.slug = slug; }
     public void setTitle(String title) { this.title = title; }
     public void setSubtitle(String subtitle) { this.subtitle = subtitle; }
@@ -96,5 +112,7 @@ public class CreateArticleRequest {
     public void setIsPublished(Boolean isPublished) {
         this.isPublished = isPublished;
     }
-
+    public void setLanguage(String language) {
+        this.language = language;
+    }
 }

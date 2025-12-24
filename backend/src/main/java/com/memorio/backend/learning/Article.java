@@ -57,6 +57,8 @@ public class Article {
     @Column(name = "is_published", nullable = false)
     private Boolean isPublished;
 
+    @Column(name = "language", nullable = false, length = 8)
+    private String language;
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private OffsetDateTime createdAt;
@@ -72,7 +74,7 @@ public class Article {
                    String contentMarkdown, String coverImageUrl,  UUID coverImageId, String author,
                    Integer estimatedReadMinutes, Integer requiredSkillLevel,
                    Integer sequenceInCategory, Boolean isIntroArticle,
-                   Boolean isPublished,
+                   Boolean isPublished, String language,
                    OffsetDateTime createdAt, OffsetDateTime updatedAt){
         this.id = id;
         this.slug = slug;
@@ -89,7 +91,7 @@ public class Article {
         this.sequenceInCategory = sequenceInCategory;
         this.isIntroArticle = isIntroArticle;
         this.isPublished = isPublished;
-
+        this.language = language;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -99,7 +101,7 @@ public class Article {
                    String contentMarkdown, String coverImageUrl, String author,
                    Integer estimatedReadMinutes, Integer requiredSkillLevel,
                    Integer sequenceInCategory, Boolean isIntroArticle,
-                   Boolean isPublished){
+                   Boolean isPublished, String language){
         this.slug = slug;
         this.title = title;
         this.subtitle = subtitle;
@@ -113,6 +115,7 @@ public class Article {
         this.sequenceInCategory = sequenceInCategory;
         this.isIntroArticle = isIntroArticle;
         this.isPublished = isPublished;
+        this.language = language != null ? language : "en";
     }
     public UUID getId(){return id;}
     public String getSlug(){return slug;}
@@ -131,8 +134,12 @@ public class Article {
     public Integer getSequenceInCategory(){return sequenceInCategory;}
     public Boolean getIsIntroArticle(){return isIntroArticle;}
     public Boolean getIsPublished(){ return isPublished;}
+    public String getLanguage(){return language;}
     public OffsetDateTime getCreatedAt(){return createdAt;}
     public OffsetDateTime getUpdatedAt(){return updatedAt;}
     public void setCoverImageId(UUID coverImageId) { this.coverImageId = coverImageId; }
+    public void setLanguage(String language){
+        this.language = language;
+    }
 
 }

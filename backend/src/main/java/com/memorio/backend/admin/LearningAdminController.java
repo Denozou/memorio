@@ -1,4 +1,5 @@
 package com.memorio.backend.admin;
+
 import com.memorio.backend.admin.dto.*;
 import com.memorio.backend.common.security.AuthenticationUtil;
 import com.memorio.backend.learning.*;
@@ -16,6 +17,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Admin controller for managing learning content (articles, quizzes, questions).
+ * All endpoints require ADMIN role.
+ */
 @RestController
 @RequestMapping("/api/admin/learning")
 @PreAuthorize("hasRole('ADMIN')")
@@ -26,6 +31,7 @@ public class LearningAdminController {
     private final QuizQuestionRepository questionRepo;
     private final QuizQuestionOptionRepository optionRepo;
     private final ArticleImageService articleImageService;
+
     public LearningAdminController(ArticleRepository articleRepo,
                                    ArticleQuizRepository quizRepo,
                                    QuizQuestionRepository questionRepo,
@@ -38,7 +44,9 @@ public class LearningAdminController {
         this.articleImageService = articleImageService;
     }
 
-
+    /**
+     * Upload cover image for an article.
+     */
     @PostMapping("/articles/{articleId}/upload-image")
     public ResponseEntity<ImageUploadResponse> uploadArticleImage(
             @PathVariable UUID articleId,
@@ -50,7 +58,7 @@ public class LearningAdminController {
                     .orElseThrow(() -> new RuntimeException("Article not found"));
 
             ArticleImage savedImage = articleImageService.storeImage(article, file);
-            
+
             // Update article to reference the image
             article.setCoverImageId(savedImage.getId());
             articleRepo.save(article);
@@ -68,20 +76,32 @@ public class LearningAdminController {
         }
     }
 
+    /**
+     * Create a new article.
+     * Validates that only one intro article exists per category PER LANGUAGE.
+     */
     @PostMapping("/articles")
     public ResponseEntity<?> createArticle(
             @Valid @RequestBody CreateArticleRequest request,
-            Authentication auth
-            ){
+            Authentication auth) {
+
+        // Validate intro article uniqueness per category AND language
         if (request.getIsIntroArticle()) {
             Optional<Article> existingIntro = articleRepo
-                    .findByTechniqueCategoryAndIsIntroArticleTrue(request.getTechniqueCategory());
+                    .findByTechniqueCategoryAndIsIntroArticleTrueAndLanguage(
+                            request.getTechniqueCategory(),
+                            request.getLanguage()
+                    );
+
             if (existingIntro.isPresent()) {
                 Article intro = existingIntro.get();
                 String errorMsg = String.format(
-                    "An intro article already exists: '%s' (Sequence #%d). Please uncheck it first.",
-                    intro.getTitle(),
-                    intro.getSequenceInCategory()
+                        "An intro article already exists for %s in language '%s': '%s' (Sequence #%d). " +
+                                "Please uncheck it first or use a different language.",
+                        request.getTechniqueCategory(),
+                        request.getLanguage(),
+                        intro.getTitle(),
+                        intro.getSequenceInCategory()
                 );
                 return ResponseEntity
                         .badRequest()
@@ -89,6 +109,7 @@ public class LearningAdminController {
             }
         }
 
+        // Create the article
         Article article = new Article(
                 request.getSlug(),
                 request.getTitle(),
@@ -102,31 +123,44 @@ public class LearningAdminController {
                 request.getRequiredSkillLevel(),
                 request.getSequenceInCategory(),
                 request.getIsIntroArticle(),
-                request.getIsPublished() != null ? request.getIsPublished() : false
+                request.getIsPublished() != null ? request.getIsPublished() : false,
+                request.getLanguage() // NEW: Include language
         );
+
         Article saved = articleRepo.save(article);
         return ResponseEntity.ok(saved);
     }
 
-
+    /**
+     * Update an existing article.
+     * Validates intro article uniqueness per category AND language.
+     */
     @PutMapping("/articles/{id}")
     public ResponseEntity<?> updateArticle(
             @PathVariable UUID id,
-            @Valid @RequestBody CreateArticleRequest request
-    ){
+            @Valid @RequestBody CreateArticleRequest request) {
+
         Article existing = articleRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Article not found"));
 
+        // Validate intro article uniqueness (same logic as create)
         if (request.getIsIntroArticle()) {
             Optional<Article> existingIntro = articleRepo
-                    .findByTechniqueCategoryAndIsIntroArticleTrue(request.getTechniqueCategory());
+                    .findByTechniqueCategoryAndIsIntroArticleTrueAndLanguage(
+                            request.getTechniqueCategory(),
+                            request.getLanguage()
+                    );
+
             // Allow if this article is already the intro, or if no intro exists
             if (existingIntro.isPresent() && !existingIntro.get().getId().equals(id)) {
                 Article intro = existingIntro.get();
                 String errorMsg = String.format(
-                    "An intro article already exists: '%s' (Sequence #%d). Please uncheck it first.",
-                    intro.getTitle(),
-                    intro.getSequenceInCategory()
+                        "An intro article already exists for %s in language '%s': '%s' (Sequence #%d). " +
+                                "Please uncheck it first.",
+                        request.getTechniqueCategory(),
+                        request.getLanguage(),
+                        intro.getTitle(),
+                        intro.getSequenceInCategory()
                 );
                 return ResponseEntity
                         .badRequest()
@@ -134,6 +168,7 @@ public class LearningAdminController {
             }
         }
 
+        // Update the article
         Article updated = new Article(
                 existing.getId(),
                 request.getSlug(),
@@ -150,6 +185,7 @@ public class LearningAdminController {
                 request.getSequenceInCategory(),
                 request.getIsIntroArticle(),
                 request.getIsPublished() != null ? request.getIsPublished() : false,
+                request.getLanguage(), // NEW: Include language
                 existing.getCreatedAt(),
                 OffsetDateTime.now()
         );
@@ -157,17 +193,25 @@ public class LearningAdminController {
         Article saved = articleRepo.save(updated);
         return ResponseEntity.ok(saved);
     }
+
+    /**
+     * Delete an article and all associated data (quizzes, progress, etc.).
+     */
     @DeleteMapping("/articles/{id}")
-    public ResponseEntity<Void> deleteArticle(@PathVariable UUID id){
+    public ResponseEntity<Void> deleteArticle(@PathVariable UUID id) {
         articleRepo.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Create a quiz for an article.
+     * Each article can have exactly one quiz.
+     */
     @PostMapping("/articles/{articleId}/quiz")
     public ResponseEntity<?> createQuiz(
             @PathVariable UUID articleId,
-            @Valid @RequestBody CreateQuizRequest request
-            ){
+            @Valid @RequestBody CreateQuizRequest request) {
+
         try {
             // Check if quiz already exists for this article
             Optional<ArticleQuiz> existingQuiz = quizRepo.findByArticleId(articleId);
@@ -189,23 +233,26 @@ public class LearningAdminController {
                 return ResponseEntity.badRequest()
                         .body(Map.of("error", "A quiz already exists for this article. Each article can only have one quiz."));
             }
-            // Re-throw other exceptions
             throw e;
         }
     }
 
-
+    /**
+     * Get all questions for a quiz.
+     */
     @GetMapping("/quizzes/{quizId}/questions")
     public ResponseEntity<List<QuizQuestion>> getQuestions(@PathVariable UUID quizId) {
         List<QuizQuestion> questions = questionRepo.findByQuizIdOrderByDisplayOrder(quizId);
         return ResponseEntity.ok(questions);
     }
 
+    /**
+     * Add a question to a quiz.
+     */
     @PostMapping("/quizzes/{quizId}/questions")
     public ResponseEntity<QuizQuestion> addQuestion(
             @PathVariable UUID quizId,
-            @Valid @RequestBody CreateQuestionRequest request
-            ){
+            @Valid @RequestBody CreateQuestionRequest request) {
 
         quizRepo.findById(quizId)
                 .orElseThrow(() -> new RuntimeException("Quiz not found"));
@@ -221,6 +268,9 @@ public class LearningAdminController {
         return ResponseEntity.ok(saved);
     }
 
+    /**
+     * Add an option to a question.
+     */
     @PostMapping("/questions/{questionId}/options")
     public ResponseEntity<QuizQuestionOption> addOption(
             @PathVariable UUID questionId,

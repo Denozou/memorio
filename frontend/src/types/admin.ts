@@ -14,6 +14,7 @@ export interface CreateArticleRequest {
   sequenceInCategory: number;
   isIntroArticle: boolean;
   isPublished?: boolean;
+  language: string;  // ISO 639-1 language code (e.g., "en", "pl")
 }
 
 export interface CreateQuizRequest {
@@ -49,6 +50,7 @@ export interface Article {
   sequenceInCategory: number;
   isIntroArticle: boolean;
   isPublished: boolean;
+  language: string;  // ISO 639-1 language code
   createdAt: string;
   updatedAt: string;
 }

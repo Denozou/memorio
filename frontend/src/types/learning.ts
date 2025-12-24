@@ -18,6 +18,7 @@ export interface ArticleListDto {
   author: string | null;
   contentMarkdown: string;
   isPublished: boolean;
+  language: string;  // ISO 639-1 language code
   hasRead: boolean | null;
   quizCompleted: boolean | null;
   quizScore: number | null;
@@ -37,6 +38,7 @@ export interface ArticleDetailDto {
   requiredSkillLevel: number;
   sequenceInCategory: number;
   isIntroArticle: boolean;
+  language: string;  // ISO 639-1 language code
   createdAt: string;
   hasRead: boolean | null;
   quizCompleted: boolean | null;

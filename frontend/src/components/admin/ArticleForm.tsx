@@ -31,6 +31,7 @@ export default function ArticleForm({ article, onClose }: ArticleFormProps) {
     sequenceInCategory: 1,
     isIntroArticle: false,
     isPublished: false,
+    language: "en",
   });
 
   useEffect(() => {
@@ -49,6 +50,7 @@ export default function ArticleForm({ article, onClose }: ArticleFormProps) {
         sequenceInCategory: article.sequenceInCategory,
         isIntroArticle: article.isIntroArticle,
         isPublished: article.isPublished,
+        language: article.language || "en",
       });
       // Set image preview if article has cover image
       if (article.coverImageUrl) {
@@ -282,6 +284,25 @@ export default function ArticleForm({ article, onClose }: ArticleFormProps) {
                     <option value="STORY_METHOD">Story Method</option>
                     <option value="PEG_SYSTEM">Peg System</option>
                   </select>
+                </div>
+
+                {/* Language */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-900 dark:text-slate-50 mb-2">
+                    Language <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    required
+                    value={formData.language}
+                    onChange={(e) => setFormData({ ...formData, language: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300/70 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                  >
+                    <option value="en">🇬🇧 English</option>
+                    <option value="pl">🇵🇱 Polish</option>
+                  </select>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    Users will only see articles in their preferred language
+                  </p>
                 </div>
 
                 {/* Difficulty Level */}
