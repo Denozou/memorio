@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/* Force white icons in stat cards */
+.stat-icon-white svg,
+.stat-icon-white svg * {
+  stroke: rgb(255, 255, 255) !important;
+  fill: none !important;
+  color: rgb(255, 255, 255) !important;
+}
+
 @theme {
   --color-*: initial;
   

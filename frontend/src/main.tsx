@@ -15,6 +15,7 @@ import LearningHub from "./routes/LearningHub";
 import ArticleDetail from "./routes/ArticleDetail";
 import ArticleQuiz from "./routes/ArticleQuiz";
 import AdminLearningPanel from "./routes/AdminLearningPanel";
+import AdminWordUpload from "./routes/AdminWordUpload";
 import AdminRoute from "./routes/AdminRoute";
 import VerifyEmail from "./routes/VerifyEmail";
 import RequestPasswordReset from "./routes/RequestPasswordReset";
@@ -51,6 +52,7 @@ const router = createBrowserRouter([
   { path: "/learning/articles/:slug", element: <ProtectedRoute><ArticleDetail /></ProtectedRoute> },
   { path: "/learning/articles/:slug/quiz", element: <ProtectedRoute><ArticleQuiz /></ProtectedRoute> },
   { path: "/admin/learning", element: <ProtectedRoute><AdminRoute><AdminLearningPanel /></AdminRoute></ProtectedRoute> },
+  { path: "/admin/words", element: <ProtectedRoute><AdminRoute><AdminWordUpload /></AdminRoute></ProtectedRoute> },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

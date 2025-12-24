@@ -46,7 +46,10 @@ export default function AdminLearningPanel() {
               </Link>
               <Link to="/admin/learning" className="text-sm text-slate-900 dark:text-slate-50 font-medium flex items-center gap-1">
                 <Shield className="w-4 h-4" />
-                Admin
+                Learning Admin
+              </Link>
+              <Link to="/admin/words" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
+                Word Admin
               </Link>
               <Link to="/profile" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
                 Profile
@@ -89,7 +92,10 @@ export default function AdminLearningPanel() {
                 </Link>
                 <Link to="/admin/learning" className="py-2 text-slate-900 dark:text-slate-50 font-medium flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                   <Shield className="w-4 h-4" />
-                  Admin Panel
+                  Learning Admin
+                </Link>
+                <Link to="/admin/words" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
+                  Word Admin
                 </Link>
                 <Link to="/profile" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
                   Profile
