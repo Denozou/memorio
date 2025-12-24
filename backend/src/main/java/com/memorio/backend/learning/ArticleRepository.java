@@ -20,7 +20,7 @@ public interface ArticleRepository extends JpaRepository<Article, UUID> {
      * Cached for 30 minutes (configured in RedisConfig).
      * Cache key: "articles::slug:intro" (for slug="intro")
      */
-    @Cacheable(value = "articles", key = "'slug:' + #slug")
+    @Cacheable(value = "articles", key = "'slug:' + #slug", unless = "#result == null || !#result.isPresent()")
     Optional<Article> findBySlug(String slug);
 
     /**
@@ -62,7 +62,7 @@ public interface ArticleRepository extends JpaRepository<Article, UUID> {
      * Used for determining article prerequisites and unlock logic.
      * Cache key: "articles::cat:MEMORY_PALACE:seq:1:lang:en"
      */
-    @Cacheable(value = "articles", key = "'cat:' + #category + ':seq:' + #sequence + ':lang:' + #language")
+    @Cacheable(value = "articles", key = "'cat:' + #category + ':seq:' + #sequence + ':lang:' + #language", unless = "#result == null || !#result.isPresent()")
     @Query("SELECT a FROM Article a WHERE a.techniqueCategory = :category " +
             "AND a.sequenceInCategory = :sequence AND a.isPublished = true " +
             "AND a.language = :language")
@@ -76,7 +76,7 @@ public interface ArticleRepository extends JpaRepository<Article, UUID> {
      * Find the intro article for a specific category and language.
      * Cache key: "articles::intro:cat:MEMORY_PALACE:lang:en"
      */
-    @Cacheable(value = "articles", key = "'intro:cat:' + #category + ':lang:' + #language")
+    @Cacheable(value = "articles", key = "'intro:cat:' + #category + ':lang:' + #language", unless = "#result == null || !#result.isPresent()")
     @Query("SELECT a FROM Article a WHERE a.techniqueCategory = :category " +
             "AND a.isIntroArticle = true AND a.language = :language")
     Optional<Article> findByTechniqueCategoryAndIsIntroArticleTrueAndLanguage(

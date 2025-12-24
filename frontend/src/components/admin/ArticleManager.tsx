@@ -220,7 +220,7 @@ function ArticleCard({
           <span className="px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
             {article.estimatedReadMinutes} {t('admin.min')}
           </span>
-          <span className="px-2 py-1 rounded-full bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 font-medium">
+          <span className="px-2 py-1 rounded-full bg-cyan-100 dark:bg-cyan-700 text-cyan-700 dark:text-white font-medium">
             {article.language === 'en' ? '🇬🇧 EN' : article.language === 'pl' ? '🇵🇱 PL' : article.language ? article.language.toUpperCase() : '🇬🇧 EN'}
           </span>
         </div>

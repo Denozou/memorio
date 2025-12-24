@@ -31,17 +31,23 @@ public class LearningAdminController {
     private final QuizQuestionRepository questionRepo;
     private final QuizQuestionOptionRepository optionRepo;
     private final ArticleImageService articleImageService;
+    private final SlugService slugService;
+    private final ArticleCacheService articleCacheService;
 
     public LearningAdminController(ArticleRepository articleRepo,
                                    ArticleQuizRepository quizRepo,
                                    QuizQuestionRepository questionRepo,
                                    QuizQuestionOptionRepository optionRepo,
-                                   ArticleImageService articleImageService) {
+                                   ArticleImageService articleImageService,
+                                   SlugService slugService,
+                                   ArticleCacheService articleCacheService) {
         this.articleRepo = articleRepo;
         this.quizRepo = quizRepo;
         this.questionRepo = questionRepo;
         this.optionRepo = optionRepo;
         this.articleImageService = articleImageService;
+        this.slugService = slugService;
+        this.articleCacheService = articleCacheService;
     }
 
     /**
@@ -79,11 +85,19 @@ public class LearningAdminController {
     /**
      * Create a new article.
      * Validates that only one intro article exists per category PER LANGUAGE.
+     * Automatically generates and validates slug from title.
      */
     @PostMapping("/articles")
     public ResponseEntity<?> createArticle(
             @Valid @RequestBody CreateArticleRequest request,
             Authentication auth) {
+
+        // Validate and sanitize slug (auto-generate from title if needed)
+        String validatedSlug = slugService.sanitizeAndValidateSlug(
+                request.getSlug(),
+                request.getTitle(),
+                null // null = new article, no exclusion needed
+        );
 
         // Validate intro article uniqueness per category AND language
         if (request.getIsIntroArticle()) {
@@ -109,9 +123,9 @@ public class LearningAdminController {
             }
         }
 
-        // Create the article
+        // Create the article with validated slug
         Article article = new Article(
-                request.getSlug(),
+                validatedSlug, // Use validated/generated slug
                 request.getTitle(),
                 request.getSubtitle(),
                 request.getTechniqueCategory(),
@@ -124,16 +138,19 @@ public class LearningAdminController {
                 request.getSequenceInCategory(),
                 request.getIsIntroArticle(),
                 request.getIsPublished() != null ? request.getIsPublished() : false,
-                request.getLanguage() // NEW: Include language
+                request.getLanguage()
         );
 
         Article saved = articleRepo.save(article);
+        // Evict cache to ensure fresh data is loaded
+        articleCacheService.evictAllArticleCache();
         return ResponseEntity.ok(saved);
     }
 
     /**
      * Update an existing article.
      * Validates intro article uniqueness per category AND language.
+     * Validates and sanitizes slug.
      */
     @PutMapping("/articles/{id}")
     public ResponseEntity<?> updateArticle(
@@ -142,6 +159,13 @@ public class LearningAdminController {
 
         Article existing = articleRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Article not found"));
+
+        // Validate and sanitize slug (auto-generate from title if needed)
+        String validatedSlug = slugService.sanitizeAndValidateSlug(
+                request.getSlug(),
+                request.getTitle(),
+                id // Exclude current article from uniqueness check
+        );
 
         // Validate intro article uniqueness (same logic as create)
         if (request.getIsIntroArticle()) {
@@ -168,10 +192,10 @@ public class LearningAdminController {
             }
         }
 
-        // Update the article
+        // Update the article with validated slug
         Article updated = new Article(
                 existing.getId(),
-                request.getSlug(),
+                validatedSlug, // Use validated/generated slug
                 request.getTitle(),
                 request.getSubtitle(),
                 request.getTechniqueCategory(),
@@ -185,12 +209,14 @@ public class LearningAdminController {
                 request.getSequenceInCategory(),
                 request.getIsIntroArticle(),
                 request.getIsPublished() != null ? request.getIsPublished() : false,
-                request.getLanguage(), // NEW: Include language
+                request.getLanguage(),
                 existing.getCreatedAt(),
                 OffsetDateTime.now()
         );
 
         Article saved = articleRepo.save(updated);
+        // Evict cache to ensure fresh data is loaded
+        articleCacheService.evictAllArticleCache();
         return ResponseEntity.ok(saved);
     }
 
@@ -200,6 +226,8 @@ public class LearningAdminController {
     @DeleteMapping("/articles/{id}")
     public ResponseEntity<Void> deleteArticle(@PathVariable UUID id) {
         articleRepo.deleteById(id);
+        // Evict cache to ensure fresh data is loaded
+        articleCacheService.evictAllArticleCache();
         return ResponseEntity.noContent().build();
     }
 

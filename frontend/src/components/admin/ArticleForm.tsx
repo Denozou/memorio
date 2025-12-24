@@ -15,6 +15,7 @@ export default function ArticleForm({ article, onClose }: ArticleFormProps) {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState<CreateArticleRequest>({
@@ -52,6 +53,8 @@ export default function ArticleForm({ article, onClose }: ArticleFormProps) {
         isPublished: article.isPublished,
         language: article.language || "en",
       });
+      // Mark slug as manually edited for existing articles
+      setSlugManuallyEdited(true);
       // Set image preview if article has cover image
       if (article.coverImageUrl) {
         setImagePreview(article.coverImageUrl);
@@ -63,6 +66,39 @@ export default function ArticleForm({ article, onClose }: ArticleFormProps) {
   useEffect(() => {
     setSelectedFile(null);
   }, [article]);
+
+  // Auto-generate slug from title
+  useEffect(() => {
+    // Only auto-generate for new articles and if slug hasn't been manually edited
+    if (!article && !slugManuallyEdited && formData.title) {
+      const generatedSlug = generateSlugFromTitle(formData.title);
+      setFormData(prev => ({ ...prev, slug: generatedSlug }));
+    }
+  }, [formData.title, article, slugManuallyEdited]);
+
+  function generateSlugFromTitle(title: string): string {
+    return title
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\s-]/g, "")
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .substring(0, 100);
+  }
+
+  function handleSlugChange(value: string) {
+    // Sanitize the slug input in real-time
+    const sanitized = value
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/-+/g, "-")
+      .substring(0, 100);
+    
+    setFormData({ ...formData, slug: sanitized });
+    setSlugManuallyEdited(true);
+  }
 
   async function handleImageUpload(file: File, articleId: string) {
     try {
@@ -183,7 +219,7 @@ export default function ArticleForm({ article, onClose }: ArticleFormProps) {
             </h2>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               aria-label="Close"
             >
               <X className="w-5 h-5" />
@@ -231,24 +267,47 @@ export default function ArticleForm({ article, onClose }: ArticleFormProps) {
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-300/70 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                   placeholder="Enter article title"
                 />
+                {!article && !slugManuallyEdited && formData.title && (
+                  <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-300 flex items-center gap-1">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></span>
+                    Auto-generating slug from title
+                  </p>
+                )}
               </div>
 
               {/* Slug */}
               <div>
                 <label className="block text-sm font-medium text-slate-900 dark:text-slate-50 mb-2">
                   Slug <span className="text-red-500">*</span>
+                  {!article && slugManuallyEdited && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSlugManuallyEdited(false);
+                        const generatedSlug = generateSlugFromTitle(formData.title);
+                        setFormData({ ...formData, slug: generatedSlug });
+                      }}
+                      className="ml-2 text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-normal"
+                    >
+                      Reset to auto-generate
+                    </button>
+                  )}
                 </label>
                 <input
                   type="text"
                   required
                   maxLength={100}
                   value={formData.slug}
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+                  onChange={(e) => handleSlugChange(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-300/70 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm font-mono"
                   placeholder="article-slug"
                 />
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  URL-friendly identifier (lowercase, hyphens only)
+                  {!article && !slugManuallyEdited ? (
+                    <span className="text-emerald-600 dark:text-emerald-400">✨ Auto-generated from title • Edit to customize</span>
+                  ) : (
+                    "URL-friendly identifier (lowercase, hyphens only)"
+                  )}
                 </p>
               </div>
 
@@ -352,23 +411,6 @@ export default function ArticleForm({ article, onClose }: ArticleFormProps) {
                     value={formData.estimatedReadMinutes}
                     onChange={(e) => setFormData({ ...formData, estimatedReadMinutes: parseInt(e.target.value) })}
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-300/70 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                  />
-                </div>
-
-                {/* Required Skill Level - DEPRECATED */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-900 dark:text-slate-50 mb-2">
-                    Required Level (1-10)
-                    <span className="ml-2 text-xs text-slate-400">(deprecated)</span>
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={10}
-                    value={formData.requiredSkillLevel || ""}
-                    onChange={(e) => setFormData({ ...formData, requiredSkillLevel: e.target.value ? parseInt(e.target.value) : undefined })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300/70 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                    placeholder="Optional"
                   />
                 </div>
 
