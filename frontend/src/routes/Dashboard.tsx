@@ -194,7 +194,7 @@ export default function Dashboard() {
             <div className="md:hidden flex items-center gap-2">
               <ThemeToggle />
               <button
-                className="p-2 rounded-lg border border-slate-300/70 dark:border-slate-700"
+                className="p-2 rounded-lg border border-slate-300/70 dark:border-slate-700 text-slate-700 dark:text-slate-300"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
               >
@@ -223,7 +223,7 @@ export default function Dashboard() {
                   onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
                   className="py-2 text-left text-slate-600 dark:text-slate-300 flex items-center gap-2"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-4 h-4 text-slate-600 dark:text-slate-300" />
                   {t('common.logout')}
                 </button>
               </div>
@@ -247,7 +247,7 @@ export default function Dashboard() {
             </div>
             <button 
               onClick={() => setShowTip(false)}
-              className="p-1 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 transition-colors shrink-0"
+              className="p-1 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 transition-colors shrink-0"
             >
               <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>

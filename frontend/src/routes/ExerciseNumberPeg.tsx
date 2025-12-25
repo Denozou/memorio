@@ -173,7 +173,7 @@ export default function ExerciseNumberPeg() {
               <LanguageSelector variant="compact" />
               <ThemeToggle />
               <button
-                className="p-2 rounded-lg border border-slate-300/70 dark:border-slate-700"
+                className="p-2 rounded-lg border border-slate-300/70 dark:border-slate-700 text-slate-700 dark:text-slate-300"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label={mobileMenuOpen ? t('exercises.closeMenu') : t('exercises.openMenu')}
               >
@@ -198,7 +198,7 @@ export default function ExerciseNumberPeg() {
                   onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
                   className="py-2 text-left text-slate-600 dark:text-slate-300 flex items-center gap-2"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-4 h-4 text-slate-600 dark:text-slate-300" />
                   {t('common.logout')}
                 </button>
               </div>
