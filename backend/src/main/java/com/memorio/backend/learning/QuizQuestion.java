@@ -55,4 +55,20 @@ public class QuizQuestion {
     public Integer getDisplayOrder(){return displayOrder;}
     public String getExplanation(){ return explanation;}
     public OffsetDateTime getCreatedAt(){return createdAt;}
+
+    public void setQuestionText(String questionText) {
+        this.questionText = questionText;
+    }
+
+    public void setQuestionType(QuestionType questionType) {
+        this.questionType = questionType;
+    }
+
+    public void setDisplayOrder(Integer displayOrder) {
+        this.displayOrder = displayOrder;
+    }
+
+    public void setExplanation(String explanation) {
+        this.explanation = explanation;
+    }
 }

@@ -4,6 +4,7 @@ import com.memorio.backend.admin.dto.*;
 import com.memorio.backend.common.security.AuthenticationUtil;
 import com.memorio.backend.learning.*;
 import com.memorio.backend.learning.dto.*;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -297,6 +298,58 @@ public class LearningAdminController {
     }
 
     /**
+     * Update an existing question.
+     * @Transactional ensures atomicity - if the update fails, no partial changes persist.
+     */
+    @Transactional
+    @PutMapping("/questions/{questionId}")
+    public ResponseEntity<QuizQuestion> updateQuestion(
+            @PathVariable UUID questionId,
+            @Valid @RequestBody CreateQuestionRequest request) {
+
+        QuizQuestion question = questionRepo.findById(questionId)
+                .orElseThrow(() -> new RuntimeException("Question not found"));
+
+        question.setQuestionText(request.getQuestionText());
+        question.setQuestionType(request.getQuestionType());
+        question.setDisplayOrder(request.getDisplayOrder());
+        question.setExplanation(request.getExplanation());
+
+        QuizQuestion updated = questionRepo.save(question);
+        return ResponseEntity.ok(updated);
+    }
+
+    /**
+     * Delete a question and all its options.
+     * @Transactional ensures both question and options are deleted atomically.
+     */
+    @Transactional
+    @DeleteMapping("/questions/{questionId}")
+    public ResponseEntity<Map<String, String>> deleteQuestion(@PathVariable UUID questionId) {
+        if (!questionRepo.existsById(questionId)) {
+            throw new RuntimeException("Question not found");
+        }
+
+        // Delete all options first
+        List<QuizQuestionOption> options = optionRepo.findByQuestionIdOrderByDisplayOrder(questionId);
+        optionRepo.deleteAll(options);
+
+        // Delete the question
+        questionRepo.deleteById(questionId);
+
+        return ResponseEntity.ok(Map.of("message", "Question deleted successfully"));
+    }
+
+    /**
+     * Get all options for a question.
+     */
+    @GetMapping("/questions/{questionId}/options")
+    public ResponseEntity<List<QuizQuestionOption>> getOptions(@PathVariable UUID questionId) {
+        List<QuizQuestionOption> options = optionRepo.findByQuestionIdOrderByDisplayOrder(questionId);
+        return ResponseEntity.ok(options);
+    }
+
+    /**
      * Add an option to a question.
      */
     @PostMapping("/questions/{questionId}/options")
@@ -315,5 +368,22 @@ public class LearningAdminController {
         );
         QuizQuestionOption saved = optionRepo.save(option);
         return ResponseEntity.ok(saved);
+    }
+
+    /**
+     * Delete all options for a question. Used before updating options.
+     * @Transactional ensures all options are deleted atomically.
+     */
+    @Transactional
+    @DeleteMapping("/questions/{questionId}/options")
+    public ResponseEntity<Map<String, String>> deleteAllOptionsForQuestion(@PathVariable UUID questionId) {
+        if (!questionRepo.existsById(questionId)) {
+            throw new RuntimeException("Question not found");
+        }
+
+        List<QuizQuestionOption> options = optionRepo.findByQuestionIdOrderByDisplayOrder(questionId);
+        optionRepo.deleteAll(options);
+
+        return ResponseEntity.ok(Map.of("message", "Options deleted successfully", "count", String.valueOf(options.size())));
     }
 }

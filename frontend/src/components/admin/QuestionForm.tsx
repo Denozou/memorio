@@ -18,6 +18,7 @@ interface OptionFormData {
 
 export default function QuestionForm({ quizId, question, onClose }: QuestionFormProps) {
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const [formData, setFormData] = useState<CreateQuestionRequest>({
@@ -40,10 +41,38 @@ export default function QuestionForm({ quizId, question, onClose }: QuestionForm
         displayOrder: question.displayOrder,
         explanation: question.explanation || "",
       });
-      // Note: We'd need to load options from the backend here
-      // For now, keep default options
+      // Load existing options from backend
+      loadOptions(question.id);
     }
   }, [question]);
+
+  async function loadOptions(questionId: string) {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data } = await api.get(`/api/admin/learning/questions/${questionId}/options`);
+      if (data && data.length > 0) {
+        const loadedOptions: OptionFormData[] = data.map((opt: any) => ({
+          optionText: opt.optionText,
+          isCorrect: opt.isCorrect,
+          displayOrder: opt.displayOrder,
+          tempId: crypto.randomUUID(),
+        }));
+        setOptions(loadedOptions);
+      } else {
+        // No options found, keep default empty options
+        setOptions([
+          { optionText: "", isCorrect: false, displayOrder: 0, tempId: crypto.randomUUID() },
+          { optionText: "", isCorrect: false, displayOrder: 1, tempId: crypto.randomUUID() },
+        ]);
+      }
+    } catch (e: any) {
+      console.error("Failed to load options", e);
+      setError("Failed to load existing options. You can still edit the question.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function addOption() {
     setOptions([
@@ -99,13 +128,28 @@ export default function QuestionForm({ quizId, question, onClose }: QuestionForm
     }
 
     try {
-      // Create or update question
-      const { data: createdQuestion } = await api.post(
-        `/api/admin/learning/quizzes/${quizId}/questions`,
-        formData
-      );
+      let questionId: string;
 
-      // Create options for the question
+      if (question) {
+        // UPDATE existing question
+        const { data: updatedQuestion } = await api.put(
+          `/api/admin/learning/questions/${question.id}`,
+          formData
+        );
+        questionId = updatedQuestion.id;
+
+        // Delete all existing options first
+        await api.delete(`/api/admin/learning/questions/${questionId}/options`);
+      } else {
+        // CREATE new question
+        const { data: createdQuestion } = await api.post(
+          `/api/admin/learning/quizzes/${quizId}/questions`,
+          formData
+        );
+        questionId = createdQuestion.id;
+      }
+
+      // Create/recreate all options
       for (const option of options) {
         const optionData: CreateOptionRequest = {
           optionText: option.optionText,
@@ -113,7 +157,7 @@ export default function QuestionForm({ quizId, question, onClose }: QuestionForm
           displayOrder: option.displayOrder,
         };
         await api.post(
-          `/api/admin/learning/questions/${createdQuestion.id}/options`,
+          `/api/admin/learning/questions/${questionId}/options`,
           optionData
         );
       }
@@ -147,6 +191,14 @@ export default function QuestionForm({ quizId, question, onClose }: QuestionForm
           {/* Form - Scrollable */}
           <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
             <div className="space-y-5">
+              {/* Loading State */}
+              {loading && (
+                <div className="rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-3 text-sm text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Loading existing options...
+                </div>
+              )}
+
               {/* Error Message */}
               {error && (
                 <div className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 text-sm text-red-600 dark:text-red-400">
@@ -279,7 +331,7 @@ export default function QuestionForm({ quizId, question, onClose }: QuestionForm
             <button
               type="button"
               onClick={onClose}
-              disabled={saving}
+              disabled={saving || loading}
               className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl border border-slate-300/70 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               Cancel
@@ -287,13 +339,13 @@ export default function QuestionForm({ quizId, question, onClose }: QuestionForm
             <button
               type="submit"
               onClick={handleSubmit}
-              disabled={saving}
+              disabled={saving || loading}
               className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
             >
               {saving ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Saving...
+                  {question ? "Updating..." : "Creating..."}
                 </>
               ) : (
                 <>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "../../lib/api";
-import { Plus, Edit2, HelpCircle, Search, X, ChevronRight } from "lucide-react";
+import { Plus, Edit2, HelpCircle, Search, X, ChevronRight, Trash2, AlertTriangle } from "lucide-react";
 import type { Article, Quiz, Question } from "../../types/admin";
 import QuizForm from "./QuizForm";
 import QuestionForm from "./QuestionForm";
@@ -148,6 +148,7 @@ function QuizDetailView({ article, onBack }: { article: Article; onBack: () => v
   const [showCreateQuizModal, setShowCreateQuizModal] = useState(false);
   const [showCreateQuestionModal, setShowCreateQuestionModal] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const [questionToDelete, setQuestionToDelete] = useState<Question | null>(null);
 
   useEffect(() => {
     loadQuiz();
@@ -305,6 +306,7 @@ function QuizDetailView({ article, onBack }: { article: Article; onBack: () => v
                       setSelectedQuestion(question);
                       setShowCreateQuestionModal(true);
                     }}
+                    onDelete={() => setQuestionToDelete(question)}
                   />
                 ))}
               </div>
@@ -333,6 +335,25 @@ function QuizDetailView({ article, onBack }: { article: Article; onBack: () => v
           }}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      {questionToDelete && (
+        <DeleteConfirmationModal
+          questionText={questionToDelete.questionText}
+          onConfirm={async () => {
+            try {
+              await api.delete(`/api/admin/learning/questions/${questionToDelete.id}`);
+              setQuestionToDelete(null);
+              await loadQuiz();
+            } catch (e: any) {
+              const errorMsg = e?.response?.data?.error ?? "Failed to delete question";
+              setError(errorMsg);
+              setQuestionToDelete(null);
+            }
+          }}
+          onCancel={() => setQuestionToDelete(null)}
+        />
+      )}
     </div>
   );
 }
@@ -341,11 +362,23 @@ function QuizDetailView({ article, onBack }: { article: Article; onBack: () => v
 function QuestionCard({
   question,
   onEdit,
+  onDelete,
 }: {
   question: Question;
   onEdit: () => void;
+  onDelete: () => void;
 }) {
   const { t } = useTranslation();
+  const [deleting, setDeleting] = useState(false);
+  
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      await onDelete();
+    } finally {
+      setDeleting(false);
+    }
+  }
   
   return (
     <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-4">
@@ -363,12 +396,24 @@ function QuestionCard({
             </span>
           </div>
         </div>
-        <button
-          onClick={onEdit}
-          className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-        >
-          <Edit2 className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={onEdit}
+            disabled={deleting}
+            className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+            title="Edit question"
+          >
+            <Edit2 className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+            title="Delete question"
+          >
+            <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+          </button>
+        </div>
       </div>
       {question.explanation && (
         <p className="text-sm text-slate-600 dark:text-slate-300 mt-2 pl-3 border-l-2 border-slate-300 dark:border-slate-700">
@@ -400,4 +445,91 @@ function QuestionFormModal({
   onClose: () => void;
 }) {
   return <QuestionForm quizId={quizId} question={question} onClose={onClose} />;
+}
+
+// Delete Confirmation Modal
+function DeleteConfirmationModal({
+  questionText,
+  onConfirm,
+  onCancel,
+}: {
+  questionText: string;
+  onConfirm: () => Promise<void>;
+  onCancel: () => void;
+}) {
+  const { t } = useTranslation();
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleConfirm() {
+    setDeleting(true);
+    try {
+      await onConfirm();
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm">
+      <div className="min-h-screen px-4 py-6 flex items-center justify-center">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl max-w-md w-full">
+          {/* Header */}
+          <div className="px-4 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
+              <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+            </div>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-50">
+              Delete Question
+            </h2>
+          </div>
+
+          {/* Content */}
+          <div className="px-4 sm:px-6 py-4">
+            <p className="text-slate-700 dark:text-slate-300 mb-3">
+              Are you sure you want to delete this question? This action cannot be undone.
+            </p>
+            <div className="p-3 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <p className="text-sm text-slate-900 dark:text-slate-50 line-clamp-3">
+                {questionText}
+              </p>
+            </div>
+            <p className="text-sm text-red-600 dark:text-red-400 mt-3 flex items-center gap-1">
+              <AlertTriangle className="w-4 h-4" />
+              All answer options will also be deleted.
+            </p>
+          </div>
+
+          {/* Footer */}
+          <div className="px-4 sm:px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex gap-3">
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={deleting}
+              className="flex-1 px-5 py-2.5 rounded-xl border border-slate-300/70 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirm}
+              disabled={deleting}
+              className="flex-1 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+            >
+              {deleting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4" />
+                  Delete Question
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
