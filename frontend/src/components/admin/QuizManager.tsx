@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "../../lib/api";
-import { Plus, Edit2, HelpCircle, Search, X, ChevronRight, Trash2, AlertTriangle } from "lucide-react";
+import { Plus, Edit2, HelpCircle, Search, X, ChevronRight, Trash2, AlertTriangle, GripVertical } from "lucide-react";
 import type { Article, Quiz, Question } from "../../types/admin";
 import QuizForm from "./QuizForm";
 import QuestionForm from "./QuestionForm";
@@ -149,6 +149,8 @@ function QuizDetailView({ article, onBack }: { article: Article; onBack: () => v
   const [showCreateQuestionModal, setShowCreateQuestionModal] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [questionToDelete, setQuestionToDelete] = useState<Question | null>(null);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [reordering, setReordering] = useState(false);
 
   useEffect(() => {
     loadQuiz();
@@ -207,6 +209,94 @@ function QuizDetailView({ article, onBack }: { article: Article; onBack: () => v
     }
     setSelectedQuestion(null);
     setShowCreateQuestionModal(true);
+  }
+
+  async function handleReorderQuestions(reorderedQuestions: Question[]) {
+    if (!quiz) return;
+    
+    setReordering(true);
+    setError(null);
+    
+    try {
+      // Update display order for each question
+      const updatePromises = reorderedQuestions.map((question, index) => {
+        const updatedData = {
+          questionText: question.questionText,
+          questionType: question.questionType,
+          displayOrder: index,
+          explanation: question.explanation || "",
+        };
+        return api.put(`/api/admin/learning/questions/${question.id}`, updatedData);
+      });
+
+      await Promise.all(updatePromises);
+      
+      // Refresh the list
+      await loadQuiz();
+    } catch (e: any) {
+      const errorMsg = e?.response?.data?.error ?? "Failed to reorder questions";
+      setError(errorMsg);
+      // Reload to reset to server state
+      await loadQuiz();
+    } finally {
+      setReordering(false);
+    }
+  }
+
+  function handleDragStart(index: number) {
+    setDraggedIndex(index);
+  }
+
+  function handleDragOver(e: React.DragEvent, index: number) {
+    e.preventDefault();
+    
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    const reordered = [...questions];
+    const [draggedItem] = reordered.splice(draggedIndex, 1);
+    reordered.splice(index, 0, draggedItem);
+
+    setQuestions(reordered);
+    setDraggedIndex(index);
+  }
+
+  function handleDragEnd() {
+    if (draggedIndex !== null) {
+      handleReorderQuestions(questions);
+    }
+    setDraggedIndex(null);
+  }
+
+  function handleTouchStart(index: number, e: React.TouchEvent) {
+    setDraggedIndex(index);
+  }
+
+  function handleTouchMove(e: React.TouchEvent) {
+    if (draggedIndex === null) return;
+    
+    e.preventDefault();
+    const touch = e.touches[0];
+    const elementAtPoint = document.elementFromPoint(touch.clientX, touch.clientY);
+    const questionCard = elementAtPoint?.closest('[data-question-index]');
+    
+    if (questionCard) {
+      const targetIndex = parseInt(questionCard.getAttribute('data-question-index') || '0');
+      if (targetIndex !== draggedIndex) {
+        const reordered = [...questions];
+        const [draggedItem] = reordered.splice(draggedIndex, 1);
+        reordered.splice(targetIndex, 0, draggedItem);
+        
+        setQuestions(reordered);
+        setDraggedIndex(targetIndex);
+      }
+    }
+  }
+
+  function handleTouchEnd() {
+    if (draggedIndex !== null) {
+      handleReorderQuestions(questions);
+    }
+    setDraggedIndex(null);
   }
 
   return (
@@ -297,19 +387,40 @@ function QuizDetailView({ article, onBack }: { article: Article; onBack: () => v
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {questions.map((question) => (
-                  <QuestionCard
-                    key={question.id}
-                    question={question}
-                    onEdit={() => {
-                      setSelectedQuestion(question);
-                      setShowCreateQuestionModal(true);
-                    }}
-                    onDelete={() => setQuestionToDelete(question)}
-                  />
-                ))}
-              </div>
+              <>
+                {reordering && (
+                  <div className="mb-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-3 text-sm text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                    Saving new order...
+                  </div>
+                )}
+                <div className="space-y-3">
+                  {questions.map((question, index) => (
+                    <QuestionCard
+                      key={question.id}
+                      question={question}
+                      index={index}
+                      isDragging={draggedIndex === index}
+                      onEdit={() => {
+                        setSelectedQuestion(question);
+                        setShowCreateQuestionModal(true);
+                      }}
+                      onDelete={() => setQuestionToDelete(question)}
+                      onDragStart={() => handleDragStart(index)}
+                      onDragOver={(e) => handleDragOver(e, index)}
+                      onDragEnd={handleDragEnd}
+                      onTouchStart={(e) => handleTouchStart(index, e)}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={handleTouchEnd}
+                    />
+                  ))}
+                </div>
+                {questions.length > 1 && !reordering && (
+                  <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 text-center">
+                    💡 Drag questions to reorder them
+                  </p>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -328,6 +439,7 @@ function QuizDetailView({ article, onBack }: { article: Article; onBack: () => v
         <QuestionFormModal
           quizId={quiz.id}
           question={selectedQuestion}
+          nextOrder={selectedQuestion ? undefined : questions.length}
           onClose={() => {
             setShowCreateQuestionModal(false);
             setSelectedQuestion(null);
@@ -361,12 +473,28 @@ function QuizDetailView({ article, onBack }: { article: Article; onBack: () => v
 // Question Card Component
 function QuestionCard({
   question,
+  index,
+  isDragging,
   onEdit,
   onDelete,
+  onDragStart,
+  onDragOver,
+  onDragEnd,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd,
 }: {
   question: Question;
+  index: number;
+  isDragging: boolean;
   onEdit: () => void;
   onDelete: () => void;
+  onDragStart: () => void;
+  onDragOver: (e: React.DragEvent) => void;
+  onDragEnd: () => void;
+  onTouchStart: (e: React.TouchEvent) => void;
+  onTouchMove: (e: React.TouchEvent) => void;
+  onTouchEnd: () => void;
 }) {
   const { t } = useTranslation();
   const [deleting, setDeleting] = useState(false);
@@ -381,18 +509,39 @@ function QuestionCard({
   }
   
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-4">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex-1">
+    <div
+      data-question-index={index}
+      draggable
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDragEnd={onDragEnd}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      className={`rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-4 transition-all touch-none ${
+        isDragging ? 'opacity-50 scale-95' : 'hover:shadow-md'
+      }`}
+    >
+      <div className="flex items-start gap-3 mb-3">
+        {/* Drag Handle */}
+        <div className="flex-shrink-0 cursor-grab active:cursor-grabbing touch-none">
+          <GripVertical className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+        </div>
+
+        {/* Order Badge */}
+        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+          <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
+            {index + 1}
+          </span>
+        </div>
+
+        <div className="flex-1 min-w-0">
           <p className="font-medium text-slate-900 dark:text-slate-50">
             {question.questionText}
           </p>
           <div className="flex flex-wrap gap-2 mt-2">
-            <span className="px-2 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-medium">
+            <span className="px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-medium">
               {question.questionType.replace(/_/g, ' ')}
-            </span>
-            <span className="px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs">
-              {t('admin.order')}: {question.displayOrder}
             </span>
           </div>
         </div>
@@ -439,12 +588,14 @@ function QuestionFormModal({
   quizId,
   question,
   onClose,
+  nextOrder,
 }: {
   quizId: string;
   question: Question | null;
   onClose: () => void;
+  nextOrder?: number;
 }) {
-  return <QuestionForm quizId={quizId} question={question} onClose={onClose} />;
+  return <QuestionForm quizId={quizId} question={question} onClose={onClose} nextOrder={nextOrder} />;
 }
 
 // Delete Confirmation Modal

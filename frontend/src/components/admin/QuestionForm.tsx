@@ -7,6 +7,7 @@ interface QuestionFormProps {
   quizId: string;
   question: Question | null;
   onClose: () => void;
+  nextOrder?: number;
 }
 
 interface OptionFormData {
@@ -16,7 +17,7 @@ interface OptionFormData {
   tempId: string; // For tracking before save
 }
 
-export default function QuestionForm({ quizId, question, onClose }: QuestionFormProps) {
+export default function QuestionForm({ quizId, question, onClose, nextOrder = 0 }: QuestionFormProps) {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +25,7 @@ export default function QuestionForm({ quizId, question, onClose }: QuestionForm
   const [formData, setFormData] = useState<CreateQuestionRequest>({
     questionText: "",
     questionType: "MULTIPLE_CHOICE",
-    displayOrder: 0,
+    displayOrder: nextOrder,
     explanation: "",
   });
 
@@ -221,25 +222,24 @@ export default function QuestionForm({ quizId, question, onClose }: QuestionForm
                 />
               </div>
 
-              {/* Two Column Layout */}
-              <div className="grid sm:grid-cols-2 gap-4">
-                {/* Question Type */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-900 dark:text-slate-50 mb-2">
-                    Type <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    required
-                    value={formData.questionType}
-                    onChange={(e) => setFormData({ ...formData, questionType: e.target.value as any })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300/70 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                  >
-                    <option value="MULTIPLE_CHOICE">Multiple Choice</option>
-                    <option value="TRUE_FALSE">True/False</option>
-                    <option value="FILL_BLANK">Fill in the Blank</option>
-                  </select>
-                </div>
-
+              {/* Question Type */}
+              <div>
+                <label className="block text-sm font-medium text-slate-900 dark:text-slate-50 mb-2">
+                  Type <span className="text-red-500">*</span>
+                </label>
+                <select
+                  required
+                  value={formData.questionType}
+                  onChange={(e) => setFormData({ ...formData, questionType: e.target.value as any })}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300/70 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                >
+                  <option value="MULTIPLE_CHOICE">Multiple Choice</option>
+                  <option value="TRUE_FALSE">True/False</option>
+                  <option value="FILL_BLANK">Fill in the Blank</option>
+                </select>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  You can reorder questions by dragging them after creation
+                </p>
               </div>
 
               {/* Explanation */}
