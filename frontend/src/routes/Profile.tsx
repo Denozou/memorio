@@ -484,16 +484,7 @@ export default function Profile() {
                 </div>
 
                 {/* Language Selector - Changes both UI and exercise content */}
-                <div className="group">
-                  <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wide">
-                    <Globe className="w-4 h-4" />
-                    {t('profile.language')}
-                  </label>
-                  <LanguageSelector />
-                  <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 italic">
-                    {t('profile.languageDesc')}
-                  </p>
-                </div>
+                <LanguageSelector />
               </div>
             </div>
           </div>
@@ -511,8 +502,8 @@ export default function Profile() {
                 }`}>
                   <Shield className={`w-5 h-5 ${
                     profile.twoFactorEnabled 
-                      ? 'text-emerald-600 dark:text-emerald-400' 
-                      : 'text-amber-600 dark:text-amber-400'
+                      ? 'text-emerald-500 dark:text-emerald-300' 
+                      : 'text-amber-500 dark:text-amber-300'
                   }`} />
                 </div>
                 <h3 className="text-xl font-black text-slate-900 dark:text-slate-50">
@@ -528,7 +519,7 @@ export default function Profile() {
                   </div>
                   {profile.twoFactorEnabled ? (
                     <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-300 dark:border-emerald-800">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-300" />
                       <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">{t('profile.twoFactorEnabled')}</span>
                     </div>
                   ) : (

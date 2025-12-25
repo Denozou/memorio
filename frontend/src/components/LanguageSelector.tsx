@@ -1,5 +1,6 @@
 import { Globe } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { useState, useRef, useEffect } from 'react';
 import type { LanguageCode } from '../i18n/config';
 
@@ -9,6 +10,7 @@ interface LanguageSelectorProps {
 }
 
 export default function LanguageSelector({ variant = 'default', className = '' }: LanguageSelectorProps) {
+  const { t } = useTranslation();
   const { currentLanguage, changeLanguage, isChanging, availableLanguages } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -81,7 +83,7 @@ export default function LanguageSelector({ variant = 'default', className = '' }
   return (
     <div className={className}>
       <label className="block text-sm font-medium text-slate-900 dark:text-slate-50 mb-2">
-        Language
+        {t('profile.language')}
       </label>
       <div className="relative" ref={dropdownRef}>
         <button
@@ -133,7 +135,7 @@ export default function LanguageSelector({ variant = 'default', className = '' }
         )}
       </div>
       <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-        Select your preferred language for the interface
+        {t('profile.languageDesc')}
       </p>
     </div>
   );
