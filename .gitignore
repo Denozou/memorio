@@ -20,7 +20,7 @@ build/
 *.log
 
 # LFW dataset
-lfw_funneled/
+#lfw_funneled/
 backend-git-backup/
 
 ..bfg-report
