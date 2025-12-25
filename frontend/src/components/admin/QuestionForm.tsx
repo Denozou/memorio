@@ -137,7 +137,7 @@ export default function QuestionForm({ quizId, question, onClose }: QuestionForm
             </h2>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               aria-label="Close"
             >
               <X className="w-5 h-5" />
