@@ -12,6 +12,7 @@ type VerifyResp = {
     displayName: string;
     role: string;
   };
+  expiresAt: number;
 };
 
 export default function TwoFactorVerify() {
@@ -90,11 +91,20 @@ export default function TwoFactorVerify() {
         return;
       }
 
-      await api.post<VerifyResp>("/auth/2fa/verify", {
+      const response = await api.post<VerifyResp>("/auth/2fa/verify", {
         tempToken,
         code: verificationCode,
         isBackupCode: useBackupCode
       });
+      
+      // Store token expiration for session management
+      if (response.data.expiresAt) {
+        try {
+          localStorage.setItem('token_expiration', response.data.expiresAt.toString());
+        } catch (e) {
+          console.warn('Failed to store token expiration:', e);
+        }
+      }
 
       nav("/dashboard");
     } catch (err: any) {

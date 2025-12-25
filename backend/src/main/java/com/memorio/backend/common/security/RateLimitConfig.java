@@ -53,9 +53,12 @@ public class RateLimitConfig {
     }
 
     private Bucket createRefreshBucket(){
+        // Allow 30 refresh attempts per minute per IP
+        // With smart client-side refresh logic, active users should only need 1-2 per hour
+        // This provides buffer for legitimate use while preventing abuse
         Bandwidth limit = Bandwidth.builder()
-                .capacity(10)
-                .refillIntervally(10, Duration.ofMinutes(1))
+                .capacity(30)
+                .refillIntervally(30, Duration.ofMinutes(1))
                 .build();
         return Bucket.builder()
                 .addLimit(limit)

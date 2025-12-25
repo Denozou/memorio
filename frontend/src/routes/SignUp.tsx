@@ -14,6 +14,7 @@ type RegisterResp = {
         displayName: string;
         role: string;
     };
+    expiresAt: number;
 };
 
 export default function SignUp(){
@@ -48,13 +49,22 @@ export default function SignUp(){
         }
 
         try{
-            await api.post<RegisterResp>("/auth/register", {
+            const response = await api.post<RegisterResp>("/auth/register", {
                 displayName,
                 email,
                 password,
                 confirmPassword,
                 preferredLanguage: "en"
             });
+            
+            // Store token expiration for session management
+            if (response.data.expiresAt) {
+                try {
+                    localStorage.setItem('token_expiration', response.data.expiresAt.toString());
+                } catch (e) {
+                    console.warn('Failed to store token expiration:', e);
+                }
+            }
 
             nav("/dashboard");
         }catch(err: any){

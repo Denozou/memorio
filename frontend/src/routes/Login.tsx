@@ -14,6 +14,7 @@ type LoginResp = {
         displayName: string;
         role: string;
     };
+    expiresAt: number;
 };
 
 type TwoFactorRequiredResp = {
@@ -52,6 +53,15 @@ export default function Login(){
             if ('twoFactorRequired' in response.data && response.data.twoFactorRequired) {
                 nav("/auth/2fa/verify", { state: { tempToken: response.data.tempToken } });
                 return;
+            }
+            
+            // Store token expiration for session management
+            if ('expiresAt' in response.data && response.data.expiresAt) {
+                try {
+                    localStorage.setItem('token_expiration', response.data.expiresAt.toString());
+                } catch (e) {
+                    console.warn('Failed to store token expiration:', e);
+                }
             }
             
             nav("/dashboard");

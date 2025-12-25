@@ -20,14 +20,13 @@ import com.memorio.backend.auth.dto.TwoFactorVerifyRequest;
 import com.memorio.backend.auth.dto.TwoFactorRequiredResponse;
 import com.memorio.backend.auth.dto.TwoFactorDisableRequest;
 import java.time.OffsetDateTime;
+import java.time.Instant;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.Map;
 import java.util.List;
 import java.util.UUID;
 
@@ -92,6 +91,7 @@ public class AuthController {
         String access = jwt.generateAccessToken(subject, user.getEmail(), List.of(user.getRole().name()));
         String refresh = jwt.generateRefreshToken(subject);
 
+        Instant expiresAt = jwt.getExpiration(access);
 
         cookieUtil.setAccessTokenCookie(response, access);
         cookieUtil.setRefreshTokenCookie(response, refresh);
@@ -103,7 +103,7 @@ public class AuthController {
                 user.getRole().name()
         );
         return  ResponseEntity.ok(
-                new AuthSuccessResponse("Login successful", userInfo)
+                new AuthSuccessResponse("Login successful", userInfo, expiresAt.toEpochMilli())
         );
     }
     @PostMapping("/refresh")
@@ -137,11 +137,14 @@ public class AuthController {
             );
             String newRefresh = jwt.generateRefreshToken(user.getId().toString());
 
+            // Get expiration time for client-side tracking
+            Instant expiresAt = jwt.getExpiration(newAccess);
+
             cookieUtil.setAccessTokenCookie(response, newAccess);
             cookieUtil.setRefreshTokenCookie(response, newRefresh);
 
             return ResponseEntity.ok(
-                new RefreshResponse("Token refreshed successfully")
+               new RefreshResponse("Token refreshed successfully", expiresAt.toEpochMilli())
             );
         } catch (JwtException | IllegalArgumentException e) {
             // signature/expired/malformed
@@ -171,6 +174,8 @@ public class AuthController {
             String subject = user.getId().toString();
             String access = jwt.generateAccessToken(subject, user.getEmail(), List.of(user.getRole().name()));
             String refresh = jwt.generateRefreshToken(subject);
+            
+            Instant expiresAt = jwt.getExpiration(access);
 
             cookieUtil.setAccessTokenCookie(response, access);
             cookieUtil.setRefreshTokenCookie(response, refresh);
@@ -182,7 +187,7 @@ public class AuthController {
                     user.getRole().name()
             );
 
-            return ResponseEntity.ok(new AuthSuccessResponse("Registration successful", userInfo));
+            return ResponseEntity.ok(new AuthSuccessResponse("Registration successful", userInfo, expiresAt.toEpochMilli()));
         }catch (DuplicateEmailException e){
             return ResponseEntity.status(409)
                     .body(new ErrorResponse("An account with this email already exists"));
@@ -474,6 +479,8 @@ public class AuthController {
             );
             String refresh = jwt.generateRefreshToken(subject);
 
+            Instant expiresAt = jwt.getExpiration(access);
+
             cookieUtil.setAccessTokenCookie(response, access);
             cookieUtil.setRefreshTokenCookie(response, refresh);
 
@@ -484,9 +491,7 @@ public class AuthController {
                     user.getRole().name()
             );
 
-            return ResponseEntity.ok(
-                    new AuthSuccessResponse("Login successful", userInfo)
-            );
+            return ResponseEntity.ok(new AuthSuccessResponse("Login successful", userInfo, expiresAt.toEpochMilli()));
 
         }catch (JwtException e) {
             return ResponseEntity.status(401)
