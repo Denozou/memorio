@@ -504,28 +504,72 @@
     "closeMenu": "Close Menu"
   },
   "landing": {
+    "navMethodology": "Methodology",
+    "navExercises": "Exercises",
+    "login": "Log in",
+    "getStarted": "Get Started",
     "hero": {
-      "title": "Master Your Memory",
-      "subtitle": "Train your brain with scientifically proven memory techniques",
-      "cta": "Get Started Free",
-      "secondaryCta": "Learn More"
+      "badge": "Science-backed memory training",
+      "title": "Stop forgetting.\nStart mastering.",
+      "subtitle": "Train your brain with the techniques used by memory champions. Master names, numbers, and lists through active recall and spaced repetition.",
+      "startTraining": "Start Training Now",
+      "learnMore": "Learn More"
     },
-    "features": {
-      "title": "Why Choose Memorio?",
-      "feature1Title": "Adaptive Learning",
-      "feature1Desc": "Our AI adjusts difficulty based on your performance",
-      "feature2Title": "Proven Techniques",
-      "feature2Desc": "Learn methods used by memory champions",
-      "feature3Title": "Track Progress",
-      "feature3Desc": "Visualize your improvement over time"
+    "methodology": {
+      "title": "Built for results.",
+      "subtitle": "We don't just flash cards at you. We use proven cognitive science to ensure information moves from short-term to long-term memory.",
+      "feature1": {
+        "title": "BKT Algorithm",
+        "desc": "Bayesian Knowledge Tracing predicts exactly when you're about to forget something and schedules a review."
+      },
+      "feature2": {
+        "title": "Active Recall",
+        "desc": "Move beyond passive reading. Our exercises force your brain to retrieve information actively."
+      },
+      "feature3": {
+        "title": "Gamified Progress",
+        "desc": "Earn badges, maintain streaks, and grow your forest. Making memory training addictive."
+      }
     },
-    "testimonials": {
-      "title": "What Our Users Say"
+    "exercises": {
+      "title": "Core Exercises",
+      "subtitle": "Targeted workouts for different memory types.",
+      "exercise1": {
+        "title": "Word Linking",
+        "subtitle": "Chain Method",
+        "desc": "Memorize long lists of items by creating vivid narrative chains.",
+        "tag1": "Lists",
+        "tag2": "Speeches"
+      },
+      "exercise2": {
+        "title": "Names & Faces",
+        "subtitle": "Social Recall",
+        "desc": "Never forget a name again. Learn to tag visual features to names.",
+        "tag1": "Networking",
+        "tag2": "Social"
+      },
+      "exercise3": {
+        "title": "Number Pegs",
+        "subtitle": "Abstract Data",
+        "desc": "Convert abstract numbers into concrete images using the Major System.",
+        "tag1": "Phone #s",
+        "tag2": "Dates",
+        "tag3": "PINs"
+      }
+    },
+    "social": {
+      "title": "Join Brain Athletes Worldwide",
+      "subtitle": "Train alongside students, professionals, and memory champions building cognitive resilience through science-backed techniques."
     },
     "cta": {
-      "title": "Ready to Transform Your Memory?",
-      "subtitle": "Join thousands of users improving their memory skills",
-      "button": "Start Training Now"
+      "title": "Ready to upgrade your mind?",
+      "subtitle": "Join today and get your first personalized training plan for free. No credit card required.",
+      "button": "Get Started for Free"
+    },
+    "footer": {
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "contact": "Contact"
     }
   }
 }

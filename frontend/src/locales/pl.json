@@ -504,28 +504,72 @@
     "closeMenu": "Zamknij menu"
   },
   "landing": {
+    "navMethodology": "Metodologia",
+    "navExercises": "Ćwiczenia",
+    "login": "Zaloguj się",
+    "getStarted": "Rozpocznij",
     "hero": {
-      "title": "Opanuj swoją pamięć",
-      "subtitle": "Trenuj mózg naukowo potwierdzonymi technikami pamięciowymi",
-      "cta": "Zacznij za darmo",
-      "secondaryCta": "Dowiedz się więcej"
+      "badge": "Naukowo potwierdzone treningi pamięci",
+      "title": "Przestań zapominać.\nZacznij opanowywać.",
+      "subtitle": "Trenuj mózg technikami używanymi przez mistrzów pamięci. Opanuj imiona, liczby i listy poprzez aktywne przypominanie i powtarzanie w odstępach czasu.",
+      "startTraining": "Rozpocznij Trening",
+      "learnMore": "Dowiedz się więcej"
     },
-    "features": {
-      "title": "Dlaczego Memorio?",
-      "feature1Title": "Adaptacyjna nauka",
-      "feature1Desc": "Nasza AI dostosowuje trudność do Twoich wyników",
-      "feature2Title": "Sprawdzone techniki",
-      "feature2Desc": "Ucz się metod używanych przez mistrzów pamięci",
-      "feature3Title": "Śledź postępy",
-      "feature3Desc": "Wizualizuj swoje postępy w czasie"
+    "methodology": {
+      "title": "Stworzone dla rezultatów.",
+      "subtitle": "Nie tylko pokazujemy ci kart. Używamy sprawdzonej nauki kognitywnej, aby zapewnić, że informacje przenoszą się z pamięci krótkotrwałej do długotrwałej.",
+      "feature1": {
+        "title": "Algorytm BKT",
+        "desc": "Bayesian Knowledge Tracing przewiduje dokładnie, kiedy zapomnisz coś i planuje powtórkę."
+      },
+      "feature2": {
+        "title": "Aktywne Przypominanie",
+        "desc": "Wyjdź poza pasywne czytanie. Nasze ćwiczenia zmuszają mózg do aktywnego przypominania informacji."
+      },
+      "feature3": {
+        "title": "Grywalizacja Postępów",
+        "desc": "Zdobywaj odznaki, utrzymuj serie i rozwijaj swój las. Czynimy trening pamięci uzależniającym."
+      }
     },
-    "testimonials": {
-      "title": "Co mówią nasi użytkownicy"
+    "exercises": {
+      "title": "Główne Ćwiczenia",
+      "subtitle": "Ukierunkowane treningi dla różnych typów pamięci.",
+      "exercise1": {
+        "title": "Łączenie Słów",
+        "subtitle": "Metoda Łańcucha",
+        "desc": "Zapamiętuj długie listy przedmiotów tworząc żywe narracyjne łańcuchy.",
+        "tag1": "Listy",
+        "tag2": "Przemówienia"
+      },
+      "exercise2": {
+        "title": "Imiona i Twarze",
+        "subtitle": "Przypominanie Społeczne",
+        "desc": "Nigdy więcej nie zapomnij imienia. Naucz się kojarzyć cechy wizualne z imionami.",
+        "tag1": "Networking",
+        "tag2": "Społeczne"
+      },
+      "exercise3": {
+        "title": "Kołki Liczbowe",
+        "subtitle": "Dane Abstrakcyjne",
+        "desc": "Przekształć abstrakcyjne liczby w konkretne obrazy używając Systemu Głównego.",
+        "tag1": "Tel. nr",
+        "tag2": "Daty",
+        "tag3": "Kody PIN"
+      }
+    },
+    "social": {
+      "title": "Dołącz do Atletów Mózgu na Całym Świecie",
+      "subtitle": "Trenuj razem ze studentami, profesjonalistami i mistrzami pamięci budującymi odporność kognitywną poprzez naukowo potwierdzone techniki."
     },
     "cta": {
-      "title": "Gotowy, aby zmienić swoją pamięć?",
-      "subtitle": "Dołącz do tysięcy użytkowników poprawiających swoje umiejętności pamięciowe",
-      "button": "Rozpocznij trening teraz"
+      "title": "Gotowy, aby ulepszyć swój umysł?",
+      "subtitle": "Dołącz już dziś i otrzymaj swój pierwszy spersonalizowany plan treningowy za darmo. Nie wymaga karty kredytowej.",
+      "button": "Rozpocznij za Darmo"
+    },
+    "footer": {
+      "privacy": "Prywatność",
+      "terms": "Warunki",
+      "contact": "Kontakt"
     }
   }
 }

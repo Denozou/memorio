@@ -4,6 +4,8 @@ import {
   Users, Sparkles, Activity, ChevronRight 
 } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
+import LanguageSelector from '../components/LanguageSelector';
+import { useTranslation } from 'react-i18next';
 
 interface FeatureCardProps {
   icon: React.ReactNode;
@@ -20,6 +22,8 @@ interface ExerciseCardProps {
 }
 
 export default function LandingPage() {
+  const { t } = useTranslation();
+  
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans selection:bg-indigo-500/30">
       
@@ -32,14 +36,15 @@ export default function LandingPage() {
             </div>
             <span className="text-xl font-bold tracking-tight">Memorio</span>
           </div>
-          <div className="flex items-center gap-6">
-            <a href="#methodology" className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors hidden sm:block">Methodology</a>
-            <a href="#exercises" className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors hidden sm:block">Exercises</a>
-            <div className="h-6 w-px bg-slate-300 dark:bg-white/10 hidden sm:block" />
+          <div className="flex items-center gap-4">
+            <a href="#methodology" className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors hidden md:block">{t('landing.navMethodology')}</a>
+            <a href="#exercises" className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors hidden md:block">{t('landing.navExercises')}</a>
+            <div className="h-6 w-px bg-slate-300 dark:bg-white/10 hidden md:block" />
+            <LanguageSelector variant="compact" />
             <ThemeToggle />
-            <a href="/login" className="text-sm font-medium text-slate-900 hover:text-indigo-600 dark:text-white dark:hover:text-indigo-400 transition-colors min-h-[44px] inline-flex items-center">Log in</a>
+            <a href="/login" className="text-sm font-medium text-slate-900 hover:text-indigo-600 dark:text-white dark:hover:text-indigo-400 transition-colors min-h-[44px] inline-flex items-center">{t('landing.login')}</a>
             <a href="/signup" className="bg-indigo-600 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-indigo-500 dark:bg-white dark:text-slate-950 dark:hover:bg-indigo-50 transition-colors min-h-[44px] inline-flex items-center">
-              Get Started
+              {t('landing.getStarted')}
             </a>
           </div>
         </div>
@@ -54,24 +59,23 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100 border border-indigo-200 dark:bg-white/5 dark:border-white/10 text-xs font-medium text-indigo-600 dark:text-indigo-300 mb-8">
             <Sparkles className="w-3 h-3" />
-            <span>Science-backed memory training</span>
+            <span>{t('landing.hero.badge')}</span>
           </div>
           
           <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6 bg-gradient-to-b from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
-            Stop forgetting.<br />Start mastering.
+            {t('landing.hero.title')}
           </h1>
           
           <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Train your brain with the techniques used by memory champions. 
-            Master names, numbers, and lists through active recall and spaced repetition.
+            {t('landing.hero.subtitle')}
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a href="/signup" className="w-full sm:w-auto min-h-[48px] px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full font-bold transition-all hover:scale-105 active:scale-95 shadow-xl shadow-indigo-500/20 flex items-center justify-center gap-2">
-              Start Training Now <ArrowRight className="w-5 h-5" />
+              {t('landing.hero.startTraining')} <ArrowRight className="w-5 h-5" />
             </a>
             <a href="#methodology" className="w-full sm:w-auto min-h-[48px] px-8 py-4 bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 dark:bg-white/5 dark:hover:bg-white/10 dark:text-white dark:border-white/10 rounded-full font-bold transition-all flex items-center justify-center gap-2">
-              Learn More
+              {t('landing.hero.learnMore')}
             </a>
           </div>
 
@@ -111,27 +115,27 @@ export default function LandingPage() {
       <section id="methodology" className="py-24 bg-slate-50 dark:bg-slate-950 relative">
         <div className="max-w-7xl mx-auto px-6">
            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-bold mb-6 text-slate-900 dark:text-white">Built for results.</h2>
+              <h2 className="text-3xl md:text-5xl font-bold mb-6 text-slate-900 dark:text-white">{t('landing.methodology.title')}</h2>
               <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto text-lg">
-                We don't just flash cards at you. We use proven cognitive science to ensure information moves from short-term to long-term memory.
+                {t('landing.methodology.subtitle')}
               </p>
            </div>
 
            <div className="grid md:grid-cols-3 gap-8">
               <FeatureCard 
                 icon={<Target />} 
-                title="BKT Algorithm" 
-                desc="Bayesian Knowledge Tracing predicts exactly when you're about to forget something and schedules a review."
+                title={t('landing.methodology.feature1.title')} 
+                desc={t('landing.methodology.feature1.desc')}
               />
               <FeatureCard 
                 icon={<Activity />} 
-                title="Active Recall" 
-                desc="Move beyond passive reading. Our exercises force your brain to retrieve information actively."
+                title={t('landing.methodology.feature2.title')} 
+                desc={t('landing.methodology.feature2.desc')}
               />
               <FeatureCard 
                 icon={<Trophy />} 
-                title="Gamified Progress" 
-                desc="Earn badges, maintain streaks, and grow your forest. Making memory training addictive."
+                title={t('landing.methodology.feature3.title')} 
+                desc={t('landing.methodology.feature3.desc')}
               />
            </div>
         </div>
@@ -142,32 +146,32 @@ export default function LandingPage() {
          <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-6">
                <div>
-                  <h2 className="text-3xl md:text-4xl font-bold mb-2 text-slate-900 dark:text-white">Core Exercises</h2>
-                  <p className="text-slate-600 dark:text-slate-400">Targeted workouts for different memory types.</p>
+                  <h2 className="text-3xl md:text-4xl font-bold mb-2 text-slate-900 dark:text-white">{t('landing.exercises.title')}</h2>
+                  <p className="text-slate-600 dark:text-slate-400">{t('landing.exercises.subtitle')}</p>
                </div>
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
                <ExerciseCard 
-                  title="Word Linking" 
-                  subtitle="Chain Method"
-                  desc="Memorize long lists of items by creating vivid narrative chains."
+                  title={t('landing.exercises.exercise1.title')} 
+                  subtitle={t('landing.exercises.exercise1.subtitle')}
+                  desc={t('landing.exercises.exercise1.desc')}
                   color="bg-purple-500"
-                  tags={["Lists", "Speeches"]}
+                  tags={[t('landing.exercises.exercise1.tag1'), t('landing.exercises.exercise1.tag2')]}
                />
                <ExerciseCard 
-                  title="Names & Faces" 
-                  subtitle="Social Recall"
-                  desc="Never forget a name again. Learn to tag visual features to names."
+                  title={t('landing.exercises.exercise2.title')} 
+                  subtitle={t('landing.exercises.exercise2.subtitle')}
+                  desc={t('landing.exercises.exercise2.desc')}
                   color="bg-indigo-500"
-                  tags={["Networking", "Social"]}
+                  tags={[t('landing.exercises.exercise2.tag1'), t('landing.exercises.exercise2.tag2')]}
                />
                <ExerciseCard 
-                  title="Number Pegs" 
-                  subtitle="Abstract Data"
-                  desc="Convert abstract numbers into concrete images using the Major System."
+                  title={t('landing.exercises.exercise3.title')} 
+                  subtitle={t('landing.exercises.exercise3.subtitle')}
+                  desc={t('landing.exercises.exercise3.desc')}
                   color="bg-cyan-500"
-                  tags={["Phone #s", "Dates", "PINs"]}
+                  tags={[t('landing.exercises.exercise3.tag1'), t('landing.exercises.exercise3.tag2'), t('landing.exercises.exercise3.tag3')]}
                />
             </div>
          </div>
@@ -179,9 +183,9 @@ export default function LandingPage() {
             <div className="inline-flex items-center justify-center p-3 mb-8 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30">
                <Users className="w-8 h-8 text-indigo-400" />
             </div>
-            <h2 className="text-4xl font-bold mb-6 text-slate-900 dark:text-white">Join Brain Athletes Worldwide</h2>
+            <h2 className="text-4xl font-bold mb-6 text-slate-900 dark:text-white">{t('landing.social.title')}</h2>
             <p className="text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto">
-              Train alongside students, professionals, and memory champions building cognitive resilience through science-backed techniques.
+              {t('landing.social.subtitle')}
             </p>
          </div>
       </section>
@@ -191,12 +195,12 @@ export default function LandingPage() {
       <footer className="border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950 pt-20 pb-10">
          <div className="max-w-7xl mx-auto px-6">
             <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-3xl p-12 text-center relative overflow-hidden mb-20">
-               <h2 className="text-3xl md:text-5xl font-bold mb-6 relative z-10 text-white">Ready to upgrade your mind?</h2>
+               <h2 className="text-3xl md:text-5xl font-bold mb-6 relative z-10 text-white">{t('landing.cta.title')}</h2>
                <p className="text-indigo-200 text-lg mb-8 max-w-xl mx-auto relative z-10">
-                  Join today and get your first personalized training plan for free. No credit card required.
+                  {t('landing.cta.subtitle')}
                </p>
                <a href="/signup" className="min-h-[48px] px-10 py-4 bg-white text-indigo-900 rounded-full font-bold text-lg hover:bg-indigo-50 transition-colors shadow-xl relative z-10 inline-flex items-center justify-center">
-                  Get Started for Free
+                  {t('landing.cta.button')}
                </a>
             </div>
 
@@ -208,9 +212,9 @@ export default function LandingPage() {
                   <span className="font-bold text-slate-900 dark:text-slate-300">Memorio</span>
                </div>
                <div className="flex gap-8">
-                  <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Privacy</a>
-                  <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Terms</a>
-                  <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Contact</a>
+                  <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">{t('landing.footer.privacy')}</a>
+                  <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">{t('landing.footer.terms')}</a>
+                  <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">{t('landing.footer.contact')}</a>
                </div>
                <div className="mt-4 md:mt-0">
                   © {new Date().getFullYear()} Memorio
