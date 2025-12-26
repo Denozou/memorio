@@ -46,10 +46,10 @@ export async function logout(): Promise<void> {
         });
     } catch (error) {
         console.error('Logout error:', error);
+    } finally {
+        // Always redirect to login page, even if logout fails
+        window.location.href = '/login';
     }
-
-    // Redirect to login page
-    window.location.href = '/login';
 }
 
 

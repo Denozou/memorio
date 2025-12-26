@@ -540,7 +540,7 @@ function ResultsPhase({ targetList, userList, score, onReset }: {
         {targetList.map((target, i) => {
           const userWord = userList[i] || "";
           const isCorrect = userWord.toLowerCase() === target.toLowerCase();
-          const isSkipped = !userWord;
+          const isSkipped = !userWord || userWord.trim() === "";
 
           return (
             <div key={i} className="flex gap-3 sm:gap-6 relative pb-6 sm:pb-8 last:pb-0">
@@ -587,7 +587,7 @@ function ResultsPhase({ targetList, userList, score, onReset }: {
                     <div className="text-[10px] sm:text-xs text-red-600 dark:text-red-400 font-bold uppercase mb-1">
                       You Said
                     </div>
-                    <div className="text-sm sm:text-lg font-medium text-red-700 dark:text-red-300 line-through decoration-red-500/50 truncate">
+                    <div className="text-sm sm:text-xs font-medium text-red-700 dark:text-red-300 decoration-red-500/50 truncate">
                       {isSkipped ? "(Skipped)" : userWord}
                     </div>
                   </div>
@@ -610,7 +610,7 @@ function ResultsPhase({ targetList, userList, score, onReset }: {
       {!!score.newBadges?.length && (
         <div className="p-4 sm:p-6 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
           <div className="font-bold mb-3 text-amber-900 dark:text-amber-100 text-sm sm:text-base">
-            🎉 New Badges Earned!
+            🎉 New Badge Earned!
           </div>
           <div className="flex gap-2 sm:gap-3 flex-wrap">
             {score.newBadges.map((b) => (

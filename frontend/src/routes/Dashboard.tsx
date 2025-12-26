@@ -590,7 +590,7 @@ function HistoryList({ items }: { items: HistoryItem[] }) {
           
           <div className="text-right shrink-0 ml-2">
              <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-50">
-                {s.lastAccuracy ? `${Math.round(s.lastAccuracy * 100)}%` : t('dashboard.notFinished')}
+                {s.lastAccuracy !== null ? `${Math.round(s.lastAccuracy * 100)}%` : t('dashboard.notFinished')}
              </div>
              <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-medium">{t('dashboard.accuracy')}</span>
           </div>

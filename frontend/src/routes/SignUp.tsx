@@ -1,7 +1,7 @@
-import {useState} from "react";
+import {useState, useMemo} from "react";
 import {api} from "../lib/api";
 import {useNavigate, Link} from "react-router-dom";
-import { ArrowRight, Eye, EyeOff, Brain } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Brain, Check, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import ThemeToggle from "../components/ThemeToggle";
 import LanguageSelector from "../components/LanguageSelector";
@@ -17,6 +17,32 @@ type RegisterResp = {
     expiresAt: number;
 };
 
+// Password Requirement Item Component
+function RequirementItem({ met, text }: { met: boolean; text: string }) {
+    return (
+        <div className={`flex items-center gap-2 text-xs transition-all duration-300 ${
+            met ? 'text-emerald-600 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-200'
+        }`}>
+            <div className={`flex items-center justify-center w-4 h-4 rounded-full transition-all duration-300 ${
+                met 
+                    ? 'bg-emerald-500 dark:bg-emerald-500 scale-100' 
+                    : 'bg-slate-300 dark:bg-slate-600 scale-90'
+            }`}>
+                {met ? (
+                    <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                ) : (
+                    <X className="w-2.5 h-2.5 text-slate-500 dark:text-slate-300" strokeWidth={2.5} />
+                )}
+            </div>
+            <span className={`font-medium transition-all ${
+                met ? 'opacity-100' : 'opacity-100'
+            }`}>
+                {text}
+            </span>
+        </div>
+    );
+}
+
 export default function SignUp(){
     const { t } = useTranslation();
     const nav = useNavigate();
@@ -30,6 +56,29 @@ export default function SignUp(){
     const [error, setError] = useState<string|null>(null);
     const [busy, setBusy] = useState(false);
 
+    // Password validation state
+    const passwordValidation = useMemo(() => {
+        const hasMinLength = password.length >= 12;
+        const hasUppercase = /[A-Z]/.test(password);
+        const hasLowercase = /[a-z]/.test(password);
+        const hasDigit = /[0-9]/.test(password);
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+        
+        const allValid = hasMinLength && hasUppercase && hasLowercase && hasDigit && hasSpecialChar;
+        const validCount = [hasMinLength, hasUppercase, hasLowercase, hasDigit, hasSpecialChar].filter(Boolean).length;
+        
+        return {
+            hasMinLength,
+            hasUppercase,
+            hasLowercase,
+            hasDigit,
+            hasSpecialChar,
+            allValid,
+            validCount,
+            totalCount: 5
+        };
+    }, [password]);
+
     async function onSubmit(e: React.FormEvent){
         e.preventDefault();
         setBusy(true);
@@ -42,8 +91,8 @@ export default function SignUp(){
             return;
         }
 
-        if (password.length < 6) {
-            setError(t('auth.passwordTooShort'));
+        if (!passwordValidation.allValid) {
+            setError('Please meet all password requirements');
             setBusy(false);
             return;
         }
@@ -170,7 +219,62 @@ export default function SignUp(){
                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
                             </div>
-                            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Must be at least 6 characters</p>
+                            
+                            {/* Password Strength Indicator */}
+                            {password.length > 0 && (
+                                <div className="mt-3 space-y-3">
+                                    {/* Strength Bar */}
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                                                Password Strength
+                                            </span>
+                                            <span className={`text-xs font-semibold transition-colors ${
+                                                passwordValidation.validCount === 5 ? 'text-emerald-600 dark:text-emerald-400' :
+                                                passwordValidation.validCount >= 3 ? 'text-amber-600 dark:text-amber-400' :
+                                                'text-red-600 dark:text-red-400'
+                                            }`}>
+                                                {passwordValidation.validCount === 5 ? 'Strong' :
+                                                 passwordValidation.validCount >= 3 ? 'Medium' : 'Weak'}
+                                            </span>
+                                        </div>
+                                        <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                            <div 
+                                                className={`h-full transition-all duration-500 ease-out ${
+                                                    passwordValidation.validCount === 5 ? 'bg-gradient-to-r from-emerald-500 to-green-500' :
+                                                    passwordValidation.validCount >= 3 ? 'bg-gradient-to-r from-amber-500 to-yellow-500' :
+                                                    'bg-gradient-to-r from-red-500 to-orange-500'
+                                                }`}
+                                                style={{ width: `${(passwordValidation.validCount / passwordValidation.totalCount) * 100}%` }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Requirements List */}
+                                    <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-3 space-y-2">
+                                        <RequirementItem 
+                                            met={passwordValidation.hasMinLength} 
+                                            text="At least 12 characters"
+                                        />
+                                        <RequirementItem 
+                                            met={passwordValidation.hasUppercase} 
+                                            text="One uppercase letter (A-Z)"
+                                        />
+                                        <RequirementItem 
+                                            met={passwordValidation.hasLowercase} 
+                                            text="One lowercase letter (a-z)"
+                                        />
+                                        <RequirementItem 
+                                            met={passwordValidation.hasDigit} 
+                                            text="One number (0-9)"
+                                        />
+                                        <RequirementItem 
+                                            met={passwordValidation.hasSpecialChar} 
+                                            text="One special character (!@#$%...)"
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Confirm Password Input */}

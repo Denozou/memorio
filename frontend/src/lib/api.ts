@@ -32,7 +32,7 @@ api.interceptors.response.use(
             console.log('Refresh token expired or invalid');
             // Only logout if not on a public page
             if (!isPublicPage()) {
-                logout();
+                setTimeout(() => logout(), 100);
             }
             throw error;
         }
@@ -53,7 +53,7 @@ api.interceptors.response.use(
                 // Refresh failed - logout user
                 isRefreshing = false;
                 console.log('Token refresh failed, logging out...');
-                logout();
+                setTimeout(() => logout(), 100);
                 throw error;
             }
         }
