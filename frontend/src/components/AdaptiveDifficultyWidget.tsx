@@ -108,6 +108,11 @@ export default function AdaptiveDifficultyWidget() {
   const { stats, skillsDueForReview, skillsNeedingPractice } = dashboard;
   const masteryPercent = Math.round(stats.averageMastery * 100);
 
+  // Filter out QUIZ skills - only show the three main exercises
+  const mainExerciseTypes = ['WORD_LINKING', 'NAMES_FACES', 'NUMBER_PEG'];
+  const filteredDueForReview = skillsDueForReview.filter(skill => mainExerciseTypes.includes(skill.skillType));
+  const filteredNeedingPractice = skillsNeedingPractice.filter(skill => mainExerciseTypes.includes(skill.skillType));
+
   return (
     <div className="space-y-6">
       {/* Overall Stats Card */}
@@ -161,18 +166,18 @@ export default function AdaptiveDifficultyWidget() {
       </div>
 
       {/* Skills Due for Review */}
-      {skillsDueForReview.length > 0 && (
+      {filteredDueForReview.length > 0 && (
         <div className="rounded-2xl border border-orange-200 dark:border-orange-800 shadow-sm p-6 bg-gradient-to-br from-orange-50 to-amber-50 dark:bg-none dark:bg-slate-900">
           <div className="flex items-center gap-3 mb-4">
             <div className="h-10 w-10 rounded-xl bg-orange-100 dark:bg-orange-900/70 flex items-center justify-center">
               <Clock className="w-5 h-5 text-orange-600 dark:text-orange-300" />
             </div>
             <h3 className="font-semibold text-slate-900 dark:text-slate-50">
-              Ready to Review ({skillsDueForReview.length})
+              Ready to Review ({filteredDueForReview.length})
             </h3>
           </div>
           <div className="space-y-3">
-            {skillsDueForReview.map((skill) => (
+            {filteredDueForReview.map((skill) => (
               <SkillCard key={skill.id} skill={skill} formatSkillName={formatSkillName} getSkillIcon={getSkillIcon} getSkillRoute={getSkillRoute} type="review" />
             ))}
           </div>
@@ -180,18 +185,18 @@ export default function AdaptiveDifficultyWidget() {
       )}
 
       {/* Skills Needing Practice */}
-      {skillsNeedingPractice.length > 0 && (
+      {filteredNeedingPractice.length > 0 && (
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 shadow-sm p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="h-10 w-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <h3 className="font-semibold text-slate-900 dark:text-slate-50">
-              {t('dashboard.needsPractice')} ({skillsNeedingPractice.length})
+              {t('dashboard.needsPractice')} ({filteredNeedingPractice.length})
             </h3>
           </div>
           <div className="space-y-3">
-            {skillsNeedingPractice.slice(0, 3).map((skill) => (
+            {filteredNeedingPractice.slice(0, 3).map((skill) => (
               <SkillCard key={skill.id} skill={skill} formatSkillName={formatSkillName} getSkillIcon={getSkillIcon} getSkillRoute={getSkillRoute} type="practice" />
             ))}
           </div>
