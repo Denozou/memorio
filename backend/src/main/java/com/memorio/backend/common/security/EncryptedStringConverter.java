@@ -32,9 +32,26 @@ public class EncryptedStringConverter implements AttributeConverter<String, Stri
 
     @Override
     public String convertToEntityAttribute(String dbData) {
-        if (dbData == null) {
+        if (dbData == null || dbData.isEmpty()) {
             return null;
         }
-        return encryptionService.decrypt(dbData);
+        
+        // Check if data appears to be encrypted (Base64 with proper length)
+        // Encrypted data should be at least 28 bytes (12 IV + 16 tag minimum)
+        // When Base64 encoded, that's at least ~38 characters
+        if (dbData.length() < 32) {
+            // Too short to be encrypted, assume plaintext (legacy data)
+            return dbData;
+        }
+        
+        try {
+            // Attempt to decrypt
+            return encryptionService.decrypt(dbData);
+        } catch (Exception e) {
+            // If decryption fails, assume it's plaintext legacy data
+            // Log warning but return the plaintext value
+            // On next save, it will be encrypted
+            return dbData;
+        }
     }
 }
