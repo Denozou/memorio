@@ -8,6 +8,7 @@ import {
 import { useTranslation } from "react-i18next";
 import ThemeToggle from "../components/ThemeToggle";
 import LanguageSelector from "../components/LanguageSelector";
+import ReviewNotificationBadge from "../components/ReviewNotificationBadge";
 
 type StartReq = { type: "NUMBER_PEG" };
 
@@ -143,8 +144,9 @@ export default function ExerciseNumberPeg() {
             </Link>
             
             <div className="hidden md:flex items-center gap-6">
-              <Link to="/dashboard" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
+              <Link to="/dashboard" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50 inline-flex items-center">
                 {t('common.dashboard')}
+                <ReviewNotificationBadge />
               </Link>
               <Link to="/leaderboard" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
                 {t('common.leaderboard')}
@@ -185,8 +187,9 @@ export default function ExerciseNumberPeg() {
           {mobileMenuOpen && (
             <div className="md:hidden py-3 border-t border-slate-200/70 dark:border-slate-800">
               <div className="flex flex-col gap-2">
-                <Link to="/dashboard" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/dashboard" className="py-2 text-slate-600 dark:text-slate-300 inline-flex items-center" onClick={() => setMobileMenuOpen(false)}>
                   {t('common.dashboard')}
+                  <ReviewNotificationBadge />
                 </Link>
                 <Link to="/learning" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
                   {t('common.learning')}

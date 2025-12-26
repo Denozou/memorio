@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Trophy, Sprout, TrendingUp, Info, X, Maximize2, ArrowLeft, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Trophy, Sprout, TrendingUp, Info, X, Maximize2, ChevronLeft, ChevronRight, Loader2, Brain, LogOut, Menu } from 'lucide-react';
 import { api } from '../lib/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ThemeToggle from '../components/ThemeToggle';
 import { IsoForestPlot } from '../components/IsoForest';
+import ReviewNotificationBadge from '../components/ReviewNotificationBadge';
 
 type LeaderboardEntry = {
   userId: string;
@@ -210,6 +211,12 @@ export default function IsoForestLeaderboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<LeaderboardEntry | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
 
   useEffect(() => {
     fetchLeaderboard();
@@ -233,7 +240,7 @@ export default function IsoForestLeaderboard() {
   const carbonOffset = (totalTrees * 25).toLocaleString();
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans pb-20">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans">
       <style>{`
         @keyframes popIn {
           0% { opacity: 0; transform: scale(0) translateY(10px); }
@@ -244,6 +251,88 @@ export default function IsoForestLeaderboard() {
 
       {selectedUser && <ForestModal user={selectedUser} onClose={() => setSelectedUser(null)} t={t} />}
 
+      {/* Header Navigation */}
+      <header className="sticky top-0 z-40 border-b border-slate-700/50 dark:border-slate-800 bg-slate-900 dark:bg-slate-950 backdrop-blur">
+        <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            <Link to="/dashboard" className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center shadow-md">
+                <Brain className="h-5 w-5 text-white" />
+              </div>
+              <span className="font-semibold tracking-tight text-white">Memorio</span>
+            </Link>
+            
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-6">
+              <Link to="/dashboard" className="text-sm text-slate-300 hover:text-white inline-flex items-center">
+                {t('common.dashboard')}
+                <ReviewNotificationBadge />
+              </Link>
+              <Link to="/leaderboard" className="text-sm text-white font-medium">
+                {t('common.leaderboard')}
+              </Link>
+              <Link to="/learning" className="text-sm text-slate-300 hover:text-white">
+                {t('common.learning')}
+              </Link>
+              <Link to="/profile" className="text-sm text-slate-300 hover:text-white">
+                {t('common.profile')}
+              </Link>
+            </div>
+
+            <div className="hidden md:flex items-center gap-3">
+              <ThemeToggle />
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 rounded-xl border border-slate-700 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                {t('common.logout')}
+              </button>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden flex items-center gap-2">
+              <ThemeToggle />
+              <button
+                className="p-2 rounded-lg border border-slate-700 text-slate-300"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden py-3 border-t border-slate-700/50 dark:border-slate-800">
+              <div className="flex flex-col gap-2">
+                <Link to="/dashboard" className="py-2 text-slate-300 hover:text-white inline-flex items-center" onClick={() => setMobileMenuOpen(false)}>
+                  {t('common.dashboard')}
+                  <ReviewNotificationBadge />
+                </Link>
+                <Link to="/leaderboard" className="py-2 text-white font-medium" onClick={() => setMobileMenuOpen(false)}>
+                  {t('common.leaderboard')}
+                </Link>
+                <Link to="/learning" className="py-2 text-slate-300 hover:text-white" onClick={() => setMobileMenuOpen(false)}>
+                  {t('common.learning')}
+                </Link>
+                <Link to="/profile" className="py-2 text-slate-300 hover:text-white" onClick={() => setMobileMenuOpen(false)}>
+                  {t('common.profile')}
+                </Link>
+                <button
+                  onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
+                  className="py-2 text-left text-slate-300 hover:text-white flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4 text-slate-300" />
+                  {t('common.logout')}
+                </button>
+              </div>
+            </div>
+          )}
+        </nav>
+      </header>
+
       <div className="bg-slate-900 dark:bg-slate-950 text-white pt-12 pb-32 px-6 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-[20%] -right-[10%] w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-3xl" />
@@ -251,13 +340,6 @@ export default function IsoForestLeaderboard() {
         </div>
 
         <div className="max-w-4xl mx-auto relative z-10">
-          <div className="flex justify-between items-center mb-8">
-            <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors">
-              <ArrowLeft size={20} />
-              <span className="hidden sm:inline">{t('leaderboard.backToDashboard')}</span>
-            </button>
-            <ThemeToggle />
-          </div>
 
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-4">
             <div className="flex-1">

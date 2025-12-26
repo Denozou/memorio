@@ -20,7 +20,7 @@ type Streak = {
 
 type HistoryItem = {
   sessionId: string;
-  type: "WORD_LINKING" | "NAMES_FACES" | "OBJECT_STORY" | "DAILY_CHALLENGE";
+  type: "WORD_LINKING" | "NAMES_FACES" | "NUMBER_PEG" | "OBJECT_STORY" | "DAILY_CHALLENGE";
   startedAt: string;        // datetime
   finishedAt: string | null;
   attemptCount: number;
@@ -634,10 +634,25 @@ function TypeBadge({ type }: { type: HistoryItem["type"] }) {
     return names[exerciseType] || exerciseType.replace("_", " ").toLowerCase().replace(/(^|\s)\S/g, (m) => m.toUpperCase());
   };
 
+  const getColorClass = () => {
+    switch(type) {
+      case "WORD_LINKING":
+        return "bg-green-500";
+      case "NAMES_FACES":
+        return "bg-blue-500";
+      case "NUMBER_PEG":
+        return "bg-orange-400";
+      case "OBJECT_STORY":
+        return "bg-purple-500";
+      case "DAILY_CHALLENGE":
+        return "bg-pink-500";
+      default:
+        return "bg-slate-400";
+    }
+  };
+
   return (
-    <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full shrink-0 ${
-      type === "WORD_LINKING" ? "bg-green-500" : "bg-orange-400"
-    }`} title={formatType(type)} />
+    <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full shrink-0 ${getColorClass()}`} title={formatType(type)} />
   );
 }
 
