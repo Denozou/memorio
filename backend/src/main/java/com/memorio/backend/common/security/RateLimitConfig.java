@@ -6,8 +6,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
 import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
 public class RateLimitConfig {
@@ -32,19 +30,19 @@ public class RateLimitConfig {
         // This is higher than the 5 failed attempts per email lockout
         // so email-based blocking takes precedence
         Bandwidth limit = Bandwidth.builder()
-                .capacity(20)
-                .refillIntervally(20, Duration.ofMinutes(1))
+                .capacity(30)
+                .refillIntervally(30, Duration.ofMinutes(1))
                 .build();
         return Bucket.builder()
                 .addLimit(limit)
                 .build();
     }
 
-    //3 requests per hour
+    //10 requests per hour
     private Bucket createRegisterBucket(){
         Bandwidth limit = Bandwidth.builder()
-                .capacity(3)
-                .refillIntervally(3, Duration.ofHours(1))
+                .capacity(20)
+                .refillIntervally(20, Duration.ofHours(1))
                 .build();
 
         return Bucket.builder()
