@@ -438,7 +438,7 @@ public class ExerciseController {
 
     private int getWordCountForLevel(int skillLevel){
         int level = Math.max(1, Math.min(skillLevel, 10));
-        return 6 + (level *6);
+        return level * 6;
     }
 
     private int getFaceCountForLevel(int skillLevel){
