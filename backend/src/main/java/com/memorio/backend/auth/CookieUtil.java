@@ -3,11 +3,9 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.HttpHeaders;
-import org.springframework.core.env.Profiles;
 
 @Component
 public class CookieUtil {
@@ -16,12 +14,12 @@ public class CookieUtil {
 
     @Value("${security.jwt.access-token-minutes:30}")
     private int accessTokenMinutes;
-    @Value("${security.jwt.refresh-token-minutes:10080}") // 7 days!!!
+    @Value("${security.jwt.refresh-token-minutes:10080}") // 7 days
     private int refreshTokenMinutes;
+    @Value("${security.cookie.secure:false}")
+    private boolean cookieSecure;
 
-    private final Environment environment;
-    public CookieUtil( Environment environment){
-        this.environment = environment;
+    public CookieUtil() {
     }
 
     public void setAccessTokenCookie(HttpServletResponse response, String token){
@@ -56,12 +54,10 @@ public class CookieUtil {
     }
 
     private ResponseCookie createSecureCookie(String name, String value, int maxAgeSeconds){
-        boolean isProduction = !environment.acceptsProfiles(Profiles.of("dev","development", "local"));
-
         return ResponseCookie.from(name,value)
                 .httpOnly(true)
-                .secure(isProduction)  // ДЛЯ ПРОДУ ЗМІНИТИ НА TRUE || set TRUE for production
-                .path("/") // для проду треба буде поставити посилання на свій домен
+                .secure(cookieSecure)
+                .path("/")
                 .maxAge(maxAgeSeconds)
                 .sameSite("Lax")
                 .build();

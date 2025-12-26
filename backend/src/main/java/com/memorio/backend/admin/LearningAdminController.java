@@ -34,6 +34,7 @@ public class LearningAdminController {
     private final ArticleImageService articleImageService;
     private final SlugService slugService;
     private final ArticleCacheService articleCacheService;
+    private final com.memorio.backend.common.validation.FileUploadValidator fileUploadValidator;
 
     public LearningAdminController(ArticleRepository articleRepo,
                                    ArticleQuizRepository quizRepo,
@@ -41,7 +42,8 @@ public class LearningAdminController {
                                    QuizQuestionOptionRepository optionRepo,
                                    ArticleImageService articleImageService,
                                    SlugService slugService,
-                                   ArticleCacheService articleCacheService) {
+                                   ArticleCacheService articleCacheService,
+                                   com.memorio.backend.common.validation.FileUploadValidator fileUploadValidator) {
         this.articleRepo = articleRepo;
         this.quizRepo = quizRepo;
         this.questionRepo = questionRepo;
@@ -49,6 +51,7 @@ public class LearningAdminController {
         this.articleImageService = articleImageService;
         this.slugService = slugService;
         this.articleCacheService = articleCacheService;
+        this.fileUploadValidator = fileUploadValidator;
     }
 
     /**
@@ -61,6 +64,9 @@ public class LearningAdminController {
             Authentication auth) {
 
         try {
+            // Validate file upload
+            fileUploadValidator.validateImageUpload(file);
+            
             Article article = articleRepo.findById(articleId)
                     .orElseThrow(() -> new RuntimeException("Article not found"));
 

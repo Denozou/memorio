@@ -7,8 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import com.memorio.backend.common.error.NotFoundException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
+/**
+ * Global exception handler for consistent error responses across the application.
+ * Provides secure error handling without leaking sensitive information.
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
@@ -57,6 +61,15 @@ public class GlobalExceptionHandler {
                                                               HttpServletRequest req){
         return ResponseEntity.status(HttpStatus.CONFLICT).body(
                 new ErrorResponse("An account with this email already exists", req.getRequestURI())
+        );
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponse> handleMaxUploadSizeExceeded(
+            MaxUploadSizeExceededException ex, HttpServletRequest req) {
+        log.warn("File upload size exceeded: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(
+                new ErrorResponse("File size exceeds maximum allowed size", req.getRequestURI())
         );
     }
 

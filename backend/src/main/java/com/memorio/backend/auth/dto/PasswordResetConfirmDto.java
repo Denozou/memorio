@@ -1,8 +1,8 @@
 package com.memorio.backend.auth.dto;
 
 import com.memorio.backend.common.validation.PasswordMatches;
+import com.memorio.backend.common.validation.StrongPassword;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 @PasswordMatches
 public class PasswordResetConfirmDto {
@@ -10,7 +10,7 @@ public class PasswordResetConfirmDto {
     private String token;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 8, message = "Password must be at least 8 characters long")
+    @StrongPassword
     private String newPassword;
 
     @NotBlank(message = "Password confirmation is required")
