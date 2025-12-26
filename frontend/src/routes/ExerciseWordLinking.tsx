@@ -60,6 +60,7 @@ export default function ExerciseWordLinking() {
   const [phase, setPhase] = useState<"idle" | "study" | "recall" | "summary">("idle");
   const [userList, setUserList] = useState<string[]>([]); // Raw user input (in order typed)
   const [positionedAnswers, setPositionedAnswers] = useState<string[]>([]); // Matched to target positions
+  const [displayAnswers, setDisplayAnswers] = useState<string[]>([]); // What user actually typed at each position
 
   const [submitting, setSubmitting] = useState(false);
   const [score, setScore] = useState<SubmitResp | null>(null);
@@ -104,6 +105,9 @@ export default function ExerciseWordLinking() {
         return userAnswer || "";
       });
 
+      // Create display answers: pad user answers to match target length
+      const displayAnswers = words.map((_, index) => userAnswers[index] || "");
+
       const body: SubmitReq = {
         sessionId,
         type: "WORD_LINKING",
@@ -112,7 +116,8 @@ export default function ExerciseWordLinking() {
       };
       const { data } = await api.post<SubmitResp>("/exercises/submit", body);
       setScore(data);
-      setPositionedAnswers(positionedAnswers); // Store for display
+      setPositionedAnswers(positionedAnswers);
+      setDisplayAnswers(displayAnswers); // Store what user actually typed
       setPhase("summary");
     } catch (e: any) {
       setError(e?.response?.data?.error ?? "Failed to submit answers");
@@ -128,6 +133,7 @@ export default function ExerciseWordLinking() {
     setScore(null);
     setUserList([]);
     setPositionedAnswers([]);
+    setDisplayAnswers([]);
   }
 
   async function handleLogout() {
@@ -253,7 +259,7 @@ export default function ExerciseWordLinking() {
           {phase === "summary" && score && words && (
             <ResultsPhase 
               targetList={words} 
-              userList={positionedAnswers} 
+              userList={displayAnswers} 
               score={score}
               onReset={resetExercise}
             />
@@ -587,7 +593,7 @@ function ResultsPhase({ targetList, userList, score, onReset }: {
                     <div className="text-[10px] sm:text-xs text-red-600 dark:text-red-400 font-bold uppercase mb-1">
                       You Said
                     </div>
-                    <div className="text-sm sm:text-xs font-medium text-red-700 dark:text-red-300 decoration-red-500/50 truncate">
+                    <div className="text-sm sm:text-s font-medium text-red-700 dark:text-red-300 decoration-red-500/50 truncate">
                       {isSkipped ? "(Skipped)" : userWord}
                     </div>
                   </div>
