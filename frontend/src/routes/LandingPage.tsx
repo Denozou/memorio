@@ -29,21 +29,21 @@ export default function LandingPage() {
       
       {/* Navbar */}
       <nav className="fixed top-0 w-full z-50 border-b border-slate-200 dark:border-white/5 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
-              <Brain className="w-6 h-6" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-600 rounded-lg sm:rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+              <Brain className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <span className="text-xl font-bold tracking-tight">Memorio</span>
+            <span className="text-lg sm:text-xl font-bold tracking-tight">Memorio</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <a href="#methodology" className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors hidden md:block">{t('landing.navMethodology')}</a>
             <a href="#exercises" className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors hidden md:block">{t('landing.navExercises')}</a>
             <div className="h-6 w-px bg-slate-300 dark:bg-white/10 hidden md:block" />
             <LanguageSelector variant="compact" />
             <ThemeToggle />
-            <a href="/login" className="text-sm font-medium text-slate-900 hover:text-indigo-600 dark:text-white dark:hover:text-indigo-400 transition-colors min-h-[44px] inline-flex items-center">{t('landing.login')}</a>
-            <a href="/signup" className="bg-indigo-600 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-indigo-500 dark:bg-white dark:text-slate-950 dark:hover:bg-indigo-50 transition-colors min-h-[44px] inline-flex items-center">
+            <a href="/login" className="text-sm font-medium text-slate-900 hover:text-indigo-600 dark:text-white dark:hover:text-indigo-400 transition-colors min-h-[44px] inline-flex items-center hidden sm:inline-flex">{t('landing.login')}</a>
+            <a href="/signup" className="bg-indigo-600 text-white px-3 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:bg-indigo-500 dark:bg-white dark:text-slate-950 dark:hover:bg-indigo-50 transition-colors min-h-[44px] inline-flex items-center">
               {t('landing.getStarted')}
             </a>
           </div>
