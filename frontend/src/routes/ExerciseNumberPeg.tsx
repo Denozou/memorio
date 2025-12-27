@@ -465,17 +465,19 @@ function RecallPhase({ digitCount, onComplete }: {
     <div className="max-w-md mx-auto animate-in slide-in-from-bottom-4 duration-500">
       
       {/* Display Screen */}
-      <div className="bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 text-center shadow-inner relative">
-        <div className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-mono mb-2 uppercase">Sequence Output</div>
-        <div className="min-h-[48px] sm:min-h-[64px] flex items-center justify-center gap-0.5 sm:gap-1 overflow-x-auto pb-2">
+      <div className="bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 text-center shadow-lg relative">
+        <div className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-mono mb-3 uppercase tracking-wider">Sequence Output</div>
+        <div className="min-h-[48px] sm:min-h-[64px] flex items-center justify-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 pt-1">
           {/* Render placeholders for total length */}
           {Array.from({ length: digitCount }).map((_, i) => (
             <div 
               key={i} 
               className={`
-                w-7 h-10 sm:w-8 sm:h-12 rounded-lg flex items-center justify-center text-xl sm:text-2xl font-mono font-bold transition-all shrink-0
-                ${input[i] ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50" : "bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 border-dashed text-slate-300 dark:text-slate-700"}
-                ${i === input.length ? "border-blue-500/50 bg-blue-500/10 animate-pulse" : ""}
+                w-8 h-11 sm:w-10 sm:h-14 rounded-lg flex items-center justify-center text-xl sm:text-2xl font-mono font-bold transition-all shrink-0
+                ${input[i] 
+                  ? "bg-blue-500 dark:bg-blue-600 text-white border-2 border-blue-600 dark:border-blue-500 shadow-md" 
+                  : "bg-slate-100 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 text-slate-400 dark:text-slate-500"}
+                ${i === input.length ? "ring-2 ring-blue-400 dark:ring-blue-500 ring-offset-2 dark:ring-offset-slate-900 animate-pulse" : ""}
               `}
             >
               {input[i] || ""}
@@ -537,70 +539,154 @@ function ResultsPhase({ targetDigits, targetHints, userSequence, score, onReset 
   score: SubmitResp;
   onReset: () => void;
 }) {
-  // Diff logic
+  // Wordle-style diff logic with proper duplicate handling
+  const targetDigitsStr = targetDigits.map(d => d.toString());
+  const userDigitsArray = userSequence.split('');
+  
+  // First pass: mark exact position matches
+  const exactMatches = new Set<number>();
+  const targetCopy = [...targetDigitsStr];
+  userDigitsArray.forEach((userDigit, i) => {
+    if (userDigit === targetDigitsStr[i]) {
+      exactMatches.add(i);
+      targetCopy[i] = ''; // Mark as used
+    }
+  });
+  
+  // Second pass: mark digits that exist elsewhere (handling duplicates)
   const results = targetDigits.map((digit, i) => {
-    const userDigit = userSequence[i];
-    const isCorrect = userDigit === digit.toString();
-    return { digit, peg: targetHints[i], userDigit, isCorrect };
+    const userDigit = userDigitsArray[i] || '';
+    const isInCorrectPosition = exactMatches.has(i);
+    
+    let wasRecalled = false;
+    if (!isInCorrectPosition && userDigit) {
+      // Check if this digit exists in unused target positions
+      const unusedIndex = targetCopy.indexOf(userDigit);
+      if (unusedIndex !== -1) {
+        wasRecalled = true;
+        targetCopy[unusedIndex] = ''; // Mark as used
+      }
+    }
+    
+    return { digit, peg: targetHints[i], userDigit, isInCorrectPosition, wasRecalled };
   });
 
   const accuracy = Math.round(score.accuracy * 100);
+  const orderAccuracy = score.orderCorrect !== undefined ? Math.round((score.orderCorrect / targetDigits.length) * 100) : 0;
 
   return (
     <div className="animate-in zoom-in-95 duration-500 max-w-lg mx-auto space-y-6 sm:space-y-8">
       
       {/* Score Header */}
       <div className="text-center">
-        <div className="inline-flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-4">
+        <div className="inline-flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-6">
           <Trophy className="w-4 h-4 text-yellow-500" />
           <span className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">Analysis Complete</span>
         </div>
-        <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-50 mb-2">
-          {accuracy}% Accuracy
-        </h2>
-        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
-          You recalled {score.correct} out of {targetDigits.length} digits correctly.
-        </p>
-        {score.orderCorrect !== undefined && (
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-500 mt-1">
-            In correct order: {score.orderCorrect}/{targetDigits.length}
-          </p>
-        )}
+        
+        {/* Dual Metrics Display */}
+        <div className="flex items-center justify-center gap-6 sm:gap-8">
+          {/* Recall Accuracy */}
+          <div className="flex-1 text-center">
+            <div className="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-slate-50 mb-2">
+              {accuracy}%
+            </div>
+            <div className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">
+              Numbers Recalled
+            </div>
+            <div className="text-xs text-slate-400 dark:text-slate-500">
+              {score.correct}/{targetDigits.length} correct
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="w-px h-20 sm:h-24 bg-slate-300 dark:bg-slate-700" />
+          
+          {/* Order Accuracy */}
+          <div className="flex-1 text-center">
+            <div className="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-slate-50 mb-2">
+              {orderAccuracy}%
+            </div>
+            <div className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">
+              Correct Position
+            </div>
+            <div className="text-xs text-slate-400 dark:text-slate-500">
+              {score.orderCorrect}/{targetDigits.length} in order
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* The Sequence Diff Visualization */}
-      <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6">
-        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-y-6 sm:gap-y-8 gap-x-2">
+      {/* Top-Bottom Comparison Visualization */}
+      <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 space-y-4">
+        
+        {/* Label: Your Answer */}
+        <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-center">
+          Your Answer
+        </div>
+        
+        {/* User's Sequence Row */}
+        <div className="flex justify-center gap-1.5 sm:gap-2">
           {results.map((r, i) => (
-            <div key={i} className="flex flex-col items-center gap-2 group relative">
-              
-              {/* User Input Bubble */}
+            <div key={`user-${i}`} className="group relative">
               <div className={`
-                w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-base sm:text-lg border-2 z-10
-                ${r.isCorrect 
-                  ? "bg-green-500/10 border-green-500 text-green-600 dark:text-green-400" 
-                  : "bg-red-500/10 border-red-500 text-red-600 dark:text-red-400"}
+                w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-bold text-base sm:text-lg border-2 transition-all
+                ${r.isInCorrectPosition
+                  ? "bg-blue-500 border-blue-600 text-white shadow-lg shadow-blue-500/50" 
+                  : r.wasRecalled
+                    ? "bg-yellow-400 border-yellow-500 text-slate-900"
+                    : "bg-red-500/10 border-red-400 text-red-600 dark:bg-red-500/20 dark:border-red-400 dark:text-red-400"}
               `}>
                 {r.userDigit || "?"}
               </div>
-
-              {/* Connector Line */}
-              <div className={`h-3 sm:h-4 w-0.5 ${r.isCorrect ? "bg-slate-300 dark:bg-slate-700" : "bg-red-500/30"}`} />
-
-              {/* Target Digit (The Correct Answer) */}
-              <div className={`
-                text-xs sm:text-sm font-mono font-bold
-                ${r.isCorrect ? "text-slate-400 dark:text-slate-500" : "text-slate-700 dark:text-slate-300 underline decoration-blue-500/50 decoration-2 underline-offset-4"}
-              `}>
-                {r.digit}
-              </div>
-
-              {/* Hover Tooltip for Peg */}
-              <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-[10px] sm:text-xs px-2 py-1 rounded text-white whitespace-nowrap z-20 shadow-lg">
+              
+              {/* Hover tooltip for peg hint */}
+              <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-[10px] sm:text-xs px-2 py-1 rounded text-white whitespace-nowrap z-20 shadow-lg left-1/2 -translate-x-1/2">
                 {r.peg}
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Separator */}
+        <div className="flex items-center gap-3 px-4">
+          <div className="flex-1 h-px bg-slate-300 dark:bg-slate-700" />
+          <span className="text-xs text-slate-400 dark:text-slate-600">vs</span>
+          <div className="flex-1 h-px bg-slate-300 dark:bg-slate-700" />
+        </div>
+
+        {/* Label: Correct Answer */}
+        <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-center">
+          Correct Answer
+        </div>
+
+        {/* Correct Sequence Row */}
+        <div className="flex justify-center gap-1.5 sm:gap-2">
+          {results.map((r, i) => (
+            <div key={`target-${i}`} className="relative">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-bold text-base sm:text-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-2 border-slate-300 dark:border-slate-700">
+                {r.digit}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Color Legend */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4">
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-lg bg-blue-500 border-2 border-blue-600 shadow-lg shadow-blue-500/30" />
+            <span className="text-slate-600 dark:text-slate-400">Correct Position</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-lg bg-yellow-400 border-2 border-yellow-500" />
+            <span className="text-slate-600 dark:text-slate-400">Recalled (Wrong Position)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-lg bg-red-500/10 border-2 border-red-400" />
+            <span className="text-slate-600 dark:text-slate-400">Not Recalled</span>
+          </div>
         </div>
       </div>
 
@@ -665,13 +751,6 @@ function Header({ phase, sessionId, skillLevel }: {
       
       <div className="flex items-center gap-2 sm:gap-3">
         {skillLevel && <DifficultyBadge level={skillLevel} />}
-        {sessionId && (
-          <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs font-mono bg-slate-100 dark:bg-slate-900 px-2 sm:px-3 py-1 rounded-lg">
-            <Brain className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Session: {sessionId.substring(0, 8)}...</span>
-            <span className="sm:hidden">{sessionId.substring(0, 6)}...</span>
-          </div>
-        )}
       </div>
     </div>
   );

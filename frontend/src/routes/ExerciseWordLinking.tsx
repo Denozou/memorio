@@ -673,13 +673,6 @@ function Header({ phase, sessionId, skillLevel }: {
       
       <div className="flex items-center gap-2 sm:gap-3">
         {skillLevel && <DifficultyBadge level={skillLevel} />}
-        {sessionId && (
-          <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs font-mono bg-slate-100 dark:bg-slate-900 px-2 sm:px-3 py-1 rounded-lg">
-            <Brain className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Session: {sessionId.substring(0, 8)}...</span>
-            <span className="sm:hidden">{sessionId.substring(0, 6)}...</span>
-          </div>
-        )}
       </div>
     </div>
   );
