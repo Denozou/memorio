@@ -58,7 +58,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/users").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/lexicon/languages").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/learning/images/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/learning/images/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
