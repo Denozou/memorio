@@ -21,16 +21,19 @@ public class QuizService {
     private final QuizQuestionOptionRepository optionRepo;
     private final UserArticleProgressRepository progressRepo;
     private final AdaptiveDifficultyService adaptiveService;
+    private final ArticleCacheService cacheService;
 
     public QuizService(ArticleRepository articleRepo, ArticleQuizRepository quizRepo,
                        QuizQuestionRepository questionRepo, QuizQuestionOptionRepository optionRepo,
-                       UserArticleProgressRepository progressRepo, AdaptiveDifficultyService adaptiveService){
+                       UserArticleProgressRepository progressRepo, AdaptiveDifficultyService adaptiveService,
+                       ArticleCacheService cacheService){
         this.articleRepo = articleRepo;
         this.quizRepo = quizRepo;
         this.questionRepo = questionRepo;
         this.optionRepo = optionRepo;
         this.progressRepo = progressRepo;
         this.adaptiveService = adaptiveService;
+        this.cacheService = cacheService;
     }
 
     public QuizWithQuestions getQuizByArticleSlug(String articleSlug){
@@ -136,6 +139,9 @@ public class QuizService {
         }
         
         progressRepo.save(progress);
+        
+        // Evict user progress cache to ensure fresh data on next request
+        cacheService.evictAllUserProgressForArticle(userId, articleId);
     }
 
 

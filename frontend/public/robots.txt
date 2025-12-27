@@ -1,0 +1,13 @@
+# Robots.txt for Memorio
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://memorio.tech/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Disallow admin routes
+Disallow: /admin/
+Disallow: /api/

@@ -21,16 +21,19 @@ public class LearningService {
     private final ArticleRepository articleRepo;
     private final UserArticleProgressRepository progressRepo;
     private final UserRepository userRepo;
+    private final ArticleCacheService cacheService;
 
     // Default language if user is not logged in or has no preference set
     private static final String DEFAULT_LANGUAGE = "en";
 
     public LearningService(ArticleRepository articleRepo,
                            UserArticleProgressRepository progressRepo,
-                           UserRepository userRepo) {
+                           UserRepository userRepo,
+                           ArticleCacheService cacheService) {
         this.articleRepo = articleRepo;
         this.progressRepo = progressRepo;
         this.userRepo = userRepo;
+        this.cacheService = cacheService;
     }
 
     /**
@@ -225,6 +228,8 @@ public class LearningService {
             progress.setHasRead(true);
             progress.setFirstReadAt(OffsetDateTime.now());
             progressRepo.save(progress);
+            // Evict user progress cache to ensure fresh data on next request
+            cacheService.evictAllUserProgressForArticle(userId, articleId);
         }
     }
 
