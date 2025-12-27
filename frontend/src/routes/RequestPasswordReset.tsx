@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
+import { API_BASE_URL } from '../lib/api';
 
 export default function RequestPasswordReset() {
     const [email, setEmail] = useState('');
@@ -14,7 +15,7 @@ export default function RequestPasswordReset() {
         setIsLoading(true);
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/auth/password-reset/request`, {
+            const response = await fetch(`${API_BASE_URL}/auth/password-reset/request`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -1,4 +1,6 @@
 
+import { API_BASE_URL } from '../../lib/api';
+
 interface GoogleOAuthButtonProps{
     disabled?:boolean;
     className?:string;
@@ -6,8 +8,7 @@ interface GoogleOAuthButtonProps{
 export default function GoogleOAuthButton({disabled = false, className = ''}: GoogleOAuthButtonProps){ 
 
     const handleGoogleLogin = () => {
-        const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-        const googleAuthUrl = `${backendUrl}/oauth2/authorization/google`;
+        const googleAuthUrl = `${API_BASE_URL}/oauth2/authorization/google`;
         window.location.href = googleAuthUrl;  
     };
     return (

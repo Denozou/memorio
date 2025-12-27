@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Lock, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
+import { API_BASE_URL } from '../lib/api';
 
 export default function ResetPassword() {
     const [searchParams] = useSearchParams();
@@ -44,7 +45,7 @@ export default function ResetPassword() {
         setIsLoading(true);
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/auth/password-reset/confirm`, {
+            const response = await fetch(`${API_BASE_URL}/auth/password-reset/confirm`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -1,10 +1,19 @@
 import axios, { AxiosError } from "axios";
 import { logout } from "./auth";
 
-const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+/**
+ * Normalize the backend base URL so we don't accidentally double-prefix `/api`
+ * when VITE_API_URL includes it (e.g., https://memorio.tech/api).
+ */
+const normalizeBaseUrl = (value: string) => {
+    const trimmed = value.replace(/\/+$/, "");
+    return trimmed.endsWith("/api") ? trimmed.slice(0, -4) : trimmed;
+};
+
+export const API_BASE_URL = normalizeBaseUrl(import.meta.env.VITE_API_URL ?? "http://localhost:8080");
 
 export const api = axios.create({
-    baseURL: BASE,
+    baseURL: API_BASE_URL,
     withCredentials: true // Enable cookies for all requests
 });
 

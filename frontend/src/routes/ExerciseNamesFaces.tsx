@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { api } from "../lib/api";
+import { api, API_BASE_URL } from "../lib/api";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   LogOut, Menu, X, AlertCircle, ArrowRight, Brain, 
@@ -468,7 +468,7 @@ function StudyView({
                 }
               `}>
                 <img 
-                  src={`${import.meta.env.VITE_API_URL || "http://localhost:8080"}${currentFace.imageUrl}`}
+                  src={`${API_BASE_URL}${currentFace.imageUrl}`}
                   alt={currentFace.displayName}
                   className="w-full h-full object-cover"
                 />
@@ -521,7 +521,7 @@ function StudyView({
             style={{ opacity: idx <= currentIndex ? 1 : 0.3 }}
           >
             <img
-              src={`${import.meta.env.VITE_API_URL || "http://localhost:8080"}${face.imageUrl}`}
+              src={`${API_BASE_URL}${face.imageUrl}`}
               alt={idx <= currentIndex ? face.displayName : "Not shown yet"}
               className={`w-full aspect-square object-cover rounded-lg ${
                 idx === currentIndex 
@@ -571,7 +571,7 @@ function RecallView({
             className="flex flex-col gap-3 p-3 sm:p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl sm:rounded-2xl"
           >
             <img
-              src={`${import.meta.env.VITE_API_URL || "http://localhost:8080"}${face.imageUrl}`}
+              src={`${API_BASE_URL}${face.imageUrl}`}
               alt={`Face ${idx + 1}`}
               className="w-full aspect-square object-cover rounded-lg"
               loading="lazy"
@@ -716,7 +716,7 @@ function SummaryView({
                 {/* Image */}
                 <div className="aspect-square relative overflow-hidden">
                   <img 
-                    src={`${import.meta.env.VITE_API_URL || "http://localhost:8080"}${face.imageUrl}`}
+                    src={`${API_BASE_URL}${face.imageUrl}`}
                     alt={face.displayName}
                     className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${
                       !isCorrect ? 'grayscale opacity-70' : ''

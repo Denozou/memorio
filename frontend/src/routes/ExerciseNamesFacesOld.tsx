@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { api } from "../lib/api";
+import { api, API_BASE_URL } from "../lib/api";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   LogOut, Menu, X, AlertCircle, ArrowRight, Brain, 
@@ -366,7 +366,7 @@ export default function ExerciseNamesFaces() {
                   style={{ opacity: idx <= currentIndex ? 1 : 0.3 }}
                 >
                   <img
-                    src={`${import.meta.env.VITE_API_URL || "http://localhost:8080"}${face.imageUrl}`}
+                    src={`${API_BASE_URL}${face.imageUrl}`}
                     alt={idx <= currentIndex ? face.displayName : "Not shown yet"}
                     className={`w-full aspect-square object-cover rounded-lg ${
                       idx === currentIndex 
@@ -405,7 +405,7 @@ export default function ExerciseNamesFaces() {
                   className="flex flex-col gap-3 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl"
                 >
                   <img
-                    src={`${import.meta.env.VITE_API_URL || "http://localhost:8080"}${face.imageUrl}`}
+                    src={`${API_BASE_URL}${face.imageUrl}`}
                     alt={`Face ${idx + 1}`}
                     className="w-full aspect-square object-cover rounded-lg"
                     loading="lazy"
@@ -515,7 +515,7 @@ export default function ExerciseNamesFaces() {
                       }`}
                     >
                       <img
-                        src={`${import.meta.env.VITE_API_URL || "http://localhost:8080"}${face.imageUrl}`}
+                        src={`${API_BASE_URL}${face.imageUrl}`}
                         alt={face.displayName}
                         className="w-full aspect-square object-cover rounded-lg mb-2"
                         loading="lazy"
@@ -565,7 +565,7 @@ function FaceCard({ face }: { face: FaceData }) {
   return (
     <div className="flex flex-col items-center gap-4 max-w-md w-full">
       <img
-        src={`${import.meta.env.VITE_API_URL || "http://localhost:8080"}${face.imageUrl}`}
+        src={`${API_BASE_URL}${face.imageUrl}`}
         alt={face.displayName}
         className="w-full max-w-xs aspect-square object-cover rounded-2xl shadow-lg border-4 border-white dark:border-slate-800"
       />

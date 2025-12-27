@@ -101,7 +101,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL:-https://memorio.tech/api}
+        VITE_API_URL: ${VITE_API_URL:-https://memorio.tech}
     container_name: memorio-frontend
     ports:
       - "5173:80"
@@ -146,4 +146,3 @@ volumes:
 networks:
   memorio-network:
     driver: bridge
-

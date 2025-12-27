@@ -1,4 +1,6 @@
 
+import { API_BASE_URL } from '../../lib/api';
+
 interface FacebookOAuthButtonProps{
     disabled?:boolean;
     className?: string;
@@ -7,8 +9,7 @@ interface FacebookOAuthButtonProps{
 
 export default function FacebookOAuthButton({disabled = false, className = ''}: FacebookOAuthButtonProps){
     const handleFacebookLogin = () => {
-        const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-        const facebookAuthUrl = `${backendUrl}/oauth2/authorization/facebook`;
+        const facebookAuthUrl = `${API_BASE_URL}/oauth2/authorization/facebook`;
         window.location.href = facebookAuthUrl;
     };
     return (

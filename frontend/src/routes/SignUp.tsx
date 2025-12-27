@@ -1,5 +1,5 @@
 import {useState, useMemo} from "react";
-import {api} from "../lib/api";
+import {api, API_BASE_URL} from "../lib/api";
 import {useNavigate, Link} from "react-router-dom";
 import { ArrowRight, Eye, EyeOff, Brain, Check, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -340,7 +340,7 @@ export default function SignUp(){
                         {/* OAuth Buttons */}
                         <div className="space-y-3">
                             <a
-                                href={`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/oauth2/authorization/google`}
+                                href={`${API_BASE_URL}/oauth2/authorization/google`}
                                 className="w-full px-5 py-3 rounded-2xl border border-slate-300/70 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                             >
                                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -353,7 +353,7 @@ export default function SignUp(){
                             </a>
 
                             <a
-                                href={`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/oauth2/authorization/facebook`}
+                                href={`${API_BASE_URL}/oauth2/authorization/facebook`}
                                 className="w-full px-5 py-3 rounded-2xl border border-slate-300/70 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                             >
                                 <svg className="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24">
