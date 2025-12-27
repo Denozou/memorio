@@ -11,7 +11,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/adaptive")
+@RequestMapping("/api/adaptive")
 public class AdaptiveDifficultyController {
 
     private final AdaptiveDifficultyService adaptiveService;

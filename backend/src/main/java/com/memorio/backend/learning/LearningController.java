@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * Handles both authenticated and anonymous requests.
  */
 @RestController
-@RequestMapping("/learning")
+@RequestMapping("/api/learning")
 public class LearningController {
     private final LearningService learningService;
     private final QuizService quizService;

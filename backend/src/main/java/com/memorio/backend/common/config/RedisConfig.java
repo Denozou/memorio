@@ -8,6 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -15,13 +16,17 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.cache.annotation.CachingConfigurer;
+import org.springframework.cache.interceptor.CacheErrorHandler;
+
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
 @EnableCaching
-public class RedisConfig {
+@Profile("!test")
+public class RedisConfig implements CachingConfigurer {
 
     /**
      * Creates a Redis-specific ObjectMapper with type information.
@@ -88,6 +93,8 @@ public class RedisConfig {
         cacheConfigurations.put("userStats", defaultConfig.entryTtl(Duration.ofMinutes(5)));
         cacheConfigurations.put("leaderboard", defaultConfig.entryTtl(Duration.ofMinutes(7)));
         cacheConfigurations.put("rateLimits", defaultConfig.entryTtl(Duration.ofHours(1)));
+        // User progress cache - shorter TTL since it changes with user actions
+        cacheConfigurations.put("userProgress", defaultConfig.entryTtl(Duration.ofMinutes(5)));
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultConfig)
@@ -95,4 +102,12 @@ public class RedisConfig {
                 .build();
     }
 
+    /**
+     * Custom error handler for graceful degradation when Redis is unavailable.
+     * Instead of failing requests, logs errors and falls back to database.
+     */
+    @Override
+    public CacheErrorHandler errorHandler() {
+        return new CustomCacheErrorHandler();
+    }
 }

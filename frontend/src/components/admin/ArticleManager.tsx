@@ -46,7 +46,7 @@ export default function ArticleManager() {
     }
 
     try {
-      await api.delete(`/admin/learning/articles/${id}`);
+      await api.delete(`/api/admin/learning/articles/${id}`);
       setArticles(articles.filter(a => a.id !== id));
     } catch (e: any) {
       alert(e?.response?.data?.error ?? t('admin.deleteArticleFailed'));

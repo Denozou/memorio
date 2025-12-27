@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/faces")
+@RequestMapping("/api/faces")
 @PreAuthorize("isAuthenticated")
 public class FaceImageController {
 

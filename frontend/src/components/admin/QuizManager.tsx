@@ -182,7 +182,7 @@ function QuizDetailView({ article, onBack }: { article: Article; onBack: () => v
 
   async function loadQuestions(quizId: string) {
     try {
-      const { data } = await api.get<Question[]>(`/admin/learning/quizzes/${quizId}/questions`);
+      const { data } = await api.get<Question[]>(`/api/admin/learning/quizzes/${quizId}/questions`);
       setQuestions(data);
     } catch (e: any) {
       console.error("Failed to load questions", e);
@@ -192,7 +192,7 @@ function QuizDetailView({ article, onBack }: { article: Article; onBack: () => v
 
   async function handleCreateQuiz(quizData: { title: string; passingScore: number }) {
     try {
-      const { data } = await api.post(`/admin/learning/articles/${article.id}/quiz`, quizData);
+      const { data } = await api.post(`/api/admin/learning/articles/${article.id}/quiz`, quizData);
       setQuiz(data);
       setShowCreateQuizModal(false);
     } catch (e: any) {
@@ -226,7 +226,7 @@ function QuizDetailView({ article, onBack }: { article: Article; onBack: () => v
           displayOrder: index,
           explanation: question.explanation || "",
         };
-        return api.put(`/admin/learning/questions/${question.id}`, updatedData);
+        return api.put(`/api/admin/learning/questions/${question.id}`, updatedData);
       });
 
       await Promise.all(updatePromises);
@@ -454,7 +454,7 @@ function QuizDetailView({ article, onBack }: { article: Article; onBack: () => v
           questionText={questionToDelete.questionText}
           onConfirm={async () => {
             try {
-              await api.delete(`/admin/learning/questions/${questionToDelete.id}`);
+              await api.delete(`/api/admin/learning/questions/${questionToDelete.id}`);
               setQuestionToDelete(null);
               await loadQuiz();
             } catch (e: any) {

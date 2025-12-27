@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/admin/faces")
+@RequestMapping("/api/admin/faces")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminFaceController {
     private static final Logger logger = LoggerFactory.getLogger(AdminFaceController.class);
