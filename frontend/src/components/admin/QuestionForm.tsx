@@ -51,7 +51,7 @@ export default function QuestionForm({ quizId, question, onClose, nextOrder = 0 
     setLoading(true);
     setError(null);
     try {
-      const { data } = await api.get(`/api/admin/learning/questions/${questionId}/options`);
+      const { data } = await api.get(`/admin/learning/questions/${questionId}/options`);
       if (data && data.length > 0) {
         const loadedOptions: OptionFormData[] = data.map((opt: any) => ({
           optionText: opt.optionText,
@@ -134,17 +134,17 @@ export default function QuestionForm({ quizId, question, onClose, nextOrder = 0 
       if (question) {
         // UPDATE existing question
         const { data: updatedQuestion } = await api.put(
-          `/api/admin/learning/questions/${question.id}`,
+          `/admin/learning/questions/${question.id}`,
           formData
         );
         questionId = updatedQuestion.id;
 
         // Delete all existing options first
-        await api.delete(`/api/admin/learning/questions/${questionId}/options`);
+        await api.delete(`/admin/learning/questions/${questionId}/options`);
       } else {
         // CREATE new question
         const { data: createdQuestion } = await api.post(
-          `/api/admin/learning/quizzes/${quizId}/questions`,
+          `/admin/learning/quizzes/${quizId}/questions`,
           formData
         );
         questionId = createdQuestion.id;
@@ -158,7 +158,7 @@ export default function QuestionForm({ quizId, question, onClose, nextOrder = 0 
           displayOrder: option.displayOrder,
         };
         await api.post(
-          `/api/admin/learning/questions/${questionId}/options`,
+          `/admin/learning/questions/${questionId}/options`,
           optionData
         );
       }

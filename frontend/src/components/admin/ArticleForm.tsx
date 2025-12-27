@@ -109,7 +109,7 @@ export default function ArticleForm({ article, onClose }: ArticleFormProps) {
       formData.append("file", file);
 
       const { data } = await api.post<ImageUploadResponse>(
-        `/api/admin/learning/articles/${articleId}/upload-image`,
+        `/admin/learning/articles/${articleId}/upload-image`,
         formData,
         {
           headers: {
@@ -173,7 +173,7 @@ export default function ArticleForm({ article, onClose }: ArticleFormProps) {
     try {
       if (article) {
         // Update existing article
-        const response = await api.put(`/api/admin/learning/articles/${article.id}`, formData);
+        const response = await api.put(`/admin/learning/articles/${article.id}`, formData);
         console.log("Article updated:", response.data);
         console.log("Updated language to:", response.data.language);
         // Small delay to ensure backend cache is cleared
@@ -182,7 +182,7 @@ export default function ArticleForm({ article, onClose }: ArticleFormProps) {
         onClose();
       } else {
         // Create new article
-        const response = await api.post("/api/admin/learning/articles", formData);
+        const response = await api.post("/admin/learning/articles", formData);
         console.log("Article created:", response.data);
         const newArticleId = response.data.id;
         

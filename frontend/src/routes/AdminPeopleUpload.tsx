@@ -63,7 +63,7 @@ export default function AdminPeopleUpload() {
   async function loadStatistics() {
     try {
       setStatsLoading(true);
-      const { data } = await api.get<Statistics>("/api/admin/faces/status");
+      const { data } = await api.get<Statistics>("/admin/faces/status");
       setStatistics(data);
     } catch (e) {
       console.error("Failed to load statistics", e);
@@ -399,7 +399,7 @@ function UploadPanel({ onUploadSuccess }: { onUploadSuccess: () => void }) {
       });
 
       const { data } = await api.post<UploadResult>(
-        "/api/admin/faces/person",
+        "/admin/faces/person",
         formData,
         {
           headers: {
@@ -678,7 +678,7 @@ function ManagePanel({ onRefresh }: { onRefresh: () => void }) {
   async function loadPeople() {
     try {
       setLoading(true);
-      const { data } = await api.get<Person[]>("/api/admin/faces/people");
+      const { data } = await api.get<Person[]>("/admin/faces/people");
       setPeople(data);
     } catch (e) {
       console.error("Failed to load people", e);
@@ -694,7 +694,7 @@ function ManagePanel({ onRefresh }: { onRefresh: () => void }) {
 
     try {
       setDeleting(personName);
-      await api.delete(`/api/admin/faces/person/${personName}`);
+      await api.delete(`/admin/faces/person/${personName}`);
       await loadPeople();
       await onRefresh();
     } catch (e) {
@@ -708,7 +708,7 @@ function ManagePanel({ onRefresh }: { onRefresh: () => void }) {
   async function handleToggleActive(person: Person) {
     try {
       const endpoint = person.isActive ? "deactivate" : "activate";
-      await api.put(`/api/admin/faces/person/${person.personName}/${endpoint}`);
+      await api.put(`/admin/faces/person/${person.personName}/${endpoint}`);
       await loadPeople();
       await onRefresh();
     } catch (e) {
