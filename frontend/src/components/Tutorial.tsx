@@ -99,7 +99,10 @@ export default function Tutorial({ onComplete }: TutorialProps) {
     try {
       await api.post("/users/complete-tutorial");
     } catch (error) {
-      console.error("Failed to mark tutorial as completed:", error);
+      // Likely unauthenticated; avoid spamming errors in console
+      if (import.meta.env.DEV) {
+        console.error("Failed to mark tutorial as completed:", error);
+      }
     }
     setTimeout(() => {
       onComplete();

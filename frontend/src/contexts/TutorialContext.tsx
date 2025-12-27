@@ -14,9 +14,22 @@ export function TutorialProvider({ children }: Readonly<{ children: ReactNode }>
   const [isVisible, setIsVisible] = useState(false);
   const [hasCheckedInitial, setHasCheckedInitial] = useState(false);
 
-  // Check if user needs to see tutorial on first load
+  // Check if user needs to see tutorial on first load (only on protected routes)
   useEffect(() => {
     let alive = true;
+    
+    // Only check tutorial status on protected routes (not on public pages)
+    const publicPaths = ['/login', '/signup', '/auth/', '/landing', '/'];
+    const isPublicPage = publicPaths.some(path => 
+      window.location.pathname === path || 
+      (path !== '/' && window.location.pathname.startsWith(path))
+    );
+    
+    if (isPublicPage) {
+      setHasCheckedInitial(true);
+      return;
+    }
+    
     const checkTutorialStatus = async () => {
       try {
         const { data } = await api.get<{ completed: boolean }>("/users/tutorial-status");

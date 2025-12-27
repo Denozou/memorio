@@ -63,10 +63,12 @@ export default function Dashboard() {
   const [loadingProg, setLoadingProg] = useState(false);
   const [progErr, setProgErr] = useState<string | null>(null);
 
-  // Pick a random tip
+  // Pick a random tip with a safe fallback when translations aren't loaded as arrays
   const dailyTip = useMemo(() => {
-    const tips = t('dashboard.tips', { returnObjects: true }) as string[];
-    return tips[Math.floor(Math.random() * tips.length)];
+    const tips = t('dashboard.tips', { returnObjects: true });
+    const list = Array.isArray(tips) ? tips : [];
+    if (!list.length) return null;
+    return list[Math.floor(Math.random() * list.length)];
   }, [t]);
 
   // Calculate accuracy trend for sparkline
@@ -261,7 +263,11 @@ export default function Dashboard() {
             </div>
             <div className="flex-1 pt-0.5 sm:pt-1 min-w-0">
               <h4 className="font-bold text-amber-900 dark:text-amber-100 text-xs sm:text-sm mb-1">{t('dashboard.memoryTip')}</h4>
-              <p className="text-xs sm:text-sm text-amber-800 dark:text-amber-200/80 leading-relaxed">{dailyTip}</p>
+            {dailyTip && (
+              <p className="text-xs sm:text-sm text-amber-800 dark:text-amber-200/80 leading-relaxed">
+                {dailyTip}
+              </p>
+            )}
             </div>
             <button 
               onClick={() => setShowTip(false)}
@@ -442,7 +448,7 @@ export default function Dashboard() {
               <div className="flex flex-wrap gap-2">
                 {loading ? (
                    <div className="h-8 w-24 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
-                ) : progress && progress.badges.length > 0 ? (
+                ) : progress?.badges?.length ? (
                   <>
                   {progress.badges.map(b => <BadgePill key={b} code={b} />)}
                   </>
