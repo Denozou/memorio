@@ -23,7 +23,7 @@ import java.util.UUID;
  * All endpoints require ADMIN role.
  */
 @RestController
-@RequestMapping("/api/admin/learning")
+@RequestMapping("/admin/learning")
 @PreAuthorize("hasRole('ADMIN')")
 public class LearningAdminController {
 
