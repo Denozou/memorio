@@ -59,6 +59,9 @@ public class User {
     @Column(name = "two_factor_enabled_at")
     private OffsetDateTime twoFactorEnabledAt;
 
+    @Column(name = "tutorial_completed", nullable = false)
+    private boolean tutorialCompleted = false;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private OffsetDateTime createdAt;
 
@@ -149,6 +152,15 @@ public class User {
     public void setTwoFactorEnabledAt(OffsetDateTime twoFactorEnabledAt) {
         this.twoFactorEnabledAt = twoFactorEnabledAt;
     }
+
+    public boolean isTutorialCompleted() {
+        return tutorialCompleted;
+    }
+
+    public void setTutorialCompleted(boolean tutorialCompleted) {
+        this.tutorialCompleted = tutorialCompleted;
+    }
+
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public OffsetDateTime getUpdatedAt() { return updatedAt; }
 

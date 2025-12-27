@@ -45,4 +45,18 @@ public class UserController {
         UserResponse body = new UserResponse(u.getId(), u.getEmail(), u.getCreatedAt());
         return ResponseEntity.ok(body);
     }
+
+    @GetMapping("/tutorial-status")
+    public ResponseEntity<Map<String, Boolean>> getTutorialStatus(Authentication auth) {
+        UUID userId = AuthenticationUtil.extractUserId(auth);
+        User u = service.getUser(userId);
+        return ResponseEntity.ok(Map.of("completed", u.isTutorialCompleted()));
+    }
+
+    @PostMapping("/complete-tutorial")
+    public ResponseEntity<Map<String, Boolean>> completeTutorial(Authentication auth) {
+        UUID userId = AuthenticationUtil.extractUserId(auth);
+        service.markTutorialCompleted(userId);
+        return ResponseEntity.ok(Map.of("completed", true));
+    }
 }

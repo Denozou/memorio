@@ -106,29 +106,34 @@ public class AdaptiveDifficultyService {
     public MasteryStats getMasteryStats(UUID userId) {
         List<UserSkillMastery> allSkills = masteryRepo.findByUserId(userId);
 
-        if (allSkills.isEmpty()) {
+        // Filter out QUIZ skills - only count main exercises
+        List<UserSkillMastery> mainExerciseSkills = allSkills.stream()
+                .filter(s -> !s.getSkillType().equals("QUIZ"))
+                .toList();
+
+        if (mainExerciseSkills.isEmpty()) {
             return new MasteryStats(0, 0, 0, 0.0, 0);
         }
 
-        long masteredCount = allSkills.stream()
+        long masteredCount = mainExerciseSkills.stream()
                 .filter(UserSkillMastery::isMastered)
                 .count();
 
-        long needsReviewCount = allSkills.stream()
+        long needsReviewCount = mainExerciseSkills.stream()
                 .filter(UserSkillMastery::needsReview)
                 .count();
 
-        long needsPracticeCount = allSkills.stream()
+        long needsPracticeCount = mainExerciseSkills.stream()
                 .filter(s -> s.getProbabilityKnown() < 0.7)
                 .count();
 
-        double avgMastery = allSkills.stream()
+        double avgMastery = mainExerciseSkills.stream()
                 .mapToDouble(UserSkillMastery::getProbabilityKnown)
                 .average()
                 .orElse(0.0);
 
         return new MasteryStats(
-                allSkills.size(),
+                mainExerciseSkills.size(),
                 (int) masteredCount,
                 (int) needsReviewCount,
                 avgMastery,

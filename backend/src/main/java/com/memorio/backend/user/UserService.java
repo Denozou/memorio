@@ -64,4 +64,11 @@ public class UserService {
         }
         return users.findByEmail(email).orElseThrow(() -> new NotFoundException("User Not found"));
     }
+
+    @Transactional
+    public void markTutorialCompleted(UUID userId) {
+        User user = getUser(userId);
+        user.setTutorialCompleted(true);
+        users.save(user);
+    }
 }
