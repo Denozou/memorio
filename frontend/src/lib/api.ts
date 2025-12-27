@@ -33,6 +33,8 @@ api.interceptors.response.use(
             // Only logout if not on a public page
             if (!isPublicPage()) {
                 setTimeout(() => logout(), 100);
+                // Return a promise that never resolves to prevent error display while redirecting
+                return new Promise(() => {});
             }
             throw error;
         }
@@ -54,7 +56,8 @@ api.interceptors.response.use(
                 isRefreshing = false;
                 console.log('Token refresh failed, logging out...');
                 setTimeout(() => logout(), 100);
-                throw error;
+                // Return a promise that never resolves to prevent error display while redirecting
+                return new Promise(() => {});
             }
         }
 

@@ -4,7 +4,7 @@ import { api } from './api';
 import axios, { AxiosError } from 'axios';
 
 const TOKEN_EXPIRATION_KEY = 'token_expiration';
-const REFRESH_BUFFER_MS = 5 * 60 * 1000; // Refresh 5 minutes before expiration
+const REFRESH_BUFFER_MS = 10 * 60 * 1000; // Refresh 10 minutes before expiration (more aggressive)
 const MIN_REFRESH_INTERVAL_MS = 30 * 1000; // Minimum 30 seconds between refreshes
 
 class SessionManager {
