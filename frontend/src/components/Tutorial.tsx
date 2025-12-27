@@ -113,43 +113,43 @@ export default function Tutorial({ onComplete }: TutorialProps) {
   const getColorClasses = (color: string) => {
     const colors: Record<string, { bg: string; text: string; border: string; headerGradient: string; buttonGradient: string }> = {
       purple: {
-        bg: "bg-purple-100 dark:bg-purple-900/40",
-        text: "text-purple-600 dark:text-purple-400",
+        bg: "bg-purple-100 dark:bg-purple-600",
+        text: "text-purple-700 dark:text-white",
         border: "border-purple-200 dark:border-purple-800",
         headerGradient: "linear-gradient(135deg, #a855f7 0%, #8b5cf6 50%, #6366f1 100%)",
         buttonGradient: "linear-gradient(to right, #a855f7, #6366f1)"
       },
       blue: {
-        bg: "bg-blue-100 dark:bg-blue-900/40",
-        text: "text-blue-600 dark:text-blue-400",
+        bg: "bg-blue-100 dark:bg-blue-600",
+        text: "text-blue-700 dark:text-white",
         border: "border-blue-200 dark:border-blue-800",
         headerGradient: "linear-gradient(135deg, #3b82f6 0%, #0ea5e9 50%, #06b6d4 100%)",
         buttonGradient: "linear-gradient(to right, #3b82f6, #06b6d4)"
       },
       green: {
-        bg: "bg-green-100 dark:bg-green-900/40",
-        text: "text-green-600 dark:text-green-400",
+        bg: "bg-green-100 dark:bg-green-600",
+        text: "text-green-700 dark:text-white",
         border: "border-green-200 dark:border-green-800",
         headerGradient: "linear-gradient(135deg, #22c55e 0%, #10b981 50%, #14b8a6 100%)",
         buttonGradient: "linear-gradient(to right, #22c55e, #14b8a6)"
       },
       amber: {
-        bg: "bg-amber-100 dark:bg-amber-900/40",
-        text: "text-amber-600 dark:text-amber-400",
+        bg: "bg-amber-100 dark:bg-amber-600",
+        text: "text-amber-700 dark:text-white",
         border: "border-amber-200 dark:border-amber-800",
         headerGradient: "linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #ef4444 100%)",
         buttonGradient: "linear-gradient(to right, #f59e0b, #ef4444)"
       },
       teal: {
-        bg: "bg-teal-100 dark:bg-teal-900/40",
-        text: "text-teal-600 dark:text-teal-400",
+        bg: "bg-teal-100 dark:bg-teal-600",
+        text: "text-teal-700 dark:text-white",
         border: "border-teal-200 dark:border-teal-800",
         headerGradient: "linear-gradient(135deg, #14b8a6 0%, #06b6d4 50%, #0ea5e9 100%)",
         buttonGradient: "linear-gradient(to right, #14b8a6, #0ea5e9)"
       },
       indigo: {
-        bg: "bg-indigo-100 dark:bg-indigo-900/40",
-        text: "text-indigo-600 dark:text-indigo-400",
+        bg: "bg-indigo-100 dark:bg-indigo-600",
+        text: "text-indigo-700 dark:text-white",
         border: "border-indigo-200 dark:border-indigo-800",
         headerGradient: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)",
         buttonGradient: "linear-gradient(to right, #6366f1, #a855f7)"
