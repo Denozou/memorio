@@ -283,23 +283,23 @@ function IdleView({ loading, onStart, t }: { loading: boolean; onStart: () => vo
   return (
     <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-500">
       <div className="rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 shadow-lg p-4 sm:p-6 lg:p-8">
-        <div className="rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 p-4 sm:p-6 mb-6">
-          <h3 className="text-base sm:text-lg font-semibold text-purple-900 dark:text-purple-100 mb-3">{t('exercises.howItWorks')}</h3>
-          <ul className="space-y-2 text-sm sm:text-base text-purple-800 dark:text-purple-200">
+        <div className="rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 p-4 sm:p-6 mb-6">
+          <h3 className="text-base sm:text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-3">{t('exercises.howItWorks')}</h3>
+          <ul className="space-y-2 text-sm sm:text-base text-indigo-800 dark:text-indigo-200">
             <li className="flex items-start gap-2">
-              <span className="text-purple-600 dark:text-purple-400 mt-0.5">•</span>
+              <span className="text-indigo-600 dark:text-indigo-400 mt-0.5">•</span>
               <span>{t('exercises.numberPegInstructions.step1')}</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-purple-600 dark:text-purple-400 mt-0.5">•</span>
+              <span className="text-indigo-600 dark:text-indigo-400 mt-0.5">•</span>
               <span>{t('exercises.numberPegInstructions.step2')}</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-purple-600 dark:text-purple-400 mt-0.5">•</span>
+              <span className="text-indigo-600 dark:text-indigo-400 mt-0.5">•</span>
               <span>{t('exercises.numberPegInstructions.step3')}</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-purple-600 dark:text-purple-400 mt-0.5">•</span>
+              <span className="text-indigo-600 dark:text-indigo-400 mt-0.5">•</span>
               <span>{t('exercises.numberPegInstructions.step4')}</span>
             </li>
           </ul>

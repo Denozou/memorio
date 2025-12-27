@@ -172,10 +172,10 @@
     "startExercise": "Rozpocznij ćwiczenie",
     "howItWorks": "Jak to działa",
     "wordLinkingInstructions": {
-      "step1": "Słowa będą pojawiać się pojedynczo z wizualnym łączeniem",
-      "step2": "Twórz mentalne połączenia między kolejnymi słowami",
-      "step3": "Wpisz słowa w fazie przypominania (dowolna kolejność)",
-      "step4": "Otrzymaj dodatkowe punkty za poprawną kolejność!"
+      "step1": "Zobaczysz listę słów wyświetlanych jedno po drugim",
+      "step2": "Zapamiętaj je, wyobrażając sobie historię łączącą każde słowo z następnym",
+      "step3": "Po fazie nauki wpisz wszystkie słowa, które pamiętasz",
+      "step4": "Kolejność nie ma znaczenia, ale dostajesz bonus za poprawną sekwencję!"
     },
     "studyPhase": "Faza nauki",
     "recallPhase": "Faza przypominania",
@@ -208,16 +208,16 @@
     "sessionResults": "Wyniki sesji",
     "starting": "Rozpoczynanie...",
     "namesFacesInstructions": {
-      "step1": "Ucz się twarzy i imion z wyświetlaniem czasowym",
-      "step2": "Zapamiętaj tyle, ile możesz",
-      "step3": "Wpisz imiona w fazie przypominania",
-      "step4": "Zdobądź punkty za dokładność i poprawną kolejność"
+      "step1": "Zobaczysz twarze połączone z imionami, jedna po drugiej",
+      "step2": "Skojarz każdą twarz z imieniem, używając charakterystycznych cech",
+      "step3": "Po nauce zobaczysz te same twarze bez imion",
+      "step4": "Wpisz poprawne imię dla każdej pokazanej twarzy"
     },
     "numberPegInstructions": {
-      "step1": "Każda cyfra (0-9) ma rymujące się słowo-kołek",
-      "step2": "Cyfry pojawiają się pojedynczo ze słowami-kołkami",
-      "step3": "Twórz żywe obrazy mentalne łączące kołki",
-      "step4": "Przypomnij sobie sekwencję używając klawiatury numerycznej"
+      "step1": "Zobaczysz sekwencję cyfr ze słowami-hakami (np. 1=Jeden, 2=Dwa)",
+      "step2": "Stwórz mentalną historię łączącą każde słowo-hak z następnym",
+      "step3": "Po nauce przypomnij sobie oryginalną sekwencję cyfr",
+      "step4": "Użyj klawiatury numerycznej lub zwykłej, aby wprowadzić liczby po kolei"
     },
     "closeMenu": "Zamknij menu",
     "openMenu": "Otwórz menu",

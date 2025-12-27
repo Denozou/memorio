@@ -172,10 +172,10 @@
     "startExercise": "Start Exercise",
     "howItWorks": "How it works",
     "wordLinkingInstructions": {
-      "step1": "Words will appear one at a time with visual linking",
-      "step2": "Create mental connections between consecutive words",
-      "step3": "Type words in the recall phase (any order works)",
-      "step4": "Get bonus points for correct order!"
+      "step1": "You'll see a list of words displayed one by one",
+      "step2": "Memorize them by imagining a story connecting each word to the next",
+      "step3": "After the study phase, type all the words you remember",
+      "step4": "Order doesn't matter, but you get bonus points for correct sequence!"
     },
     "studyPhase": "Study Phase",
     "recallPhase": "Recall Phase",
@@ -208,16 +208,16 @@
     "sessionResults": "Session Results",
     "starting": "Starting...",
     "namesFacesInstructions": {
-      "step1": "Study faces and names with timed display",
-      "step2": "Memorize as many as you can",
-      "step3": "Type the names in the recall phase",
-      "step4": "Earn points for accuracy and correct order"
+      "step1": "You'll see faces paired with names one at a time",
+      "step2": "Associate each face with its name using distinctive features",
+      "step3": "After studying, you'll see the same faces without names",
+      "step4": "Type the correct name for each face shown"
     },
     "numberPegInstructions": {
-      "step1": "Each digit (0-9) has a rhyming peg word",
-      "step2": "Digits appear one at a time with their peg words",
-      "step3": "Create vivid mental images linking the pegs",
-      "step4": "Recall the sequence using the numpad"
+      "step1": "You'll see a sequence of digits with their peg words (e.g., 1=Sun, 2=Shoe)",
+      "step2": "Create a mental story linking each peg word to the next",
+      "step3": "After studying, recall the original digit sequence",
+      "step4": "Use the numpad or keyboard to enter the numbers in order"
     },
     "closeMenu": "Close menu",
     "openMenu": "Open menu",
