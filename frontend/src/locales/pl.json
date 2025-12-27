@@ -503,6 +503,50 @@
     "menu": "Menu",
     "closeMenu": "Zamknij menu"
   },
+  "tutorial": {
+    "welcome": {
+      "title": "Witaj w Memorio!",
+      "content": "Twoja podróż do opanowania technik pamięciowych zaczyna się tutaj. Ten krótki przewodnik pomoże Ci zrozumieć, jak korzystać z platformy i jak najlepiej wykorzystać swoje ćwiczenia."
+    },
+    "wordLinking": {
+      "title": "Łączenie Słów",
+      "content": "Twórz żywe skojarzenia mentalne między słowami, aby je zapamiętać. Będziesz studiować listę słów, a następnie przypominać je sobie, budując łańcuch połączeń. Im bardziej kreatywne i dziwaczne skojarzenia, tym lepiej!",
+      "step1": "Faza nauki: Czytaj i wizualizuj połączenia między słowami",
+      "step2": "Faza przypominania: Wpisz słowa w dowolnej kolejności",
+      "step3": "Otrzymaj informację zwrotną o swojej dokładności"
+    },
+    "namesFaces": {
+      "title": "Imiona i Twarze",
+      "content": "Opanuj sztukę zapamiętywania imion, kojarząc twarze z charakterystycznymi cechami. Studiuj twarze połączone z imionami, a następnie sprawdź swoją pamięć, dopasowując je prawidłowo.",
+      "step1": "Faza nauki: Spójrz na każdą twarz i skojarz ją z imieniem",
+      "step2": "Faza przypominania: Wpisz prawidłowe imię dla każdej twarzy",
+      "step3": "Dowiedz się, które skojarzenia zadziałały, a które wymagają praktyki"
+    },
+    "numberPeg": {
+      "title": "System Haków Liczbowych",
+      "content": "Używaj systemu haków do zapamiętywania liczb, przekształcając je w zapadające w pamięć obrazy. Każda cyfra (0-9) ma odpowiadające jej słowo lub obraz. Twórz historie łączące te obrazy, aby zapamiętać sekwencje.",
+      "step1": "Faza nauki: Zobacz cyfry sparowane z ich słowami-hakami",
+      "step2": "Stwórz mentalną historię łączącą wszystkie obrazy haków",
+      "step3": "Faza przypominania: Wprowadź sekwencję cyfr, którą pamiętasz"
+    },
+    "learningHub": {
+      "title": "Centrum Nauki",
+      "content": "Poszerzaj swoją wiedzę dzięki wyselekcjonowanym artykułom i interaktywnym quizom. Centrum Nauki oferuje szczegółowe przewodniki po technikach pamięciowych, strategiach uczenia się i nauce o poznaniu.",
+      "step1": "Przeglądaj artykuły uporządkowane według kategorii i tematów",
+      "step2": "Czytaj kompleksowe przewodniki po technikach pamięciowych",
+      "step3": "Sprawdź swoją wiedzę za pomocą interaktywnych quizów"
+    },
+    "adaptiveLearning": {
+      "title": "Adaptacyjne Uczenie",
+      "content": "Platforma automatycznie dostosowuje się do Twojego poziomu umiejętności. W miarę postępów ćwiczenia stają się trudniejsze. Twoje opanowanie materiału jest śledzone za pomocą inteligentnego algorytmu, który wie, kiedy potrzebujesz powtórki.",
+      "step1": "Zacznij od swojego aktualnego poziomu i rozwijaj się naturalnie",
+      "step2": "Powtarzaj umiejętności, zanim zostaną zapomniane",
+      "step3": "Śledź swoje postępy dzięki szczegółowym statystykom"
+    },
+    "getStarted": "Rozpocznij",
+    "tutorial": "Samouczek",
+    "viewTutorial": "Zobacz samouczek"
+  },
   "landing": {
     "navMethodology": "Metodologia",
     "navExercises": "Ćwiczenia",

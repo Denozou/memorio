@@ -10,7 +10,7 @@ import ThemeToggle from "../components/ThemeToggle";
 import LanguageSelector from "../components/LanguageSelector";
 import AdaptiveDifficultyWidget from "../components/AdaptiveDifficultyWidget";
 import ReviewNotificationBadge from "../components/ReviewNotificationBadge";
-import Tutorial from "../components/Tutorial";
+import { useTutorial } from "../contexts/TutorialContext";
 
 type Streak = {
   currentStreak: number;
@@ -49,8 +49,7 @@ export default function Dashboard() {
   const nav = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showTip, setShowTip] = useState(true);
-  const [showTutorial, setShowTutorial] = useState(false);
-  const [tutorialChecked, setTutorialChecked] = useState(false);
+  const { showTutorial } = useTutorial();
 
   const [streak, setStreak] = useState<Streak | null>(null);
   const [loadingStreak, setLoadingStreak] = useState(false);
@@ -142,29 +141,6 @@ export default function Dashboard() {
     return () => { alive = false; };
   }, []);
 
-  // Check tutorial status on mount
-  useEffect(() => {
-    let alive = true;
-    
-    (async () => {
-      try {
-        const { data } = await api.get<{ completed: boolean }>("/users/tutorial-status");
-        if (alive && !data.completed) {
-          setShowTutorial(true);
-        }
-        setTutorialChecked(true);
-      } catch (e) {
-        console.error("Failed to check tutorial status:", e);
-        setTutorialChecked(true);
-      }
-    })();
-
-    return () => { alive = false; };
-  }, []);
-
-  const handleTutorialComplete = () => {
-    setShowTutorial(false);
-  };
 
   async function handleLogout() {
     try {
@@ -178,9 +154,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 dark:from-slate-950 dark:to-slate-900 antialiased">
-      {/* Tutorial Modal */}
-      {showTutorial && tutorialChecked && <Tutorial onComplete={handleTutorialComplete} />}
-      
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-slate-200/60 dark:border-slate-800 bg-white/80 dark:bg-slate-950/70 backdrop-blur">
         <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -212,7 +185,7 @@ export default function Dashboard() {
             <div className="hidden md:flex items-center gap-3">
               <ThemeToggle />
               <button
-                onClick={() => setShowTutorial(true)}
+                onClick={showTutorial}
                 className="px-4 py-2 rounded-xl border border-purple-300/70 dark:border-purple-700 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors flex items-center gap-2"
                 title={t('tutorial.viewTutorial', 'View Tutorial')}
               >
@@ -258,7 +231,7 @@ export default function Dashboard() {
                   {t('common.profile')}
                 </Link>
                 <button
-                  onClick={() => { setMobileMenuOpen(false); setShowTutorial(true); }}
+                  onClick={() => { setMobileMenuOpen(false); showTutorial(); }}
                   className="py-2 text-left text-purple-600 dark:text-purple-400 flex items-center gap-2"
                 >
                   <Lightbulb className="w-4 h-4" />

@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { Link, useNavigate } from "react-router-dom";
-import { BookOpen, Clock, CheckCircle, Lock, LogOut, Menu, X, GraduationCap, TrendingUp, ChevronDown, ChevronUp, Unlock, Brain } from "lucide-react";
+import { BookOpen, Clock, CheckCircle, Lock, LogOut, Menu, X, GraduationCap, TrendingUp, ChevronDown, ChevronUp, Unlock, Brain, Lightbulb } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import ThemeToggle from "../components/ThemeToggle";
 import ReviewNotificationBadge from "../components/ReviewNotificationBadge";
+import { useTutorial } from "../contexts/TutorialContext";
 import type { ArticleListDto, TechniqueCategory, UserProgressDto } from "../types/learning";
 
 interface CategoryGroup {
@@ -19,6 +20,7 @@ export default function LearningHub() {
   const { t } = useTranslation();
   const nav = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { showTutorial } = useTutorial();
   
   const [articles, setArticles] = useState<ArticleListDto[]>([]);
   const [loading, setLoading] = useState(false);
@@ -199,6 +201,14 @@ export default function LearningHub() {
             <div className="hidden md:flex items-center gap-3">
               <ThemeToggle />
               <button
+                onClick={showTutorial}
+                className="px-4 py-2 rounded-xl border border-purple-300/70 dark:border-purple-700 text-sm text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors flex items-center gap-2"
+                title={t('tutorial.viewTutorial', 'View Tutorial')}
+              >
+                <Lightbulb className="w-4 h-4" />
+                <span className="hidden lg:inline">{t('tutorial.tutorial', 'Tutorial')}</span>
+              </button>
+              <button
                 onClick={handleLogout}
                 className="px-4 py-2 rounded-xl border border-slate-300/70 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2"
               >
@@ -237,6 +247,13 @@ export default function LearningHub() {
                 <Link to="/profile" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
                   {t('common.profile')}
                 </Link>
+                <button
+                  onClick={() => { setMobileMenuOpen(false); showTutorial(); }}
+                  className="py-2 text-left text-purple-600 dark:text-purple-400 flex items-center gap-2"
+                >
+                  <Lightbulb className="w-4 h-4" />
+                  {t('tutorial.tutorial', 'Tutorial')}
+                </button>
                 <button
                   onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
                   className="py-2 text-left text-slate-600 dark:text-slate-300 flex items-center gap-2"

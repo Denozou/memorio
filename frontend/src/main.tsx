@@ -26,6 +26,7 @@ import TwoFactorSetup from "./routes/TwoFactorSetup";
 import TwoFactorDisable from "./routes/TwoFactorDisable";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { TutorialProvider } from "./contexts/TutorialContext";
 import "./i18n/config"; // Initialize i18n
 import "./index.css";
 
@@ -61,7 +62,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ThemeProvider>
       <LanguageProvider>
-        <RouterProvider router={router} />
+        <TutorialProvider>
+          <RouterProvider router={router} />
+        </TutorialProvider>
       </LanguageProvider>
     </ThemeProvider>
   </React.StrictMode>

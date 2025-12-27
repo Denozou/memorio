@@ -257,19 +257,19 @@ export default function Tutorial({ onComplete }: TutorialProps) {
 
             <button
               onClick={handleNext}
-              className="px-6 py-2 rounded-xl font-medium text-white hover:opacity-90 transition-opacity shadow-md"
+              className="px-4 py-1.5 sm:px-6 sm:py-2 rounded-xl font-medium text-white text-sm sm:text-base hover:opacity-90 transition-opacity shadow-md"
               style={{ background: colors.buttonGradient }}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 {isLastStep ? (
                   <>
-                    <CheckCircle className="w-4 h-4" />
+                    <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     <span>{t('tutorial.getStarted', 'Get Started')}</span>
                   </>
                 ) : (
                   <>
                     <span>{t('common.next', 'Next')}</span>
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </>
                 )}
               </div>

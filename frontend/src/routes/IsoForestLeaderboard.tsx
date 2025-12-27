@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Trophy, Sprout, TrendingUp, Info, X, Maximize2, ChevronLeft, ChevronRight, Loader2, Brain, LogOut, Menu } from 'lucide-react';
+import { Trophy, Sprout, TrendingUp, Info, X, Maximize2, ChevronLeft, ChevronRight, Loader2, Brain, LogOut, Menu, Lightbulb } from 'lucide-react';
 import { api } from '../lib/api';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ThemeToggle from '../components/ThemeToggle';
 import { IsoForestPlot } from '../components/IsoForest';
 import ReviewNotificationBadge from '../components/ReviewNotificationBadge';
+import { useTutorial } from '../contexts/TutorialContext';
 
 type LeaderboardEntry = {
   userId: string;
@@ -207,6 +208,7 @@ const ForestModal = ({ user, onClose, t }: {
 export default function IsoForestLeaderboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { showTutorial } = useTutorial();
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -282,6 +284,14 @@ export default function IsoForestLeaderboard() {
             <div className="hidden md:flex items-center gap-3">
               <ThemeToggle />
               <button
+                onClick={showTutorial}
+                className="px-4 py-2 rounded-xl border border-purple-600 text-sm text-purple-400 hover:bg-purple-900/30 transition-colors flex items-center gap-2"
+                title={t('tutorial.viewTutorial', 'View Tutorial')}
+              >
+                <Lightbulb className="w-4 h-4" />
+                <span className="hidden lg:inline">{t('tutorial.tutorial', 'Tutorial')}</span>
+              </button>
+              <button
                 onClick={handleLogout}
                 className="px-4 py-2 rounded-xl border border-slate-700 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors flex items-center gap-2"
               >
@@ -320,6 +330,13 @@ export default function IsoForestLeaderboard() {
                 <Link to="/profile" className="py-2 text-slate-300 hover:text-white" onClick={() => setMobileMenuOpen(false)}>
                   {t('common.profile')}
                 </Link>
+                <button
+                  onClick={() => { setMobileMenuOpen(false); showTutorial(); }}
+                  className="py-2 text-left text-purple-400 flex items-center gap-2"
+                >
+                  <Lightbulb className="w-4 h-4" />
+                  {t('tutorial.tutorial', 'Tutorial')}
+                </button>
                 <button
                   onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
                   className="py-2 text-left text-slate-300 hover:text-white flex items-center gap-2"
