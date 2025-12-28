@@ -229,9 +229,39 @@ export default function IsoForestLeaderboard() {
     setError(null);
     try {
       const endpoint = pageNumber ? `/leaderboard/page/${pageNumber}` : '/leaderboard';
-      const { data } = await api.get<LeaderboardResponse>(endpoint);
-      setLeaderboardData(data);
+      const { data } = await api.get(endpoint);
+      
+      // Debug: Log the raw API response to diagnose data issues
+      console.log('[Leaderboard] API Response:', JSON.stringify(data, null, 2));
+      
+      // Handle both response formats:
+      // - /leaderboard returns { currentPage: {...}, currentUserRank, totalUsers, ... }
+      // - /leaderboard/page/{n} returns the page directly { entries: [...], pageNumber, ... }
+      let normalizedData: LeaderboardResponse;
+      
+      if (data.currentPage) {
+        // Full response from /leaderboard
+        normalizedData = data as LeaderboardResponse;
+      } else if (data.entries !== undefined) {
+        // Direct page response from /leaderboard/page/{n} - wrap it
+        normalizedData = {
+          currentPage: data as LeaderboardPage,
+          currentUserRank: leaderboardData?.currentUserRank ?? 0,
+          totalUsers: leaderboardData?.totalUsers ?? 0,
+          nextPageNumber: (data.pageNumber < data.totalPages) ? data.pageNumber + 1 : null,
+          previousPageNumber: (data.pageNumber > 1) ? data.pageNumber - 1 : null,
+        };
+      } else {
+        console.error('[Leaderboard] Unexpected response format:', data);
+        throw new Error('Invalid response format from leaderboard API');
+      }
+      
+      console.log('[Leaderboard] Normalized data:', normalizedData);
+      console.log('[Leaderboard] entries:', normalizedData?.currentPage?.entries);
+      
+      setLeaderboardData(normalizedData);
     } catch (err: any) {
+      console.error('[Leaderboard] Fetch error:', err);
       setError(err?.response?.data?.error ?? t('leaderboard.loading'));
     } finally {
       setLoading(false);
