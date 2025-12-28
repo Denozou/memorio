@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 import { api } from "../lib/api";
 import Tutorial from "../components/Tutorial";
 
@@ -13,16 +14,18 @@ const TutorialContext = createContext<TutorialContextType | undefined>(undefined
 export function TutorialProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [isVisible, setIsVisible] = useState(false);
   const [hasCheckedInitial, setHasCheckedInitial] = useState(false);
+  const location = useLocation();
 
   // Check if user needs to see tutorial on first load (only on protected routes)
   useEffect(() => {
     let alive = true;
+    const currentPath = location.pathname;
     
     // Only check tutorial status on protected routes (not on public pages)
     const publicPaths = ['/login', '/signup', '/auth/', '/landing', '/'];
     const isPublicPage = publicPaths.some(path => 
-      window.location.pathname === path || 
-      (path !== '/' && window.location.pathname.startsWith(path))
+      currentPath === path || 
+      (path !== '/' && currentPath.startsWith(path))
     );
     
     if (isPublicPage) {
@@ -44,7 +47,7 @@ export function TutorialProvider({ children }: Readonly<{ children: ReactNode }>
     };
     checkTutorialStatus();
     return () => { alive = false; };
-  }, []);
+  }, [location.pathname]);
 
   const showTutorial = () => setIsVisible(true);
   const hideTutorial = () => setIsVisible(false);
