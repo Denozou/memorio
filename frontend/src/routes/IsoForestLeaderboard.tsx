@@ -238,7 +238,7 @@ export default function IsoForestLeaderboard() {
     }
   };
 
-  const totalTrees = leaderboardData?.currentPage.entries.reduce((acc, curr) => acc + curr.trees, 0) || 0;
+  const totalTrees = leaderboardData?.currentPage?.entries?.reduce((acc, curr) => acc + curr.trees, 0) ?? 0;
   const carbonOffset = (totalTrees * 25).toLocaleString();
 
   return (
@@ -419,17 +419,17 @@ export default function IsoForestLeaderboard() {
                 </div>
                 <div className="min-w-0">
                   <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Viewing Page</div>
-                  <div className="font-bold text-slate-800 dark:text-slate-100">{leaderboardData.currentPage.pageNumber} of {leaderboardData.currentPage.totalPages}</div>
+                  <div className="font-bold text-slate-800 dark:text-slate-100">{leaderboardData.currentPage?.pageNumber ?? 1} of {leaderboardData.currentPage?.totalPages ?? 1}</div>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 px-2">
               <h2 className="text-lg sm:text-xl font-bold text-slate-700 dark:text-slate-200">
-                {t('leaderboard.topPlayers')} ({t('leaderboard.rank')} {leaderboardData.currentPage.startRank}-{leaderboardData.currentPage.endRank})
+                {t('leaderboard.topPlayers')} ({t('leaderboard.rank')} {leaderboardData.currentPage?.startRank ?? 1}-{leaderboardData.currentPage?.endRank ?? 1})
               </h2>
               <div className="flex gap-2 self-end sm:self-auto">
-                {!leaderboardData.currentPage.isCurrentUserPage && (
+                {!leaderboardData.currentPage?.isCurrentUserPage && (
                   <button onClick={() => fetchLeaderboard()} className="px-3 py-1 text-sm bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-lg hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors font-medium">
                     {t('leaderboard.yourRank')}
                   </button>
@@ -444,9 +444,15 @@ export default function IsoForestLeaderboard() {
             </div>
 
             <div className="space-y-4">
-              {leaderboardData.currentPage.entries.map((user) => (
-                <UserRow key={user.userId} user={user} onSelect={setSelectedUser} t={t} />
-              ))}
+              {leaderboardData.currentPage?.entries?.length ? (
+                leaderboardData.currentPage.entries.map((user) => (
+                  <UserRow key={user.userId} user={user} onSelect={setSelectedUser} t={t} />
+                ))
+              ) : (
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-12 text-center">
+                  <p className="text-slate-500 dark:text-slate-400">{t('leaderboard.noEntries', 'No entries found')}</p>
+                </div>
+              )}
             </div>
           </>
         ) : null}
