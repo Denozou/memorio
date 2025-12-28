@@ -5,12 +5,24 @@ import { logout } from "./auth";
  * Normalize the backend base URL so we don't accidentally double-prefix `/api`
  * when VITE_API_URL includes it (e.g., https://memorio.tech/api).
  */
-const normalizeBaseUrl = (value: string) => {
-    const trimmed = value.replace(/\/+$/, "");
-    return trimmed.endsWith("/api") ? trimmed.slice(0, -4) : trimmed;
+const normalizeBaseUrl = (value: string): string => {
+    // Trim whitespace and trailing slashes
+    const trimmed = value.trim().replace(/\/+$/, "");
+    // Remove /api suffix if present (case-insensitive check for robustness)
+    if (trimmed.toLowerCase().endsWith("/api")) {
+        return trimmed.slice(0, -4);
+    }
+    return trimmed;
 };
 
-export const API_BASE_URL = normalizeBaseUrl(import.meta.env.VITE_API_URL ?? "http://localhost:8080");
+const rawApiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+export const API_BASE_URL = normalizeBaseUrl(rawApiUrl);
+
+// Debug log in development
+if (import.meta.env.DEV) {
+    console.log("[API] Raw VITE_API_URL:", rawApiUrl);
+    console.log("[API] Normalized API_BASE_URL:", API_BASE_URL);
+}
 
 export const api = axios.create({
     baseURL: API_BASE_URL,
