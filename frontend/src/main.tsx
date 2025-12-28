@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from "react";
 import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { TutorialProvider } from "./contexts/TutorialContext";
@@ -52,38 +52,49 @@ function LazyRoute({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<PageLoader />}>{children}</Suspense>;
 }
 
+function AppShell() {
+  return (
+    <TutorialProvider>
+      <Outlet />
+    </TutorialProvider>
+  );
+}
+
 const router = createBrowserRouter([
-  { path: "/", element: <LazyRoute><LandingPage /></LazyRoute> },
-  { path: "/login", element: <LazyRoute><Login /></LazyRoute> },
-  { path: "/signup", element: <LazyRoute><SignUp /></LazyRoute> },
-  { path: "/auth/oauth2/success", element: <LazyRoute><OAuth2Success /></LazyRoute> },
-  { path: "/auth/verify-email", element: <LazyRoute><VerifyEmail /></LazyRoute> },
-  { path: "/auth/forgot-password", element: <LazyRoute><RequestPasswordReset /></LazyRoute> },
-  { path: "/auth/reset-password", element: <LazyRoute><ResetPassword /></LazyRoute> },
-  { path: "/auth/2fa/verify", element: <LazyRoute><TwoFactorVerify /></LazyRoute> },
-  { path: "/auth/2fa/setup", element: <ProtectedRoute><LazyRoute><TwoFactorSetup /></LazyRoute></ProtectedRoute> },
-  { path: "/auth/2fa/disable", element: <ProtectedRoute><LazyRoute><TwoFactorDisable /></LazyRoute></ProtectedRoute> },
-  { path: "/dashboard", element: <ProtectedRoute><LazyRoute><Dashboard /></LazyRoute></ProtectedRoute> },
-  { path: "/profile", element: <ProtectedRoute><LazyRoute><Profile /></LazyRoute></ProtectedRoute> },
-  { path: "/leaderboard", element: <ProtectedRoute><LazyRoute><IsoForestLeaderboard /></LazyRoute></ProtectedRoute> },
-  { path: "/exercise/word-linking", element: <ProtectedRoute><LazyRoute><ExerciseWordLinking /></LazyRoute></ProtectedRoute> },
-  { path: "/exercise/names-faces", element: <ProtectedRoute><LazyRoute><ExerciseNamesFaces /></LazyRoute></ProtectedRoute> },
-  { path: "/exercise/number-peg", element: <ProtectedRoute><LazyRoute><ExerciseNumberPeg /></LazyRoute></ProtectedRoute> },
-  { path: "/learning", element: <ProtectedRoute><LazyRoute><LearningHub /></LazyRoute></ProtectedRoute> },
-  { path: "/learning/articles/:slug", element: <ProtectedRoute><LazyRoute><ArticleDetail /></LazyRoute></ProtectedRoute> },
-  { path: "/learning/articles/:slug/quiz", element: <ProtectedRoute><LazyRoute><ArticleQuiz /></LazyRoute></ProtectedRoute> },
-  { path: "/admin/learning", element: <ProtectedRoute><AdminRoute><LazyRoute><AdminLearningPanel /></LazyRoute></AdminRoute></ProtectedRoute> },
-  { path: "/admin/words", element: <ProtectedRoute><AdminRoute><LazyRoute><AdminWordUpload /></LazyRoute></AdminRoute></ProtectedRoute> },
-  { path: "/admin/people", element: <ProtectedRoute><AdminRoute><LazyRoute><AdminPeopleUpload /></LazyRoute></AdminRoute></ProtectedRoute> }
+  {
+    element: <AppShell />,
+    children: [
+      { path: "/", element: <LazyRoute><LandingPage /></LazyRoute> },
+      { path: "/login", element: <LazyRoute><Login /></LazyRoute> },
+      { path: "/signup", element: <LazyRoute><SignUp /></LazyRoute> },
+      { path: "/auth/oauth2/success", element: <LazyRoute><OAuth2Success /></LazyRoute> },
+      { path: "/auth/verify-email", element: <LazyRoute><VerifyEmail /></LazyRoute> },
+      { path: "/auth/forgot-password", element: <LazyRoute><RequestPasswordReset /></LazyRoute> },
+      { path: "/auth/reset-password", element: <LazyRoute><ResetPassword /></LazyRoute> },
+      { path: "/auth/2fa/verify", element: <LazyRoute><TwoFactorVerify /></LazyRoute> },
+      { path: "/auth/2fa/setup", element: <ProtectedRoute><LazyRoute><TwoFactorSetup /></LazyRoute></ProtectedRoute> },
+      { path: "/auth/2fa/disable", element: <ProtectedRoute><LazyRoute><TwoFactorDisable /></LazyRoute></ProtectedRoute> },
+      { path: "/dashboard", element: <ProtectedRoute><LazyRoute><Dashboard /></LazyRoute></ProtectedRoute> },
+      { path: "/profile", element: <ProtectedRoute><LazyRoute><Profile /></LazyRoute></ProtectedRoute> },
+      { path: "/leaderboard", element: <ProtectedRoute><LazyRoute><IsoForestLeaderboard /></LazyRoute></ProtectedRoute> },
+      { path: "/exercise/word-linking", element: <ProtectedRoute><LazyRoute><ExerciseWordLinking /></LazyRoute></ProtectedRoute> },
+      { path: "/exercise/names-faces", element: <ProtectedRoute><LazyRoute><ExerciseNamesFaces /></LazyRoute></ProtectedRoute> },
+      { path: "/exercise/number-peg", element: <ProtectedRoute><LazyRoute><ExerciseNumberPeg /></LazyRoute></ProtectedRoute> },
+      { path: "/learning", element: <ProtectedRoute><LazyRoute><LearningHub /></LazyRoute></ProtectedRoute> },
+      { path: "/learning/articles/:slug", element: <ProtectedRoute><LazyRoute><ArticleDetail /></LazyRoute></ProtectedRoute> },
+      { path: "/learning/articles/:slug/quiz", element: <ProtectedRoute><LazyRoute><ArticleQuiz /></LazyRoute></ProtectedRoute> },
+      { path: "/admin/learning", element: <ProtectedRoute><AdminRoute><LazyRoute><AdminLearningPanel /></LazyRoute></AdminRoute></ProtectedRoute> },
+      { path: "/admin/words", element: <ProtectedRoute><AdminRoute><LazyRoute><AdminWordUpload /></LazyRoute></AdminRoute></ProtectedRoute> },
+      { path: "/admin/people", element: <ProtectedRoute><AdminRoute><LazyRoute><AdminPeopleUpload /></LazyRoute></AdminRoute></ProtectedRoute> }
+    ]
+  }
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ThemeProvider>
       <LanguageProvider>
-        <TutorialProvider>
-          <RouterProvider router={router} />
-        </TutorialProvider>
+        <RouterProvider router={router} />
       </LanguageProvider>
     </ThemeProvider>
   </React.StrictMode>
