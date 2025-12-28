@@ -615,5 +615,61 @@
       "terms": "Warunki",
       "contact": "Kontakt"
     }
+  },
+  "contact": {
+    "title": "Skontaktuj się",
+    "subtitle": "Masz pytanie, opinię lub po prostu chcesz się przywitać? Chętnie Cię wysłuchamy.",
+    "backToHome": "Powrót do strony głównej",
+    "securityNote": "Twoja wiadomość jest zaszyfrowana i bezpieczna",
+    "privacyNote": "Wysyłając ten formularz, zgadzasz się z naszą polityką prywatności. Nigdy nie udostępnimy Twoich informacji osobom trzecim.",
+    "form": {
+      "name": "Twoje Imię",
+      "namePlaceholder": "Jan Kowalski",
+      "email": "Adres Email",
+      "emailPlaceholder": "ty@przykład.pl",
+      "subject": "Temat",
+      "subjectPlaceholder": "W czym możemy pomóc?",
+      "message": "Wiadomość",
+      "messagePlaceholder": "Powiedz nam, co masz na myśli... (minimum 20 znaków)",
+      "send": "Wyślij Wiadomość",
+      "sending": "Wysyłanie..."
+    },
+    "errors": {
+      "nameRequired": "Proszę podać swoje imię",
+      "nameTooShort": "Imię musi mieć co najmniej 2 znaki",
+      "nameTooLong": "Imię musi mieć mniej niż 100 znaków",
+      "emailRequired": "Proszę podać adres email",
+      "emailInvalid": "Proszę podać prawidłowy adres email",
+      "subjectRequired": "Proszę podać temat",
+      "subjectTooShort": "Temat musi mieć co najmniej 5 znaków",
+      "subjectTooLong": "Temat musi mieć mniej niż 200 znaków",
+      "messageRequired": "Proszę napisać wiadomość",
+      "messageTooShort": "Wiadomość musi mieć co najmniej 20 znaków",
+      "messageTooLong": "Wiadomość musi mieć mniej niż 5000 znaków",
+      "submitFailed": "Nie udało się wysłać wiadomości. Spróbuj ponownie.",
+      "submitError": "Coś poszło nie tak",
+      "rateLimited": "Wysłałeś zbyt wiele wiadomości. Poczekaj przed ponowną próbą."
+    },
+    "success": {
+      "title": "Wiadomość Wysłana!",
+      "message": "Dziękujemy za kontakt. Odpowiemy tak szybko, jak to możliwe.",
+      "reference": "Numer Referencyjny",
+      "sendAnother": "Wyślij Kolejną Wiadomość"
+    },
+    "rateLimited": {
+      "title": "Proszę Zwolnić",
+      "message": "Osiągnąłeś limit wiadomości. Poczekaj chwilę przed wysłaniem kolejnej wiadomości.",
+      "tryAgain": "Spróbuj Później"
+    },
+    "faq": {
+      "title": "Częste Pytania",
+      "q1": "Jak szybko otrzymam odpowiedź?",
+      "a1": "Zazwyczaj odpowiadamy w ciągu 24-48 godzin w dni robocze.",
+      "q2": "Czy mogę śledzić moją wiadomość?",
+      "a2": "Tak! Zachowaj numer referencyjny, aby w razie potrzeby śledzić swoje zapytanie."
+    },
+    "footer": {
+      "rights": "Wszelkie prawa zastrzeżone."
+    }
   }
 }

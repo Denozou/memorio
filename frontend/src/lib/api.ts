@@ -38,7 +38,7 @@ let isRefreshing = false;
 
 // Check if current page is a public page that doesn't require auth
 const isPublicPage = () => {
-    const publicPaths = ['/login', '/signup', '/auth/verify-email', '/auth/forgot-password', '/auth/reset-password', '/auth/2fa/verify', '/landing', '/'];
+    const publicPaths = ['/login', '/signup', '/auth/verify-email', '/auth/forgot-password', '/auth/reset-password', '/auth/2fa/verify', '/landing', '/', '/contact'];
     return publicPaths.some(path => window.location.pathname === path || window.location.pathname.startsWith(path));
 };
 

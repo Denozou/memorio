@@ -214,7 +214,7 @@ export default function LandingPage() {
                <div className="flex gap-8">
                   <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">{t('landing.footer.privacy')}</a>
                   <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">{t('landing.footer.terms')}</a>
-                  <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">{t('landing.footer.contact')}</a>
+                  <a href="/contact" className="hover:text-slate-900 dark:hover:text-white transition-colors">{t('landing.footer.contact')}</a>
                </div>
                <div className="mt-4 md:mt-0">
                   © {new Date().getFullYear()} Memorio

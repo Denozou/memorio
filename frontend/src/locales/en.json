@@ -615,5 +615,61 @@
       "terms": "Terms",
       "contact": "Contact"
     }
+  },
+  "contact": {
+    "title": "Get in Touch",
+    "subtitle": "Have a question, feedback, or just want to say hello? We'd love to hear from you.",
+    "backToHome": "Back to home",
+    "securityNote": "Your message is encrypted and secure",
+    "privacyNote": "By submitting this form, you agree to our privacy policy. We'll never share your information with third parties.",
+    "form": {
+      "name": "Your Name",
+      "namePlaceholder": "John Doe",
+      "email": "Email Address",
+      "emailPlaceholder": "you@example.com",
+      "subject": "Subject",
+      "subjectPlaceholder": "How can we help?",
+      "message": "Message",
+      "messagePlaceholder": "Tell us what's on your mind... (minimum 20 characters)",
+      "send": "Send Message",
+      "sending": "Sending..."
+    },
+    "errors": {
+      "nameRequired": "Please enter your name",
+      "nameTooShort": "Name must be at least 2 characters",
+      "nameTooLong": "Name must be less than 100 characters",
+      "emailRequired": "Please enter your email address",
+      "emailInvalid": "Please enter a valid email address",
+      "subjectRequired": "Please enter a subject",
+      "subjectTooShort": "Subject must be at least 5 characters",
+      "subjectTooLong": "Subject must be less than 200 characters",
+      "messageRequired": "Please enter your message",
+      "messageTooShort": "Message must be at least 20 characters",
+      "messageTooLong": "Message must be less than 5000 characters",
+      "submitFailed": "Failed to send message. Please try again.",
+      "submitError": "Something went wrong",
+      "rateLimited": "You've sent too many messages. Please wait before trying again."
+    },
+    "success": {
+      "title": "Message Sent!",
+      "message": "Thank you for reaching out. We'll get back to you as soon as possible.",
+      "reference": "Reference ID",
+      "sendAnother": "Send Another Message"
+    },
+    "rateLimited": {
+      "title": "Please Slow Down",
+      "message": "You've reached the message limit. Please wait a while before sending another message.",
+      "tryAgain": "Try Again Later"
+    },
+    "faq": {
+      "title": "Common Questions",
+      "q1": "How quickly will I get a response?",
+      "a1": "We typically respond within 24-48 hours during business days.",
+      "q2": "Can I track my message?",
+      "a2": "Yes! Save your reference ID to track your inquiry if needed."
+    },
+    "footer": {
+      "rights": "All rights reserved."
+    }
   }
 }

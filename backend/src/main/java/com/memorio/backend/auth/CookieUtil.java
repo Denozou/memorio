@@ -16,7 +16,7 @@ public class CookieUtil {
     private int accessTokenMinutes;
     @Value("${security.jwt.refresh-token-minutes:10080}") // 7 days
     private int refreshTokenMinutes;
-    @Value("${security.cookie.secure:false}")
+    @Value("${security.cookie.secure:true}")
     private boolean cookieSecure;
 
     public CookieUtil() {

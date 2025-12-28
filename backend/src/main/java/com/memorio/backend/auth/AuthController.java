@@ -368,8 +368,9 @@ public class AuthController {
             return ResponseEntity.ok(new TwoFactorSetupResponse(secret, qrCodeDataUrl, manualEntryKey, plainBackupCodes));
 
         }catch (Exception e){
+            
             return ResponseEntity.status(500)
-                    .body(new ErrorResponse("Failed to setup 2FA: " + e.getMessage()));
+                    .body(new ErrorResponse("Failed to setup 2FA. Please try again."));
         }
     }
 

@@ -59,11 +59,14 @@ const UserRow = ({ user, onSelect, t }: {
   const avatarUrl = user.pictureUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.displayName}`;
 
   return (
-    <div
+    <button
+      type="button"
       onClick={() => onSelect(user)}
+      aria-label={`${t('leaderboard.viewForest', 'View forest for')} ${user.displayName}, ${t('leaderboard.rank')} ${rank}`}
       className={`
-        relative group flex flex-col md:flex-row items-center gap-4 md:gap-6 p-4 
+        w-full text-left relative group flex flex-col md:flex-row items-center gap-4 md:gap-6 p-4 
         rounded-2xl shadow-sm border-2 transition-all duration-300 cursor-pointer hover:shadow-md
+        focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900
         ${rank <= 3 ? (rankColors as any)[rank] : rankColors.default}
         ${user.isCurrentUser ? 'ring-2 ring-emerald-500 dark:ring-emerald-400' : ''}
       `}
@@ -116,7 +119,7 @@ const UserRow = ({ user, onSelect, t }: {
           <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">{user.totalPoints.toLocaleString()} {t('leaderboard.points').toLowerCase()}</div>
         </div>
       </div>
-    </div>
+    </button>
   );
 };
 

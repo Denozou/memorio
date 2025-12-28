@@ -34,6 +34,7 @@ const AdminLearningPanel = lazy(() => import("./routes/AdminLearningPanel"));
 const AdminWordUpload = lazy(() => import("./routes/AdminWordUpload"));
 const AdminPeopleUpload = lazy(() => import("./routes/AdminPeopleUpload"));
 const IsoForestLeaderboard = lazy(() => import("./routes/IsoForestLeaderboard"));
+const Contact = lazy(() => import("./routes/Contact"));
 
 // Loading fallback component
 function PageLoader() {
@@ -67,6 +68,7 @@ const router = createBrowserRouter([
       { path: "/", element: <LazyRoute><LandingPage /></LazyRoute> },
       { path: "/login", element: <LazyRoute><Login /></LazyRoute> },
       { path: "/signup", element: <LazyRoute><SignUp /></LazyRoute> },
+      { path: "/contact", element: <LazyRoute><Contact /></LazyRoute> },
       { path: "/auth/oauth2/success", element: <LazyRoute><OAuth2Success /></LazyRoute> },
       { path: "/auth/verify-email", element: <LazyRoute><VerifyEmail /></LazyRoute> },
       { path: "/auth/forgot-password", element: <LazyRoute><RequestPasswordReset /></LazyRoute> },
