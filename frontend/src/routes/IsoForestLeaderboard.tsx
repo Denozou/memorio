@@ -228,7 +228,7 @@ export default function IsoForestLeaderboard() {
     setLoading(true);
     setError(null);
     try {
-      const endpoint = pageNumber ? `/leaderboard/page/${pageNumber}` : '/leaderboard';
+      const endpoint = pageNumber ? `/api/leaderboard/page/${pageNumber}` : '/api/leaderboard';
       const { data } = await api.get(endpoint);
       
       // Handle both response formats:
