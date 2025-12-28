@@ -44,7 +44,7 @@ const MIN_MESSAGE_LENGTH = 20;
 const MAX_MESSAGE_LENGTH = 5000;
 
 export default function Contact() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const formRef = useRef<HTMLFormElement>(null);
   
   // Form state
@@ -121,6 +121,21 @@ export default function Contact() {
     setErrors(newErrors);
     return isValid;
   }, [formData, validateField]);
+
+  // Re-validate errors when language changes to update error messages
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      const newErrors: FormErrors = {};
+      (["name", "email", "subject", "message"] as const).forEach(field => {
+        if (errors[field]) {
+          const error = validateField(field, formData[field]);
+          if (error) newErrors[field] = error;
+        }
+      });
+      setErrors(newErrors);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [i18n.language]);
 
   // Handle input change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -358,7 +373,7 @@ export default function Contact() {
                   } bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
                 />
                 {touched.name && errors.name && (
-                  <p className="mt-1.5 text-sm text-red-500 flex items-center gap-1">
+                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
                     <AlertCircle className="w-4 h-4" />
                     {errors.name}
                   </p>
@@ -388,7 +403,7 @@ export default function Contact() {
                   } bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
                 />
                 {touched.email && errors.email && (
-                  <p className="mt-1.5 text-sm text-red-500 flex items-center gap-1">
+                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
                     <AlertCircle className="w-4 h-4" />
                     {errors.email}
                   </p>
@@ -419,7 +434,7 @@ export default function Contact() {
                   } bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
                 />
                 {touched.subject && errors.subject && (
-                  <p className="mt-1.5 text-sm text-red-500 flex items-center gap-1">
+                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
                     <AlertCircle className="w-4 h-4" />
                     {errors.subject}
                   </p>
@@ -451,7 +466,7 @@ export default function Contact() {
                 />
                 <div className="flex justify-between items-center mt-1.5">
                   {touched.message && errors.message ? (
-                    <p className="text-sm text-red-500 flex items-center gap-1">
+                    <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
                       <AlertCircle className="w-4 h-4" />
                       {errors.message}
                     </p>
