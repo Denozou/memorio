@@ -176,13 +176,15 @@ class JwtServiceTest {
     }
 
     @Test
-    @DisplayName("Should generate different tokens for same user")
-    void shouldGenerateDifferentTokensForSameUser() {
+    @DisplayName("Should generate different tokens for same user when generated at different times")
+    void shouldGenerateDifferentTokensForSameUser() throws InterruptedException {
         String userId = "123e4567-e89b-12d3-a456-426614174000";
-        
+
         String token1 = jwtService.generateRefreshToken(userId);
+        // JWT uses second-level precision for iat, so we need to wait at least 1 second
+        Thread.sleep(1100);
         String token2 = jwtService.generateRefreshToken(userId);
 
-        assertNotEquals(token1, token2, "Tokens should be different even for same user");
+        assertNotEquals(token1, token2, "Tokens should be different when generated at different times");
     }
 }

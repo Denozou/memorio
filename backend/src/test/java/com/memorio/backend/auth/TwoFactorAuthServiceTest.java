@@ -247,7 +247,8 @@ class TwoFactorAuthServiceTest {
         String usedHash = twoFactorAuthService.findUsedBackupCodeHash(hashedCodes, plainCode);
 
         assertNotNull(usedHash);
-        assertTrue(passwordEncoder.matches(plainCode, usedHash));
+        // Hashes are created from normalized codes (without hyphens)
+        assertTrue(passwordEncoder.matches(plainCode.replaceAll("[\\s-]", ""), usedHash));
     }
 
     @Test

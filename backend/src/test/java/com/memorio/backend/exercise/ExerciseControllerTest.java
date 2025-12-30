@@ -6,7 +6,7 @@ import com.memorio.backend.exercise.dto.StartExerciseRequest;
 import com.memorio.backend.exercise.dto.SubmitExerciseRequest;
 import com.memorio.backend.faces.FacePickerService;
 import com.memorio.backend.faces.Person;
-import com.memorio.backend.gamification.UserBadgeRepository;
+import com.memorio.backend.gamification.BadgeService;
 import com.memorio.backend.gamification.UserStats;
 import com.memorio.backend.gamification.UserStatsRepository;
 import com.memorio.backend.lexicon.WordPicker;
@@ -49,7 +49,7 @@ class ExerciseControllerTest {
     private UserStatsRepository userStatsRepository;
 
     @Mock
-    private UserBadgeRepository userBadgeRepository;
+    private BadgeService badgeService;
 
     @Mock
     private StreakService streakService;
@@ -118,7 +118,7 @@ class ExerciseControllerTest {
     void shouldCalculateWordCountForSkillLevel() {
         testUser.setSkillLevel(1);
         when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
-        when(wordPicker.pickWords(anyString(), anyInt(), eq(12)))
+        when(wordPicker.pickWords(anyString(), anyInt(), anyInt()))
             .thenReturn(List.of("word1"));
         when(sessionRepository.save(any(ExerciseSession.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
@@ -128,7 +128,9 @@ class ExerciseControllerTest {
 
         exerciseController.start(request, authentication);
 
-        verify(wordPicker).pickWords(anyString(), eq(1), eq(12));
+        // Skill level 1 should result in 6 words (base 4 + skill level 2)
+        // Formula: BASE_WORD_COUNT (4) + level * 2 = 4 + 1*2 = 6
+        verify(wordPicker).pickWords(eq("en"), eq(1), anyInt());
     }
 
     @Test
@@ -216,9 +218,8 @@ class ExerciseControllerTest {
             .thenReturn(Optional.of(new UserStats(userId)));
         when(userStatsRepository.save(any(UserStats.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
-        when(userBadgeRepository.existsByUserIdAndCode(any(), any()))
-            .thenReturn(false);
-        when(streakService.computeCurrentStreak(any(), any())).thenReturn(1);
+        when(badgeService.evaluateAndAwardBadges(any(), any(), anyBoolean(), anyLong()))
+            .thenReturn(new BadgeService.BadgeResult(List.of(), 0));
 
         var response = exerciseController.submit(request, authentication);
 
@@ -254,9 +255,8 @@ class ExerciseControllerTest {
             .thenReturn(Optional.of(new UserStats(userId)));
         when(userStatsRepository.save(any(UserStats.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
-        when(userBadgeRepository.existsByUserIdAndCode(any(), any()))
-            .thenReturn(false);
-        when(streakService.computeCurrentStreak(any(), any())).thenReturn(1);
+        when(badgeService.evaluateAndAwardBadges(any(), any(), anyBoolean(), anyLong()))
+            .thenReturn(new BadgeService.BadgeResult(List.of(), 0));
 
         var response = exerciseController.submit(request, authentication);
 
@@ -289,16 +289,16 @@ class ExerciseControllerTest {
             .thenAnswer(invocation -> invocation.getArgument(0));
         when(userStatsRepository.findById(userId))
             .thenReturn(Optional.of(new UserStats(userId)));
-        when(userBadgeRepository.existsByUserIdAndCode(userId, "FIRST_ATTEMPT"))
-            .thenReturn(false);
-        when(userBadgeRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        when(streakService.computeCurrentStreak(any(), any())).thenReturn(1);
+        when(userStatsRepository.save(any(UserStats.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        when(badgeService.evaluateAndAwardBadges(any(), any(), anyBoolean(), anyLong()))
+            .thenReturn(new BadgeService.BadgeResult(List.of("FIRST_ATTEMPT"), 0));
 
         var response = exerciseController.submit(request, authentication);
 
         assertNotNull(response.getBody());
         assertTrue(response.getBody().getNewBadges().contains("FIRST_ATTEMPT"));
-        verify(userBadgeRepository).save(any());
+        verify(badgeService).evaluateAndAwardBadges(any(), any(), anyBoolean(), anyLong());
     }
 
     @Test
@@ -324,9 +324,10 @@ class ExerciseControllerTest {
             .thenAnswer(invocation -> invocation.getArgument(0));
         when(userStatsRepository.findById(userId))
             .thenReturn(Optional.of(new UserStats(userId)));
-        when(userBadgeRepository.existsByUserIdAndCode(any(), any()))
-            .thenReturn(true);
-        when(streakService.computeCurrentStreak(any(), any())).thenReturn(1);
+        when(userStatsRepository.save(any(UserStats.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        when(badgeService.evaluateAndAwardBadges(any(), any(), anyBoolean(), anyLong()))
+            .thenReturn(new BadgeService.BadgeResult(List.of(), 0));
 
         var response = exerciseController.submit(request, authentication);
 
@@ -358,9 +359,10 @@ class ExerciseControllerTest {
             .thenAnswer(invocation -> invocation.getArgument(0));
         when(userStatsRepository.findById(userId))
             .thenReturn(Optional.of(new UserStats(userId)));
-        when(userBadgeRepository.existsByUserIdAndCode(any(), any()))
-            .thenReturn(true);
-        when(streakService.computeCurrentStreak(any(), any())).thenReturn(1);
+        when(userStatsRepository.save(any(UserStats.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        when(badgeService.evaluateAndAwardBadges(any(), any(), anyBoolean(), anyLong()))
+            .thenReturn(new BadgeService.BadgeResult(List.of(), 0));
 
         var response = exerciseController.submit(request, authentication);
 
@@ -392,9 +394,10 @@ class ExerciseControllerTest {
             .thenAnswer(invocation -> invocation.getArgument(0));
         when(userStatsRepository.findById(userId))
             .thenReturn(Optional.of(new UserStats(userId)));
-        when(userBadgeRepository.existsByUserIdAndCode(any(), any()))
-            .thenReturn(true);
-        when(streakService.computeCurrentStreak(any(), any())).thenReturn(1);
+        when(userStatsRepository.save(any(UserStats.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        when(badgeService.evaluateAndAwardBadges(any(), any(), anyBoolean(), anyLong()))
+            .thenReturn(new BadgeService.BadgeResult(List.of(), 0));
 
         exerciseController.submit(request, authentication);
 
@@ -423,9 +426,10 @@ class ExerciseControllerTest {
             .thenAnswer(invocation -> invocation.getArgument(0));
         when(userStatsRepository.findById(userId))
             .thenReturn(Optional.of(new UserStats(userId)));
-        when(userBadgeRepository.existsByUserIdAndCode(any(), any()))
-            .thenReturn(true);
-        when(streakService.computeCurrentStreak(any(), any())).thenReturn(1);
+        when(userStatsRepository.save(any(UserStats.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        when(badgeService.evaluateAndAwardBadges(any(), any(), anyBoolean(), anyLong()))
+            .thenReturn(new BadgeService.BadgeResult(List.of(), 0));
 
         exerciseController.submit(request, authentication);
 

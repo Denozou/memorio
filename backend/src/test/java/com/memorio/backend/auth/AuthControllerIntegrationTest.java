@@ -70,6 +70,7 @@ class AuthControllerIntegrationTest {
         request.setEmail("newuser@example.com");
         request.setDisplayName("New User");
         request.setPassword("StrongPassword123!");
+        request.setConfirmPassword("StrongPassword123!");
         request.setPreferredLanguage("en");
 
         mockMvc.perform(post("/auth/register")
@@ -90,6 +91,7 @@ class AuthControllerIntegrationTest {
         request.setEmail(TEST_EMAIL);
         request.setDisplayName("Duplicate User");
         request.setPassword("StrongPassword123!");
+        request.setConfirmPassword("StrongPassword123!");
         request.setPreferredLanguage("en");
 
         mockMvc.perform(post("/auth/register")

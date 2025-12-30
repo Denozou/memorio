@@ -32,7 +32,6 @@ class RateLimitServiceTest {
     @DisplayName("Should extract IP from X-Forwarded-For header")
     void shouldExtractIpFromXForwardedFor() {
         when(request.getHeader("X-Forwarded-For")).thenReturn("192.168.1.100");
-        when(request.getRemoteAddr()).thenReturn("10.0.0.1");
         Bucket mockBucket = mock(Bucket.class);
         when(rateLimitConfig.resolveLoginBucket("192.168.1.100")).thenReturn(mockBucket);
         when(mockBucket.tryConsumeAndReturnRemaining(1)).thenReturn(mock(io.github.bucket4j.ConsumptionProbe.class));
@@ -60,7 +59,6 @@ class RateLimitServiceTest {
     void shouldExtractIpFromXRealIp() {
         when(request.getHeader("X-Forwarded-For")).thenReturn(null);
         when(request.getHeader("X-Real-IP")).thenReturn("192.168.1.100");
-        when(request.getRemoteAddr()).thenReturn("10.0.0.1");
         Bucket mockBucket = mock(Bucket.class);
         when(rateLimitConfig.resolveLoginBucket("192.168.1.100")).thenReturn(mockBucket);
         when(mockBucket.tryConsumeAndReturnRemaining(1)).thenReturn(mock(io.github.bucket4j.ConsumptionProbe.class));

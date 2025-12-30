@@ -26,6 +26,9 @@ class StrongPasswordValidatorTest {
     @BeforeEach
     void setUp() {
         validator = new StrongPasswordValidator();
+    }
+
+    private void setupConstraintViolationMock() {
         when(context.buildConstraintViolationWithTemplate(anyString())).thenReturn(builder);
     }
 
@@ -59,6 +62,7 @@ class StrongPasswordValidatorTest {
     @Test
     @DisplayName("Should reject password shorter than 12 characters")
     void shouldRejectShortPassword() {
+        setupConstraintViolationMock();
         String shortPassword = "Short1!";
 
         boolean result = validator.isValid(shortPassword, context);
@@ -70,6 +74,7 @@ class StrongPasswordValidatorTest {
     @Test
     @DisplayName("Should reject password without uppercase letter")
     void shouldRejectPasswordWithoutUppercase() {
+        setupConstraintViolationMock();
         String noUppercase = "lowercase123!";
 
         boolean result = validator.isValid(noUppercase, context);
@@ -81,6 +86,7 @@ class StrongPasswordValidatorTest {
     @Test
     @DisplayName("Should reject password without lowercase letter")
     void shouldRejectPasswordWithoutLowercase() {
+        setupConstraintViolationMock();
         String noLowercase = "UPPERCASE123!";
 
         boolean result = validator.isValid(noLowercase, context);
@@ -92,6 +98,7 @@ class StrongPasswordValidatorTest {
     @Test
     @DisplayName("Should reject password without digit")
     void shouldRejectPasswordWithoutDigit() {
+        setupConstraintViolationMock();
         String noDigit = "NoDigitPassword!";
 
         boolean result = validator.isValid(noDigit, context);
@@ -103,6 +110,7 @@ class StrongPasswordValidatorTest {
     @Test
     @DisplayName("Should reject password without special character")
     void shouldRejectPasswordWithoutSpecialChar() {
+        setupConstraintViolationMock();
         String noSpecialChar = "NoSpecialChar123";
 
         boolean result = validator.isValid(noSpecialChar, context);

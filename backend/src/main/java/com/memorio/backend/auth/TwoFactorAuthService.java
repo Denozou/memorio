@@ -144,7 +144,8 @@ public class TwoFactorAuthService {
     }
     public List<String>hashBackupCodes(List<String> plainCodes){
         return plainCodes.stream()
-                .map(code->passwordEncoder.encode(code))
+                .map(code -> code.replaceAll("[\\s-]", "")) // Normalize before hashing
+                .map(code -> passwordEncoder.encode(code))
                 .toList();
     }
 

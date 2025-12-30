@@ -23,12 +23,12 @@ public class TestConfig {
     public RedisTemplate<String, Object> redisTemplate() {
         RedisTemplate<String, Object> mockTemplate = mock(RedisTemplate.class);
         ValueOperations<String, Object> mockValueOps = mock(ValueOperations.class);
-        
+
         when(mockTemplate.opsForValue()).thenReturn(mockValueOps);
         when(mockValueOps.get(anyString())).thenReturn(null);
         doNothing().when(mockValueOps).set(anyString(), any(), anyLong(), any());
-        doNothing().when(mockTemplate).delete(anyString());
-        
+        when(mockTemplate.delete(anyString())).thenReturn(true);
+
         return mockTemplate;
     }
 
