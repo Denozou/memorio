@@ -630,17 +630,38 @@ function HistoryList({ items }: { items: HistoryItem[] }) {
 
 function BadgePill({ code }: { code: string }) {
   const { t } = useTranslation();
-  const labels: Record<string, { label: string; emoji: string }> = {
-    "FIRST_ATTEMPT": { label: t('dashboard.badgeLabels.FIRST_ATTEMPT'), emoji: "🌱" },
-    "STREAK_7": { label: t('dashboard.badgeLabels.STREAK_7'), emoji: "🔥" },
-    "STREAK_30": { label: t('dashboard.badgeLabels.STREAK_30'), emoji: "⚡" },
-    "MASTER_LINKER": { label: t('dashboard.badgeLabels.MASTER_LINKER'), emoji: "🔗" }
+  const labels: Record<string, { emoji: string; color?: string }> = {
+    // Streak badges
+    "FIRST_ATTEMPT": { emoji: "🌱" },
+    "STREAK_7": { emoji: "🔥" },
+    "STREAK_30": { emoji: "⚡", color: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300" },
+    "STREAK_100": { emoji: "💯", color: "bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/40 dark:to-yellow-900/40 text-amber-800 dark:text-amber-200" },
+    // Exercise milestone badges
+    "EXERCISES_10": { emoji: "📚" },
+    "EXERCISES_50": { emoji: "🎯" },
+    "EXERCISES_100": { emoji: "🏛️", color: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300" },
+    "EXERCISES_500": { emoji: "🏆", color: "bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/40 dark:to-yellow-900/40 text-amber-800 dark:text-amber-200" },
+    // Accuracy badges
+    "FIRST_PERFECT": { emoji: "✨" },
+    "PERFECT_10": { emoji: "💎", color: "bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300" },
+    // Exercise mastery badges
+    "WORD_MASTER": { emoji: "🔗", color: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300" },
+    "FACE_MASTER": { emoji: "👤", color: "bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300" },
+    "NUMBER_MASTER": { emoji: "🔢", color: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300" },
+    // Points badges
+    "POINTS_1000": { emoji: "🪙" },
+    "POINTS_10000": { emoji: "💰", color: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300" },
+    "POINTS_50000": { emoji: "👑", color: "bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/40 dark:to-yellow-900/40 text-amber-800 dark:text-amber-200" }
   };
-  const badge = labels[code] || { label: code, emoji: "🏅" };
+
+  const badgeConfig = labels[code] || { emoji: "🏅" };
+  const label = t(`dashboard.badgeLabels.${code}`, code);
+  const colorClass = badgeConfig.color || "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300";
+
   return (
-    <div className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs sm:text-sm font-semibold">
-      <span>{badge.emoji}</span>
-      <span>{badge.label}</span>
+    <div className={`inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-lg ${colorClass} text-xs sm:text-sm font-semibold`}>
+      <span>{badgeConfig.emoji}</span>
+      <span>{label}</span>
     </div>
   );
 }

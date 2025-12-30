@@ -45,4 +45,12 @@ public interface ExerciseAttemptRepository extends JpaRepository<ExerciseAttempt
            ORDER BY session_id, created_at DESC
            """, nativeQuery = true)
     List<SessionLastAttempt> findLastAttemptsBySessionIds(@Param("sessionIds") List<UUID> sessionIds);
+
+    // Count perfect scores (accuracy = 1.0) for a user's sessions
+    @Query(value = """
+           SELECT COUNT(*) FROM exercise_attempts a
+           JOIN exercise_sessions s ON a.session_id = s.id
+           WHERE s.user_id = :userId AND a.accuracy = 1.0
+           """, nativeQuery = true)
+    long countPerfectScoresByUserId(@Param("userId") UUID userId);
 }

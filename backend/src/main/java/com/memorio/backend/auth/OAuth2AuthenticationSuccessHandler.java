@@ -159,10 +159,14 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         Optional<User> existingUser = userRepository.findByEmail(email);
         if (existingUser.isPresent()){
             User user = existingUser.get();
+            // OAuth2 providers verify emails, so mark as verified if not already
+            if (!user.isEmailVerified()) {
+                user.setEmailVerified(true);
+            }
             if(pictureUrl != null && !pictureUrl.isEmpty()){
                 user.setPictureUrl(pictureUrl);
-                userRepository.save(user);
             }
+            userRepository.save(user);
             return user;
         }else{
             User newUser = new User();
@@ -171,6 +175,8 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             newUser.setRole(Role.USER);
             newUser.setDisplayName(name);
             newUser.setPictureUrl(pictureUrl);
+            // OAuth2 providers verify emails before allowing login
+            newUser.setEmailVerified(true);
 
             return userRepository.save(newUser);
         }

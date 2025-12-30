@@ -2,10 +2,9 @@ package com.memorio.backend.exercise;
 import com.memorio.backend.common.error.NotFoundException;
 import com.memorio.backend.exercise.dto.*;
 import com.memorio.backend.exercise.dto.HistoryItem;
-import com.memorio.backend.gamification.UserBadgeRepository;
 import com.memorio.backend.gamification.UserStatsRepository;
+import com.memorio.backend.gamification.BadgeService;
 import com.memorio.backend.user.UserRepository;
-import com.memorio.backend.gamification.UserBadge;
 import com.memorio.backend.gamification.UserStats;
 import com.memorio.backend.lexicon.WordPicker;
 import com.memorio.backend.faces.FacePickerService;
@@ -38,7 +37,7 @@ public class ExerciseController {
     private final ExerciseAttemptRepository attempts;
     private final ObjectMapper mapper;
     private final UserStatsRepository userStatsRepo;
-    private final UserBadgeRepository userBadgeRepo;
+    private final BadgeService badgeService;
     private final StreakService streakService;
     private final UserRepository users;
     private final WordPicker wordPicker;
@@ -55,14 +54,14 @@ public class ExerciseController {
     public ExerciseController(ExerciseSessionRepository sessions,
                               ExerciseAttemptRepository attempts,
                               ObjectMapper mapper, UserStatsRepository userStatsRepo,
-                              UserBadgeRepository userBadgeRepo, StreakService streakService,
+                              BadgeService badgeService, StreakService streakService,
                               UserRepository users, WordPicker wordPicker, FacePickerService facePicker,
                               NumberPegService numberPegService, AdaptiveDifficultyService adaptiveService) {
         this.sessions = sessions;
         this.attempts = attempts;
         this.mapper = mapper;
         this.userStatsRepo = userStatsRepo;
-        this.userBadgeRepo = userBadgeRepo;
+        this.badgeService = badgeService;
         this.streakService = streakService;
         this.users = users;
         this.wordPicker = wordPicker;
@@ -278,27 +277,22 @@ public class ExerciseController {
 
         int basePoints = correct * 10;
         int bonusOrderPoints = orderCorrect * 5;
-        int bonusPoints = 0;
         var stats = userStatsRepo.findById(userId).orElseGet(() -> new UserStats(userId));
 
-        List<String> newlyAwarded = new ArrayList<>();
-        if (!userBadgeRepo.existsByUserIdAndCode(userId, "FIRST_ATTEMPT")){
-            var badge = new UserBadge(UUID.randomUUID(), userId, "FIRST_ATTEMPT", OffsetDateTime.now());
-            userBadgeRepo.save(badge);
-            newlyAwarded.add("FIRST_ATTEMPT");
+        // Calculate base points first (before badge bonuses)
+        int baseEarned = basePoints + bonusOrderPoints;
+        long pointsAfterBase = stats.getTotalPoints() + baseEarned;
 
-        }
+        // Evaluate and award badges based on current achievement
+        boolean wasPerfect = (accuracy == 1.0);
+        var badgeResult = badgeService.evaluateAndAwardBadges(
+                userId, req.getType(), wasPerfect, pointsAfterBase);
 
-        var zone = ZoneId.of("UTC");
-        int currentStreak = streakService.computeCurrentStreak(userId,zone);
-        if (currentStreak >= 7 && !userBadgeRepo.existsByUserIdAndCode(userId, "STREAK_7")){
-            var badge = new UserBadge(UUID.randomUUID(), userId, "STREAK_7", OffsetDateTime.now());
-            userBadgeRepo.save(badge);
-            newlyAwarded.add("STREAK_7");
-            bonusPoints+=100;
+        List<String> newlyAwarded = badgeResult.newBadges();
+        int bonusPoints = badgeResult.bonusPoints();
 
-        }
-        int pointsEarned = basePoints + bonusOrderPoints + bonusPoints;
+        // Total points = base + order bonus + badge bonuses
+        int pointsEarned = baseEarned + bonusPoints;
         stats.addAttempt(correct, pointsEarned);
         userStatsRepo.save(stats);
 
