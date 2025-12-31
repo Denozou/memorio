@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- Exclude Spring Boot generated code -->
+    <Match>
+        <Class name="~.*\$\$.*"/>
+    </Match>
+
+    <!-- Exclude test classes -->
+    <Match>
+        <Source name="~.*Test\.java"/>
+    </Match>
+
+    <!-- Exclude DTOs - they are data carriers -->
+    <Match>
+        <Class name="~.*\.dto\..*"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!-- Exclude entities - JPA requires mutable fields -->
+    <Match>
+        <Package name="~com\.memorio\.backend\..*"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!-- Exclude false positives for Spring Security -->
+    <Match>
+        <Class name="~.*Security.*"/>
+        <Bug pattern="HARD_CODE_PASSWORD"/>
+    </Match>
+
+    <!-- Exclude configuration classes -->
+    <Match>
+        <Class name="~.*Config"/>
+    </Match>
+</FindBugsFilter>
