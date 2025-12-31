@@ -4,6 +4,8 @@ import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { TutorialProvider } from "./contexts/TutorialContext";
+import ErrorBoundary from "./components/ErrorBoundary";
+import RouteErrorBoundary from "./components/RouteErrorBoundary";
 import "./i18n/config"; // Initialize i18n
 import "./index.css";
 
@@ -64,6 +66,7 @@ function AppShell() {
 const router = createBrowserRouter([
   {
     element: <AppShell />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       { path: "/", element: <LazyRoute><LandingPage /></LazyRoute> },
       { path: "/login", element: <LazyRoute><Login /></LazyRoute> },
@@ -87,17 +90,21 @@ const router = createBrowserRouter([
       { path: "/learning/articles/:slug/quiz", element: <ProtectedRoute><LazyRoute><ArticleQuiz /></LazyRoute></ProtectedRoute> },
       { path: "/admin/learning", element: <ProtectedRoute><AdminRoute><LazyRoute><AdminLearningPanel /></LazyRoute></AdminRoute></ProtectedRoute> },
       { path: "/admin/words", element: <ProtectedRoute><AdminRoute><LazyRoute><AdminWordUpload /></LazyRoute></AdminRoute></ProtectedRoute> },
-      { path: "/admin/people", element: <ProtectedRoute><AdminRoute><LazyRoute><AdminPeopleUpload /></LazyRoute></AdminRoute></ProtectedRoute> }
+      { path: "/admin/people", element: <ProtectedRoute><AdminRoute><LazyRoute><AdminPeopleUpload /></LazyRoute></AdminRoute></ProtectedRoute> },
+      // Catch-all route for 404
+      { path: "*", element: <RouteErrorBoundary /> }
     ]
   }
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <LanguageProvider>
-        <RouterProvider router={router} />
-      </LanguageProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <LanguageProvider>
+          <RouterProvider router={router} />
+        </LanguageProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );

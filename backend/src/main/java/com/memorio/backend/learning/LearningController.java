@@ -2,6 +2,14 @@ package com.memorio.backend.learning;
 
 import com.memorio.backend.common.security.AuthenticationUtil;
 import com.memorio.backend.learning.dto.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -18,6 +26,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/api/learning")
+@Tag(name = "Learning", description = "Learning articles, quizzes, and user progress tracking")
 public class LearningController {
     private final LearningService learningService;
     private final QuizService quizService;
@@ -36,6 +45,11 @@ public class LearningController {
      *
      * Response includes progress information for logged-in users.
      */
+    @Operation(
+        summary = "Get all articles",
+        description = "Retrieve list of learning articles filtered by user's preferred language. Includes progress for authenticated users."
+    )
+    @ApiResponse(responseCode = "200", description = "Articles retrieved successfully")
     @GetMapping("/articles")
     public ResponseEntity<List<ArticleListDto>> getArticles(Authentication auth) {
         UUID userId = auth != null ? AuthenticationUtil.extractUserId(auth) : null;
@@ -175,6 +189,16 @@ public class LearningController {
     /**
      * Submit quiz answers and get results.
      */
+    @Operation(
+        summary = "Submit quiz answers",
+        description = "Submit answers for an article quiz. Returns score, pass/fail status, and updates user progress."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Quiz submitted successfully",
+            content = @Content(schema = @Schema(implementation = QuizResultDto.class))),
+        @ApiResponse(responseCode = "404", description = "Quiz not found")
+    })
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/quiz/submit")
     public ResponseEntity<QuizResultDto> submitQuiz(
             @Valid @RequestBody SubmitQuizRequest request,

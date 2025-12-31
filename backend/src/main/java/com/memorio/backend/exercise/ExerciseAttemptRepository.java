@@ -7,7 +7,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.List;
 public interface ExerciseAttemptRepository extends JpaRepository<ExerciseAttempt, UUID>{
-    Optional<ExerciseAttempt> findBySessionId(UUID sessionId);
+    Optional<ExerciseAttempt> findFirstBySessionId(UUID sessionId);
+    List<ExerciseAttempt> findBySessionId(UUID sessionId);
+    List<ExerciseAttempt> findAllBySessionId(UUID sessionId);
     long countBySessionId(UUID sessionId);
     //ExerciseAttempt findFirstBySessionIdOrderByCreatedAtDesc(UUID sessionId);
     interface AttemptSummary {

@@ -22,6 +22,14 @@ import com.memorio.backend.auth.dto.TwoFactorDisableRequest;
 import java.time.OffsetDateTime;
 import java.time.Instant;
 import io.jsonwebtoken.JwtException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -32,6 +40,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Authentication", description = "User authentication, registration, and two-factor authentication")
 public class AuthController {
     private final AuthService auth;
     private final JwtService jwt;
@@ -58,6 +67,17 @@ public class AuthController {
 
     }
 
+    @Operation(
+        summary = "User login",
+        description = "Authenticate user with email and password. Returns JWT tokens in cookies. If 2FA is enabled, returns a temporary token for 2FA verification."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Login successful or 2FA required",
+            content = @Content(schema = @Schema(oneOf = {AuthSuccessResponse.class, TwoFactorRequiredResponse.class}))),
+        @ApiResponse(responseCode = "401", description = "Invalid credentials"),
+        @ApiResponse(responseCode = "403", description = "Account temporarily locked"),
+        @ApiResponse(responseCode = "429", description = "Too many login attempts")
+    })
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest req, HttpServletRequest request, HttpServletResponse response) {
 
@@ -106,6 +126,16 @@ public class AuthController {
                 new AuthSuccessResponse("Login successful", userInfo, expiresAt.toEpochMilli())
         );
     }
+    @Operation(
+        summary = "Refresh access token",
+        description = "Exchange refresh token (from cookie) for new access and refresh tokens."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Token refreshed",
+            content = @Content(schema = @Schema(implementation = RefreshResponse.class))),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token"),
+        @ApiResponse(responseCode = "429", description = "Too many refresh attempts")
+    })
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
 
@@ -153,6 +183,16 @@ public class AuthController {
         }
     }
 
+    @Operation(
+        summary = "Register new user",
+        description = "Create a new user account. Sends email verification link. Returns JWT tokens in cookies."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Registration successful",
+            content = @Content(schema = @Schema(implementation = AuthSuccessResponse.class))),
+        @ApiResponse(responseCode = "409", description = "Email already exists"),
+        @ApiResponse(responseCode = "429", description = "Too many registration attempts")
+    })
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request,HttpServletRequest httpRequest,HttpServletResponse response){
 
@@ -338,6 +378,17 @@ public class AuthController {
                     .body(new MessageResponse("Failed to reset password. Please try again."));
         }
     }
+    @Operation(
+        summary = "Setup two-factor authentication",
+        description = "Generate 2FA secret, QR code, and backup codes. Requires authentication."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "2FA setup data returned",
+            content = @Content(schema = @Schema(implementation = TwoFactorSetupResponse.class))),
+        @ApiResponse(responseCode = "400", description = "2FA already enabled"),
+        @ApiResponse(responseCode = "401", description = "Authentication required")
+    })
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/2fa/setup")
     public ResponseEntity<?> setup2FA(HttpServletRequest request){
         String token = cookieUtil.getAccessTokenFromCookies(request);

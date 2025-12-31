@@ -12,6 +12,14 @@ import com.memorio.backend.faces.Person;
 import com.memorio.backend.common.security.AuthenticationUtil;
 import com.memorio.backend.adaptive.AdaptiveDifficultyService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -31,6 +39,8 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/exercises")
+@Tag(name = "Exercises", description = "Memory training exercises including word linking, names & faces, and number peg system")
+@SecurityRequirement(name = "bearerAuth")
 public class ExerciseController {
 
     private final ExerciseSessionRepository sessions;
@@ -69,6 +79,16 @@ public class ExerciseController {
         this.numberPegService = numberPegService;
         this.adaptiveService = adaptiveService;
     }
+    @Operation(
+        summary = "Start a new exercise session",
+        description = "Initialize a new exercise session. Returns exercise content (words, faces, or digits) based on type and user's skill level."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Exercise session started",
+            content = @Content(schema = @Schema(implementation = StartExerciseResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Unknown exercise type"),
+        @ApiResponse(responseCode = "401", description = "Authentication required")
+    })
     @PostMapping("/start")
     public ResponseEntity<StartExerciseResponse> start(@Valid @RequestBody StartExerciseRequest req,
                                                        Authentication auth){
@@ -146,6 +166,16 @@ public class ExerciseController {
             default -> throw new IllegalArgumentException("Unknown exercise type: " + req.getType());
         }
     }
+    @Operation(
+        summary = "Submit exercise answers",
+        description = "Submit answers for an exercise session. Calculates score, updates user stats, awards badges, and adjusts skill level."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Exercise submitted successfully",
+            content = @Content(schema = @Schema(implementation = SubmitExerciseResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Session not found"),
+        @ApiResponse(responseCode = "400", description = "Invalid request data")
+    })
     @Transactional
     @PostMapping("/submit")
     public ResponseEntity<SubmitExerciseResponse> submit(@Valid @RequestBody SubmitExerciseRequest req,
@@ -320,11 +350,20 @@ public class ExerciseController {
             throw new IllegalStateException("Failed to serialize list", e);
         }
     }
+    @Operation(
+        summary = "Get exercise history",
+        description = "Retrieve paginated history of user's exercise sessions with attempt statistics."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "History retrieved",
+            content = @Content(schema = @Schema(implementation = HistoryResponse.class)))
+    })
     @Transactional (readOnly = true)
     @GetMapping("/history")
-    public ResponseEntity<HistoryResponse> history(@RequestParam(defaultValue = "20") int limit,
-                                                   @RequestParam(defaultValue = "0") int offset,
-                                                   Authentication auth){
+    public ResponseEntity<HistoryResponse> history(
+            @Parameter(description = "Maximum number of items to return (1-100)") @RequestParam(defaultValue = "20") int limit,
+            @Parameter(description = "Number of items to skip") @RequestParam(defaultValue = "0") int offset,
+            Authentication auth){
         limit = Math.max(1, Math.min(limit,100));
         offset = Math.max(0, offset);
 
