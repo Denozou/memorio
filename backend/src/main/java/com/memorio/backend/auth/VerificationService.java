@@ -1,6 +1,7 @@
 package com.memorio.backend.auth;
 
 import com.memorio.backend.common.email.EmailService;
+import com.memorio.backend.common.security.ClientIpResolver;
 import com.memorio.backend.user.User;
 import com.memorio.backend.user.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,15 +10,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Iterator;
-import java.util.Map;
 import java.security.SecureRandom;
 import java.time.OffsetDateTime;
 import java.util.Base64;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.data.redis.core.RedisTemplate;
 import java.util.concurrent.TimeUnit;
 
@@ -38,19 +35,22 @@ public class VerificationService {
     private final AuthService authService;
     private final SecureRandom secureRandom;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ClientIpResolver clientIpResolver;
 
     public VerificationService(
             VerificationTokenRepository tokenRepository,
             UserRepository userRepository,
             EmailService emailService,
             AuthService authService,
-            RedisTemplate<String, Object> redisTemplate) {
+            RedisTemplate<String, Object> redisTemplate,
+            ClientIpResolver clientIpResolver) {
         this.tokenRepository = tokenRepository;
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.authService = authService;
         this.secureRandom = new SecureRandom();
         this.redisTemplate = redisTemplate;
+        this.clientIpResolver = clientIpResolver;
     }
 
     @Transactional
@@ -276,28 +276,114 @@ public class VerificationService {
     // NOTE: Manual cleanup no longer needed!
     // Redis automatically deletes expired entries using TTL (Time-To-Live)
     // The old @Scheduled cleanup method has been removed
+
     /**
-     * Extracts the real client IP address from the request, considering proxy headers.
-     * Checks X-Forwarded-For, X-Real-IP, and falls back to remote address.
+     * Initiates an email change request by sending a verification email to the new address.
+     * The email will only be changed after the user confirms via the link sent to the new email.
+     *
+     * @param user The user requesting the email change
+     * @param newEmail The new email address to change to
+     * @param requestIp The IP address of the request
+     * @return true if the verification email was sent, false if the email is already in use
      */
-    public static String getClientIp(HttpServletRequest request) {
-        if (request == null) {
-            return null;
+    @Transactional
+    public boolean initiateEmailChange(User user, String newEmail, String requestIp) {
+        // Check if new email is already in use by another user
+        if (userRepository.existsByEmailIgnoreCase(newEmail)) {
+            log.warn("Email change failed: email {} already in use. Requested by user: {}",
+                    newEmail, user.getEmail());
+            return false;
         }
 
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-            // X-Forwarded-For can contain multiple IPs, take the first one
-            return ip.split(",")[0].trim();
-        }
+        // Delete any existing email change tokens for this user
+        tokenRepository.deleteByUserIdAndTokenType(user.getId(), TokenType.EMAIL_CHANGE);
 
-        ip = request.getHeader("X-Real-IP");
-        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-            return ip;
-        }
+        String token = generateSecureToken();
+        OffsetDateTime expiresAt = OffsetDateTime.now().plusHours(EMAIL_VERIFICATION_HOURS);
 
-        return request.getRemoteAddr();
+        VerificationToken verificationToken = new VerificationToken(
+                user, token, TokenType.EMAIL_CHANGE, expiresAt, requestIp
+        );
+        verificationToken.setNewEmail(newEmail);
+        tokenRepository.save(verificationToken);
+
+        try {
+            emailService.sendEmailChangeVerification(newEmail, token);
+            log.info("Email change verification sent to {} for user: {} from IP: {}",
+                    newEmail, user.getEmail(), requestIp);
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to send email change verification to: {} for user: {}. Error: {}",
+                    newEmail, user.getEmail(), e.getMessage());
+            return true; // Still return true - token is created, email just failed to send
+        }
     }
 
+    /**
+     * Confirms an email change using the provided token.
+     * Updates the user's email address to the new email stored in the token.
+     *
+     * @param token The email change verification token
+     * @return true if the email was successfully changed, false otherwise
+     */
+    @Transactional
+    public boolean confirmEmailChange(String token) {
+        Optional<VerificationToken> tokenOpt = tokenRepository
+                .findByTokenAndUsedAtIsNullAndExpiresAtAfter(token, OffsetDateTime.now());
 
+        if (tokenOpt.isEmpty()) {
+            log.warn("Email change confirmation failed: invalid, expired, or used token");
+            return false;
+        }
+
+        VerificationToken verificationToken = tokenOpt.get();
+
+        if (verificationToken.getTokenType() != TokenType.EMAIL_CHANGE) {
+            log.warn("Email change confirmation failed: wrong token type");
+            return false;
+        }
+
+        String newEmail = verificationToken.getNewEmail();
+        if (newEmail == null || newEmail.isBlank()) {
+            log.warn("Email change confirmation failed: no new email in token");
+            return false;
+        }
+
+        // Double-check the email is still available (could have been taken since token was created)
+        if (userRepository.existsByEmailIgnoreCase(newEmail)) {
+            log.warn("Email change confirmation failed: email {} is now in use", newEmail);
+            return false;
+        }
+
+        // Mark token as used
+        verificationToken.markAsUsed();
+        tokenRepository.save(verificationToken);
+
+        // Update the user's email
+        User user = verificationToken.getUser();
+        String oldEmail = user.getEmail();
+        user.setEmail(newEmail);
+        user.setEmailVerified(true); // The new email is now verified
+        userRepository.save(user);
+
+        // Invalidate ALL other email change tokens for this user
+        tokenRepository.deleteByUserIdAndTokenType(user.getId(), TokenType.EMAIL_CHANGE);
+
+        log.info("Email changed successfully from {} to {} for user: {}",
+                oldEmail, newEmail, user.getId());
+        return true;
+    }
+
+    /**
+     * Securely extracts the real client IP address from the request.
+     *
+     * <p>Delegates to {@link ClientIpResolver} which validates that forwarded
+     * headers only come from trusted proxies, preventing IP spoofing attacks.</p>
+     *
+     * @param request The HTTP servlet request
+     * @return The validated client IP address
+     */
+    public String getClientIp(HttpServletRequest request) {
+        return clientIpResolver.resolveClientIp(request);
+    }
 }

@@ -1,48 +1,15 @@
-import { useEffect, useState, useMemo } from "react";
-import { api } from "../lib/api";
+import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { 
+import {
   Flame, TrendingUp, Award, Clock, LogOut, Menu, X,
   Play, Lightbulb, Target, BookOpen, Brain
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import ThemeToggle from "../components/ThemeToggle";
-import LanguageSelector from "../components/LanguageSelector";
 import AdaptiveDifficultyWidget from "../components/AdaptiveDifficultyWidget";
 import ReviewNotificationBadge from "../components/ReviewNotificationBadge";
 import { useTutorial } from "../contexts/TutorialContext";
-
-type Streak = {
-  currentStreak: number;
-  longestStreak: number;
-  lastActiveDate: string | null; //date (YYYY-MM-DD) or null
-  timezone: string;
-};
-
-type HistoryItem = {
-  sessionId: string;
-  type: "WORD_LINKING" | "NAMES_FACES" | "NUMBER_PEG" | "OBJECT_STORY" | "DAILY_CHALLENGE";
-  startedAt: string;        // datetime
-  finishedAt: string | null;
-  attemptCount: number;
-  lastCorrect: number | null;
-  lastTotal: number | null;
-  lastAccuracy: number | null; // 0..1 or null
-};
-
-type HistoryResponse = {
-  items: HistoryItem[];
-  limit: number;
-  offset: number;
-  total: number;
-};
-
-type Progress = {
-  totalPoints: number;
-  totalAttempts: number;
-  totalCorrect: number;
-  badges: string[];
-};
+import { useStreak, useExerciseHistory, useProgress, useLogout, type HistoryItem } from "../hooks/useQueries";
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -51,17 +18,13 @@ export default function Dashboard() {
   const [showTip, setShowTip] = useState(true);
   const { showTutorial } = useTutorial();
 
-  const [streak, setStreak] = useState<Streak | null>(null);
-  const [loadingStreak, setLoadingStreak] = useState(false);
-  const [streakErr, setStreakErr] = useState<string | null>(null);
+  // React Query hooks - automatic caching, deduplication, and background refetching
+  const { data: streak, isLoading: loadingStreak } = useStreak();
+  const { data: historyData, isLoading: loadingHist } = useExerciseHistory();
+  const { data: progress, isLoading: loadingProg } = useProgress();
+  const logoutMutation = useLogout();
 
-  const [history, setHistory] = useState<HistoryItem[] | null>(null);
-  const [loadingHist, setLoadingHist] = useState(false);
-  const [histErr, setHistErr] = useState<string | null>(null);
-
-  const [progress, setProgress] = useState<Progress | null>(null);
-  const [loadingProg, setLoadingProg] = useState(false);
-  const [progErr, setProgErr] = useState<string | null>(null);
+  const history = historyData?.items ?? null;
 
   // Pick a random tip with a safe fallback when translations aren't loaded as arrays
   const dailyTip = useMemo(() => {
@@ -74,17 +37,17 @@ export default function Dashboard() {
   // Calculate accuracy trend for sparkline
   const accuracyTrend = useMemo(() => {
     if (!history || history.length === 0) return [];
-    const sorted = [...history].sort((a, b) => 
+    const sorted = [...history].sort((a, b) =>
       new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()
     );
-    return sorted.slice(0, 15).reverse().map(h => 
+    return sorted.slice(0, 15).reverse().map(h =>
       h.lastAccuracy ? Math.round(h.lastAccuracy * 100) : 0
     );
   }, [history]);
 
   const recentSessions = useMemo(() => {
     if (!history) return [];
-    const sorted = [...history].sort((a, b) => 
+    const sorted = [...history].sort((a, b) =>
       new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()
     );
     return sorted.slice(0, 10);
@@ -92,61 +55,9 @@ export default function Dashboard() {
 
   const loading = loadingStreak || loadingHist || loadingProg;
 
-  useEffect(() => {
-    let alive = true;
-
-    // Load streak
-    (async () => {
-      setLoadingStreak(true);
-      setStreakErr(null);
-      try {
-        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-        const { data } = await api.get<Streak>("/exercises/streak", { params: { tz } });
-        if (alive) setStreak(data);
-      } catch (e: any) {
-        if (alive) setStreakErr(e?.response?.data?.error ?? "Failed to load streak");
-      } finally {
-        if (alive) setLoadingStreak(false);
-      }
-    })();
-
-    // Load history (last 60 days for heatmap, but we'll use all available)
-    (async () => {
-      setLoadingHist(true);
-      setHistErr(null);
-      try {
-        const { data } = await api.get<HistoryResponse>("/exercises/history", {
-          params: { limit: 200, offset: 0 },
-        });
-        if (alive) setHistory(data.items);
-      } catch (e: any) {
-        if (alive) setHistErr(e?.response?.data?.error ?? "Failed to load history");
-      } finally {
-        if (alive) setLoadingHist(false);
-      }
-    })();
-
-    // Load progress (points & baddges)
-    (async () => {
-      setLoadingProg(true);
-      setProgErr(null);
-      try {
-        const { data } = await api.get<Progress>("/progress");
-        setProgress(data);
-      } catch (e: any) {
-        setProgErr(e?.response?.data?.error ?? "Failed to load progress");
-      } finally {
-        setLoadingProg(false);
-      }
-    })();
-
-    return () => { alive = false; };
-  }, []);
-
-
   async function handleLogout() {
     try {
-      await api.post("/auth/logout");
+      await logoutMutation.mutateAsync();
       nav("/login");
     } catch (e) {
       console.error("Logout failed", e);

@@ -1,4 +1,5 @@
 // Tokens are now stored in secure HttpOnly cookies and managed by the server
+import { api } from './api';
 
 export type AuthUser = {
     id: string;
@@ -7,43 +8,40 @@ export type AuthUser = {
     role: string;
 };
 
-//Checkk if uesr is authenticated by making a request to a protected endpoint
+/**
+ * Check if user is authenticated by making a request to a protected endpoint.
+ * Uses the shared axios instance for automatic token refresh on 401.
+ */
 export async function isAuthenticated(): Promise<boolean> {
     try {
-        const response = await fetch('/auth/check', {
-            method: 'GET',
-            credentials: 'include', //Include cookies in request
-        });
-        return response.ok;
+        const response = await api.get('/auth/check');
+        return response.status === 200;
     } catch {
         return false;
     }
 }
 
-// Get current user information (if authenticated)
+/**
+ * Get current user information (if authenticated).
+ * Uses /users/profile (correct backend path) via shared axios instance.
+ */
 export async function getCurrentUser(): Promise<AuthUser | null> {
     try {
-        const response = await fetch('/api/user/profile', {
-            method: 'GET',
-            credentials: 'include',
-        });
-
-        if (response.ok) {
-            return await response.json();
-        }
-        return null;
+        const response = await api.get('/users/profile');
+        return response.data;
     } catch {
         return null;
     }
 }
 
-// Clear authentication by calling logout endpoint
+/**
+ * Clear authentication by calling logout endpoint.
+ * Note: We don't use the shared axios instance here to avoid
+ * triggering refresh logic during logout.
+ */
 export async function logout(): Promise<void> {
     try {
-        await fetch('/auth/logout', {
-            method: 'POST',
-            credentials: 'include',
-        });
+        await api.post('/auth/logout');
     } catch (error) {
         console.error('Logout error:', error);
     } finally {

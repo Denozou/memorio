@@ -1,11 +1,14 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense } from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./lib/queryClient";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { TutorialProvider } from "./contexts/TutorialContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import RouteErrorBoundary from "./components/RouteErrorBoundary";
+import { lazyWithRetry } from "./lib/lazyWithRetry";
 import "./i18n/config"; // Initialize i18n
 import "./index.css";
 
@@ -13,30 +16,30 @@ import "./index.css";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
 
-// Lazy load all page components for code-splitting
-const LandingPage = lazy(() => import("./routes/LandingPage"));
-const Login = lazy(() => import("./routes/Login"));
-const SignUp = lazy(() => import("./routes/SignUp"));
-const Dashboard = lazy(() => import("./routes/Dashboard"));
-const Profile = lazy(() => import("./routes/Profile"));
-const OAuth2Success = lazy(() => import("./routes/OAuth2Success"));
-const VerifyEmail = lazy(() => import("./routes/VerifyEmail"));
-const RequestPasswordReset = lazy(() => import("./routes/RequestPasswordReset"));
-const ResetPassword = lazy(() => import("./routes/ResetPassword"));
-const TwoFactorVerify = lazy(() => import("./routes/TwoFactorVerify"));
-const TwoFactorSetup = lazy(() => import("./routes/TwoFactorSetup"));
-const TwoFactorDisable = lazy(() => import("./routes/TwoFactorDisable"));
-const ExerciseWordLinking = lazy(() => import("./routes/ExerciseWordLinking"));
-const ExerciseNamesFaces = lazy(() => import("./routes/ExerciseNamesFaces"));
-const ExerciseNumberPeg = lazy(() => import("./routes/ExerciseNumberPeg"));
-const LearningHub = lazy(() => import("./routes/LearningHub"));
-const ArticleDetail = lazy(() => import("./routes/ArticleDetail"));
-const ArticleQuiz = lazy(() => import("./routes/ArticleQuiz"));
-const AdminLearningPanel = lazy(() => import("./routes/AdminLearningPanel"));
-const AdminWordUpload = lazy(() => import("./routes/AdminWordUpload"));
-const AdminPeopleUpload = lazy(() => import("./routes/AdminPeopleUpload"));
-const IsoForestLeaderboard = lazy(() => import("./routes/IsoForestLeaderboard"));
-const Contact = lazy(() => import("./routes/Contact"));
+// Lazy load all page components with retry logic for HMR resilience
+const LandingPage = lazyWithRetry(() => import("./routes/LandingPage"));
+const Login = lazyWithRetry(() => import("./routes/Login"));
+const SignUp = lazyWithRetry(() => import("./routes/SignUp"));
+const Dashboard = lazyWithRetry(() => import("./routes/Dashboard"));
+const Profile = lazyWithRetry(() => import("./routes/Profile"));
+const OAuth2Success = lazyWithRetry(() => import("./routes/OAuth2Success"));
+const VerifyEmail = lazyWithRetry(() => import("./routes/VerifyEmail"));
+const RequestPasswordReset = lazyWithRetry(() => import("./routes/RequestPasswordReset"));
+const ResetPassword = lazyWithRetry(() => import("./routes/ResetPassword"));
+const TwoFactorVerify = lazyWithRetry(() => import("./routes/TwoFactorVerify"));
+const TwoFactorSetup = lazyWithRetry(() => import("./routes/TwoFactorSetup"));
+const TwoFactorDisable = lazyWithRetry(() => import("./routes/TwoFactorDisable"));
+const ExerciseWordLinking = lazyWithRetry(() => import("./routes/ExerciseWordLinking"));
+const ExerciseNamesFaces = lazyWithRetry(() => import("./routes/ExerciseNamesFaces"));
+const ExerciseNumberPeg = lazyWithRetry(() => import("./routes/ExerciseNumberPeg"));
+const LearningHub = lazyWithRetry(() => import("./routes/LearningHub"));
+const ArticleDetail = lazyWithRetry(() => import("./routes/ArticleDetail"));
+const ArticleQuiz = lazyWithRetry(() => import("./routes/ArticleQuiz"));
+const AdminLearningPanel = lazyWithRetry(() => import("./routes/AdminLearningPanel"));
+const AdminWordUpload = lazyWithRetry(() => import("./routes/AdminWordUpload"));
+const AdminPeopleUpload = lazyWithRetry(() => import("./routes/AdminPeopleUpload"));
+const IsoForestLeaderboard = lazyWithRetry(() => import("./routes/IsoForestLeaderboard"));
+const Contact = lazyWithRetry(() => import("./routes/Contact"));
 
 // Loading fallback component
 function PageLoader() {
@@ -100,11 +103,13 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <ThemeProvider>
-        <LanguageProvider>
-          <RouterProvider router={router} />
-        </LanguageProvider>
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <LanguageProvider>
+            <RouterProvider router={router} />
+          </LanguageProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
     </ErrorBoundary>
   </React.StrictMode>
 );

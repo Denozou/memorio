@@ -90,6 +90,36 @@ public class EmailService {
         sendEmail(toEmail, subject, body);
     }
 
+    public void sendEmailChangeVerification(String newEmail, String token) {
+        // Build URL safely with proper encoding
+        String confirmLink = UriComponentsBuilder
+                .fromHttpUrl(frontendUrl)
+                .path("/auth/confirm-email-change")
+                .queryParam("token", token)
+                .toUriString();
+
+        if (!emailEnabled) {
+            log.info("Email disabled. Email change confirmation link would be: {}", confirmLink);
+            return;
+        }
+
+        String subject = "Confirm Your New Email Address - Memorio";
+        String body = String.format(
+                "Hello,\n\n" +
+                        "You requested to change your email address on Memorio to this address.\n\n" +
+                        "Please click the link below to confirm this email change:\n" +
+                        "%s\n\n" +
+                        "This link will expire in 24 hours.\n\n" +
+                        "If you didn't request this change, please ignore this email. " +
+                        "Your email address will remain unchanged.\n\n" +
+                        "Best regards,\n" +
+                        "The Memorio Team",
+                confirmLink
+        );
+
+        sendEmail(newEmail, subject, body);
+    }
+
     /**
      * Sends an email. Email failures are logged but do NOT break the user flow.
      * This is intentional - email sending should be non-blocking.

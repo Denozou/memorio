@@ -31,7 +31,7 @@ public class AdaptiveDifficultyService {
 
     public UserSkillMastery recordAttempt(UUID userId, String skillType, String conceptId,
                                           boolean wasCorrect, int difficultyLevel,
-                                          UUID exerciseSessionId) {
+                                          UUID exerciseSessionId, Integer responseTimeMs) {
         UserSkillMastery mastery = masteryRepo
                 .findByUserIdAndSkillTypeAndConceptId(userId, skillType, conceptId)
                 .orElseGet(() -> {
@@ -58,6 +58,7 @@ public class AdaptiveDifficultyService {
                 userId, mastery.getId(), exerciseSessionId,
                 skillType, difficultyLevel, wasCorrect
         );
+        history.setResponseTimeMs(responseTimeMs);
         history.setTimeSinceLastPracticeHours(hoursSinceLastPractice);
         history.setUserSkillLevelAtTime(user != null ? user.getSkillLevel() : null);
         history.setProbabilityKnownBefore(probabilityBefore);

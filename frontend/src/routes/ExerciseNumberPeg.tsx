@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { api } from "../lib/api";
 import { Link, useNavigate } from "react-router-dom";
 import { 
@@ -33,6 +33,7 @@ type SubmitReq = {
   type: "NUMBER_PEG";
   shownWords: string[];
   answers: string[];
+  responseTimeMs?: number;
 };
 
 type SubmitResp = {
@@ -69,6 +70,9 @@ export default function ExerciseNumberPeg() {
   const [itemShowMs, setItemShowMs] = useState<number>(2000);
   const [gapMs, setGapMs] = useState<number>(300);
 
+  // Track when recall phase started for response time calculation
+  const recallStartTimeRef = useRef<number | null>(null);
+
   async function startExercise() {
     setError(null);
     setLoading(true);
@@ -96,12 +100,18 @@ export default function ExerciseNumberPeg() {
     setSubmitting(true);
     setError(null);
     try {
+      // Calculate response time from recall phase start
+      const responseTimeMs = recallStartTimeRef.current
+        ? Math.round(Date.now() - recallStartTimeRef.current)
+        : undefined;
+
       const answers = sequence.split("");
       const body: SubmitReq = {
         sessionId,
         type: "NUMBER_PEG",
         shownWords: digits.map(String),
         answers,
+        responseTimeMs,
       };
       const { data } = await api.post<SubmitResp>("/exercises/submit", body);
       setScore(data);
@@ -120,6 +130,7 @@ export default function ExerciseNumberPeg() {
     setHints(null);
     setScore(null);
     setUserSequence("");
+    recallStartTimeRef.current = null;
   }
 
   async function handleLogout() {
@@ -245,12 +256,15 @@ export default function ExerciseNumberPeg() {
         <div className="mt-6 sm:mt-8">
           {phase === "idle" && <IdleView loading={loading} onStart={startExercise} t={t} />}
           {phase === "study" && digits && hints && (
-            <StudyPhase 
+            <StudyPhase
               digits={digits}
               hints={hints}
               itemShowMs={itemShowMs}
               gapMs={gapMs}
-              onComplete={() => setPhase("recall")} 
+              onComplete={() => {
+                recallStartTimeRef.current = Date.now();
+                setPhase("recall");
+              }}
             />
           )}
           {phase === "recall" && digits && (

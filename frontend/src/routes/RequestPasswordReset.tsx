@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
-import { API_BASE_URL } from '../lib/api';
+import { api } from '../lib/api';
+import { AxiosError } from 'axios';
 
 export default function RequestPasswordReset() {
     const [email, setEmail] = useState('');
@@ -15,23 +16,14 @@ export default function RequestPasswordReset() {
         setIsLoading(true);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/password-reset/request`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({ email }),
-            });
-
-            if (response.ok) {
-                setIsSubmitted(true);
-            } else {
-                const data = await response.json();
-                setError(data.message || 'Failed to send reset email');
-            }
+            await api.post('/auth/password-reset/request', { email });
+            setIsSubmitted(true);
         } catch (err) {
-            setError('An error occurred. Please try again.');
+            if (err instanceof AxiosError && err.response?.data?.message) {
+                setError(err.response.data.message);
+            } else {
+                setError('An error occurred. Please try again.');
+            }
         } finally {
             setIsLoading(false);
         }

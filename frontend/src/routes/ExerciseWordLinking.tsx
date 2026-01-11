@@ -30,6 +30,7 @@ type SubmitReq = {
   type: "WORD_LINKING";
   shownWords: string[];
   answers: string[];
+  responseTimeMs?: number;
 };
 
 type SubmitResp = {
@@ -71,6 +72,9 @@ export default function ExerciseWordLinking() {
   const [itemShowMs, setItemShowMs] = useState<number>(1600);
   const [gapMs, setGapMs] = useState<number>(400);
 
+  // Track when recall phase started for response time calculation
+  const recallStartTimeRef = useRef<number | null>(null);
+
   async function startExercise() {
     setError(null);
     setLoading(true);
@@ -98,6 +102,11 @@ export default function ExerciseWordLinking() {
     setSubmitting(true);
     setError(null);
     try {
+      // Calculate response time from recall phase start
+      const responseTimeMs = recallStartTimeRef.current
+        ? Math.round(Date.now() - recallStartTimeRef.current)
+        : undefined;
+
       // Match user answers to correct positions in the target list
       const positionedAnswers = words.map(targetWord => {
         // Find if user entered this word (case-insensitive)
@@ -115,6 +124,7 @@ export default function ExerciseWordLinking() {
         type: "WORD_LINKING",
         shownWords: words,
         answers: positionedAnswers,
+        responseTimeMs,
       };
       const { data } = await api.post<SubmitResp>("/exercises/submit", body);
       setScore(data);
@@ -136,6 +146,7 @@ export default function ExerciseWordLinking() {
     setUserList([]);
     setPositionedAnswers([]);
     setDisplayAnswers([]);
+    recallStartTimeRef.current = null;
   }
 
   async function handleLogout() {
@@ -259,11 +270,14 @@ export default function ExerciseWordLinking() {
         <div className="mt-6 sm:mt-8">
           {phase === "idle" && <IdleView loading={loading} onStart={startExercise} t={t} />}
           {phase === "study" && words && (
-            <StudyPhase 
+            <StudyPhase
               words={words}
               itemShowMs={itemShowMs}
               gapMs={gapMs}
-              onComplete={() => setPhase("recall")} 
+              onComplete={() => {
+                recallStartTimeRef.current = Date.now();
+                setPhase("recall");
+              }}
             />
           )}
           {phase === "recall" && words && (

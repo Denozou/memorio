@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
-import { api } from "../lib/api";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BookOpen, Clock, CheckCircle, Lock, LogOut, Menu, X, GraduationCap, TrendingUp, ChevronDown, ChevronUp, Unlock, Brain, Lightbulb } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import ThemeToggle from "../components/ThemeToggle";
 import ReviewNotificationBadge from "../components/ReviewNotificationBadge";
 import { useTutorial } from "../contexts/TutorialContext";
-import type { ArticleListDto, TechniqueCategory, UserProgressDto } from "../types/learning";
+import { useArticles, useLearningProgress, useLogout } from "../hooks/useQueries";
+import type { ArticleListDto, TechniqueCategory } from "../types/learning";
 
 interface CategoryGroup {
   category: TechniqueCategory;
@@ -21,53 +21,20 @@ export default function LearningHub() {
   const nav = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { showTutorial } = useTutorial();
-  
-  const [articles, setArticles] = useState<ArticleListDto[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
-  const [progress, setProgress] = useState<UserProgressDto | null>(null);
-  const [loadingProgress, setLoadingProgress] = useState(false);
-  
+
+  // React Query hooks - automatic caching and background refetching
+  const { data: articles = [], isLoading: loading, error: articlesError } = useArticles();
+  const { data: progress, isLoading: loadingProgress } = useLearningProgress();
+  const logoutMutation = useLogout();
+
+  const error = articlesError ? "Failed to load articles" : null;
+
   const [selectedCategory, setSelectedCategory] = useState<TechniqueCategory | "ALL">("ALL");
   const [expandedCategories, setExpandedCategories] = useState<Set<TechniqueCategory>>(new Set());
 
-  useEffect(() => {
-    let alive = true;
-
-    // Load articles
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const { data } = await api.get<ArticleListDto[]>("/api/learning/articles");
-        if (alive) setArticles(data);
-      } catch (e: any) {
-        if (alive) setError(e?.response?.data?.error ?? "Failed to load articles");
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-
-    // Load progress
-    (async () => {
-      setLoadingProgress(true);
-      try {
-        const { data } = await api.get<UserProgressDto>("/api/learning/progress");
-        if (alive) setProgress(data);
-      } catch (e: any) {
-        console.error("Failed to load progress", e);
-      } finally {
-        if (alive) setLoadingProgress(false);
-      }
-    })();
-
-    return () => { alive = false; };
-  }, []);
-
   async function handleLogout() {
     try {
-      await api.post("/auth/logout");
+      await logoutMutation.mutateAsync();
       nav("/login");
     } catch (e) {
       console.error("Logout failed", e);

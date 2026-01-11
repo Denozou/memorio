@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/leaderboard")
+@RequestMapping({"/leaderboard", "/api/leaderboard"})
 @Tag(name = "Gamification", description = "Leaderboards, points, badges, and user statistics")
 @SecurityRequirement(name = "bearerAuth")
 public class LeaderboardController {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { api, API_BASE_URL } from "../lib/api";
 import { Link, useNavigate } from "react-router-dom";
 import { 
@@ -36,6 +36,7 @@ type SubmitReq = {
   type: "NAMES_FACES";
   shownWords: string[];
   answers: string[];
+  responseTimeMs?: number;
 };
 
 type SubmitResp = {
@@ -82,6 +83,9 @@ export default function ExerciseNamesFaces() {
   // Timer state for per-face countdown
   const [timeLeft, setTimeLeft] = useState(0);
 
+  // Track when recall phase started for response time calculation
+  const recallStartTimeRef = useRef<number | null>(null);
+
   // Initialize timer when showing a new face
   useEffect(() => {
     if (phase === "study" && showingFace) {
@@ -119,6 +123,7 @@ export default function ExerciseNamesFaces() {
         } else {
           // All faces shown, auto-transition to recall after a short delay
           setTimeout(() => {
+            recallStartTimeRef.current = Date.now();
             setPhase("recall");
           }, 1500);
         }
@@ -154,6 +159,7 @@ export default function ExerciseNamesFaces() {
   }
 
   function finishStudy() {
+    recallStartTimeRef.current = Date.now();
     setPhase("recall");
   }
 
@@ -162,11 +168,17 @@ export default function ExerciseNamesFaces() {
     setSubmitting(true);
     setError(null);
     try {
+      // Calculate response time from recall phase start
+      const responseTimeMs = recallStartTimeRef.current
+        ? Math.round(Date.now() - recallStartTimeRef.current)
+        : undefined;
+
       const body: SubmitReq = {
         sessionId,
         type: "NAMES_FACES",
         shownWords: faces.map(f => f.displayName),
         answers,
+        responseTimeMs,
       };
       const { data } = await api.post<SubmitResp>("/exercises/submit", body);
       setScore(data);
@@ -186,6 +198,7 @@ export default function ExerciseNamesFaces() {
     setAnswers([]);
     setCurrentIndex(0);
     setShowingFace(true);
+    recallStartTimeRef.current = null;
   }
 
   async function handleLogout() {

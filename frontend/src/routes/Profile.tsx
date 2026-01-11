@@ -671,60 +671,86 @@ export default function Profile() {
               )}
             </div>
 
-            {/* Data & Privacy Card (GDPR) */}
-            <div className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-lg">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                  <Download className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                </div>
+          </div>
+        </div>
+
+        {/* Data & Privacy Section - Full Width (GDPR Danger Zone) */}
+        <div className="mt-8 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg overflow-hidden">
+          {/* Section Header */}
+          <div className="px-6 py-5 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900 border-b border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              </div>
+              <div>
                 <h3 className="text-xl font-black text-slate-900 dark:text-slate-50">
                   {t('profile.dataPrivacy', 'Data & Privacy')}
                 </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {t('profile.dataPrivacySubtitle', 'Manage your personal data and account')}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Content Grid */}
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Export Data Card */}
+              <div className="p-5 rounded-xl bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-900/20 dark:to-violet-900/20 border border-indigo-200 dark:border-indigo-800">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0">
+                    <Download className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-bold text-slate-900 dark:text-slate-50 mb-1">
+                      {t('profile.exportData', 'Export Your Data')}
+                    </h4>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
+                      {t('profile.exportDescription', 'Download a copy of all your personal data including exercise history, progress, and account information.')}
+                    </p>
+                    <button
+                      onClick={handleExportData}
+                      disabled={exportingData}
+                      className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2 shadow-md hover:shadow-lg"
+                    >
+                      {exportingData ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          {t('profile.exporting', 'Exporting...')}
+                        </>
+                      ) : (
+                        <>
+                          <Download className="w-4 h-4" />
+                          {t('profile.downloadData', 'Download My Data')}
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-4">
-                {/* Export Data */}
-                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                  <h4 className="font-bold text-slate-900 dark:text-slate-50 mb-1">
-                    {t('profile.exportData', 'Export Your Data')}
-                  </h4>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
-                    {t('profile.exportDescription', 'Download a copy of all your personal data including exercise history, progress, and account information.')}
-                  </p>
-                  <button
-                    onClick={handleExportData}
-                    disabled={exportingData}
-                    className="w-full px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
-                  >
-                    {exportingData ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        {t('profile.exporting', 'Exporting...')}
-                      </>
-                    ) : (
-                      <>
-                        <Download className="w-4 h-4" />
-                        {t('profile.downloadData', 'Download My Data')}
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {/* Delete Account */}
-                <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-                  <h4 className="font-bold text-red-700 dark:text-red-400 mb-1">
-                    {t('profile.deleteAccount', 'Delete Account')}
-                  </h4>
-                  <p className="text-sm text-red-600 dark:text-red-400/80 mb-3">
-                    {t('profile.deleteDescription', 'Permanently delete your account and all associated data. This action cannot be undone.')}
-                  </p>
-                  <button
-                    onClick={() => setShowDeleteModal(true)}
-                    className="w-full px-4 py-2.5 rounded-xl border-2 border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 font-bold hover:bg-red-100 dark:hover:bg-red-900/30 transition-all flex items-center justify-center gap-2"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    {t('profile.deleteMyAccount', 'Delete My Account')}
-                  </button>
+              {/* Delete Account Card */}
+              <div className="p-5 rounded-xl bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border border-red-200 dark:border-red-800">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/50 flex items-center justify-center flex-shrink-0">
+                    <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-bold text-red-700 dark:text-red-400 mb-1">
+                      {t('profile.deleteAccount', 'Delete Account')}
+                    </h4>
+                    <p className="text-sm text-red-600/80 dark:text-red-400/80 mb-4 leading-relaxed">
+                      {t('profile.deleteDescription', 'Permanently delete your account and all associated data. This action cannot be undone.')}
+                    </p>
+                    <button
+                      onClick={() => setShowDeleteModal(true)}
+                      className="px-5 py-2.5 rounded-xl border-2 border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 font-bold hover:bg-red-100 dark:hover:bg-red-900/30 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      {t('profile.deleteMyAccount', 'Delete My Account')}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

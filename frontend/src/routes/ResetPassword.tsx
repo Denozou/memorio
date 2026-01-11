@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Lock, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
-import { API_BASE_URL } from '../lib/api';
+import { api } from '../lib/api';
+import { AxiosError } from 'axios';
 
 export default function ResetPassword() {
     const [searchParams] = useSearchParams();
@@ -45,29 +46,19 @@ export default function ResetPassword() {
         setIsLoading(true);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/password-reset/confirm`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    token,
-                    newPassword: password,
-                    confirmPassword: confirmPassword,
-                }),
+            await api.post('/auth/password-reset/confirm', {
+                token,
+                newPassword: password,
+                confirmPassword: confirmPassword,
             });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setSuccess(true);
-                setTimeout(() => navigate('/login'), 3000);
-            } else {
-                setError(data.message || 'Failed to reset password');
-            }
+            setSuccess(true);
+            setTimeout(() => navigate('/login'), 3000);
         } catch (err) {
-            setError('An error occurred. Please try again.');
+            if (err instanceof AxiosError && err.response?.data?.message) {
+                setError(err.response.data.message);
+            } else {
+                setError('An error occurred. Please try again.');
+            }
         } finally {
             setIsLoading(false);
         }

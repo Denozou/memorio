@@ -50,7 +50,18 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> get(@PathVariable UUID id){
+    public ResponseEntity<?> get(@PathVariable UUID id, Authentication auth) {
+        UUID requesterId = AuthenticationUtil.extractUserId(auth);
+
+        // Users can only access their own data, admins can access anyone
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!requesterId.equals(id) && !isAdmin) {
+            return ResponseEntity.status(403)
+                    .body(Map.of("error", "Access denied"));
+        }
+
         User u = service.getUser(id);
         UserResponse body = new UserResponse(u.getId(), u.getEmail(), u.getCreatedAt());
         return ResponseEntity.ok(body);

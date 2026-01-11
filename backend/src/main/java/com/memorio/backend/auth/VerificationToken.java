@@ -43,6 +43,9 @@ public class VerificationToken {
     @Column(name = "request_ip", columnDefinition = "inet")
     private String requestIp;
 
+    @Column(name = "new_email")
+    private String newEmail;
+
     public VerificationToken(){
 
     }
@@ -141,5 +144,13 @@ public class VerificationToken {
 
     public void setRequestIp(String requestIp) {
         this.requestIp = requestIp;
+    }
+
+    public String getNewEmail() {
+        return newEmail;
+    }
+
+    public void setNewEmail(String newEmail) {
+        this.newEmail = newEmail;
     }
 }

@@ -92,7 +92,8 @@ public class QuizService {
             quiz.getArticleId().toString(),  // Track per-article mastery
             passed,
             1,  // Quizzes don't have difficulty levels, use 1
-            null  // No exercise session for quizzes
+            null,  // No exercise session for quizzes
+            null   // No response time tracking for quizzes
         );
 
         return new QuizResult(

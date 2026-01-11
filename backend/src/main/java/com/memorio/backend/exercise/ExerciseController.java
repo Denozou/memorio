@@ -293,7 +293,8 @@ public class ExerciseController {
             null,  // No specific concept for exercises
             wasCorrect,
             user.getSkillLevel(),
-            session.getId()
+            session.getId(),
+            req.getResponseTimeMs()
         );
 
         int level = user.getSkillLevel();

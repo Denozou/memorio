@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import { API_BASE_URL } from '../lib/api';
+import { api } from '../lib/api';
+import { AxiosError } from 'axios';
 
 export default function VerifyEmail() {
     const [searchParams] = useSearchParams();
@@ -23,24 +24,17 @@ export default function VerifyEmail() {
 
     const verifyEmail = async (token: string) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/verify-email?token=${token}`, {
-                method: 'GET',
-                credentials: 'include',
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setStatus('success');
-                setMessage(data.message || 'Email verified successfully!');
-                setTimeout(() => navigate('/dashboard'), 3000);
-            } else {
-                setStatus('error');
-                setMessage(data.message || 'Verification failed');
-            }
-        } catch (error) {
+            const response = await api.get(`/auth/verify-email?token=${token}`);
+            setStatus('success');
+            setMessage(response.data.message || 'Email verified successfully!');
+            setTimeout(() => navigate('/dashboard'), 3000);
+        } catch (err) {
             setStatus('error');
-            setMessage('An error occurred during verification');
+            if (err instanceof AxiosError && err.response?.data?.message) {
+                setMessage(err.response.data.message);
+            } else {
+                setMessage('An error occurred during verification');
+            }
         }
     };
 

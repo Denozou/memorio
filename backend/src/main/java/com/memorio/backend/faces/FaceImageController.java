@@ -1,6 +1,5 @@
 package com.memorio.backend.faces;
 
-import org.apache.coyote.Response;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,7 +14,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/faces")
-@PreAuthorize("isAuthenticated")
+@PreAuthorize("isAuthenticated()")
 public class FaceImageController {
 
     private final FaceImageRepository faceImageRepository;

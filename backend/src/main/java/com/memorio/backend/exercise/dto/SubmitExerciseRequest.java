@@ -17,6 +17,9 @@ public class SubmitExerciseRequest {
     @NotNull(message = "answers are required")
     private List<String> answers;
 
+    /** Time in milliseconds from start of recall phase to submission. */
+    private Integer responseTimeMs;
+
     public UUID getSessionId(){return sessionId;}
     public void setSessionId(UUID sessionId){
         this.sessionId = sessionId;
@@ -35,6 +38,8 @@ public class SubmitExerciseRequest {
         this.answers = answers;
     }
 
-
-
+    public Integer getResponseTimeMs(){return responseTimeMs;}
+    public void setResponseTimeMs(Integer responseTimeMs){
+        this.responseTimeMs = responseTimeMs;
+    }
 }

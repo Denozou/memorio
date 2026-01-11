@@ -1,19 +1,61 @@
+import { useEffect, useState } from 'react';
 import { useRouteError, isRouteErrorResponse, useNavigate } from 'react-router-dom';
-import { AlertTriangle, Home, ArrowLeft, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Home, ArrowLeft, RefreshCw, Wifi } from 'lucide-react';
+
+/**
+ * Check if error is a module loading failure (common during Vite HMR)
+ */
+function isModuleLoadError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const msg = error.message.toLowerCase();
+  return (
+    msg.includes('failed to fetch dynamically imported module') ||
+    msg.includes('loading chunk') ||
+    msg.includes('loading css chunk') ||
+    msg.includes('unable to preload')
+  );
+}
 
 /**
  * Route Error Boundary for React Router.
- * Handles 404s and other route-level errors.
+ * Handles 404s, module loading failures, and other route-level errors.
  */
 export default function RouteErrorBoundary() {
   const error = useRouteError();
   const navigate = useNavigate();
+  const [isRetrying, setIsRetrying] = useState(false);
+
+  const isModuleError = isModuleLoadError(error);
+
+  // Auto-reload for module loading errors (once)
+  useEffect(() => {
+    if (isModuleError && !isRetrying) {
+      const retryKey = 'module_error_auto_retry';
+      const hasRetried = sessionStorage.getItem(retryKey);
+
+      if (!hasRetried) {
+        sessionStorage.setItem(retryKey, 'true');
+        setIsRetrying(true);
+        // Small delay to show user something is happening
+        setTimeout(() => window.location.reload(), 500);
+      } else {
+        // Clear for next time
+        sessionStorage.removeItem(retryKey);
+      }
+    }
+  }, [isModuleError, isRetrying]);
 
   let title = 'Something went wrong';
   let message = 'An unexpected error occurred. Please try again.';
   let statusCode: number | null = null;
 
-  if (isRouteErrorResponse(error)) {
+  if (isRetrying) {
+    title = 'Reconnecting...';
+    message = 'The page is being refreshed automatically.';
+  } else if (isModuleError) {
+    title = 'Connection issue';
+    message = 'Failed to load the page. This can happen during development updates or network issues.';
+  } else if (isRouteErrorResponse(error)) {
     statusCode = error.status;
     switch (error.status) {
       case 404:
@@ -64,8 +106,16 @@ export default function RouteErrorBoundary() {
 
         {/* Error Icon */}
         {!statusCode && (
-          <div className="mx-auto w-20 h-20 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mb-6">
-            <AlertTriangle className="w-10 h-10 text-amber-600 dark:text-amber-400" />
+          <div className={`mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-6 ${
+            isModuleError || isRetrying
+              ? 'bg-blue-100 dark:bg-blue-900/30'
+              : 'bg-amber-100 dark:bg-amber-900/30'
+          }`}>
+            {isModuleError || isRetrying ? (
+              <Wifi className={`w-10 h-10 text-blue-600 dark:text-blue-400 ${isRetrying ? 'animate-pulse' : ''}`} />
+            ) : (
+              <AlertTriangle className="w-10 h-10 text-amber-600 dark:text-amber-400" />
+            )}
           </div>
         )}
 
@@ -79,28 +129,49 @@ export default function RouteErrorBoundary() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <button
-            onClick={handleGoBack}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-900 dark:text-white font-medium rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Go Back
-          </button>
-          <button
-            onClick={handleGoHome}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors"
-          >
-            <Home className="w-4 h-4" />
-            Go Home
-          </button>
-          {statusCode && statusCode >= 500 && (
-            <button
-              onClick={handleReload}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-900 dark:text-white font-medium rounded-lg transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Reload
-            </button>
+          {!isRetrying && (
+            <>
+              {/* Show reload as primary for module errors */}
+              {isModuleError ? (
+                <button
+                  onClick={handleReload}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Reload Page
+                </button>
+              ) : (
+                <button
+                  onClick={handleGoHome}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors"
+                >
+                  <Home className="w-4 h-4" />
+                  Go Home
+                </button>
+              )}
+              <button
+                onClick={handleGoBack}
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-900 dark:text-white font-medium rounded-lg transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Go Back
+              </button>
+              {statusCode && statusCode >= 500 && (
+                <button
+                  onClick={handleReload}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-900 dark:text-white font-medium rounded-lg transition-colors"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Reload
+                </button>
+              )}
+            </>
+          )}
+          {isRetrying && (
+            <div className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-slate-500 dark:text-slate-400 font-medium">
+              <RefreshCw className="w-4 h-4 animate-spin" />
+              Refreshing...
+            </div>
           )}
         </div>
 

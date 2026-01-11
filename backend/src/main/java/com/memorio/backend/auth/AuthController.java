@@ -299,7 +299,7 @@ public class AuthController {
                         .body(new MessageResponse("Email already verified"));
             }
 
-            String clientIp = VerificationService.getClientIp(request);
+            String clientIp = verificationService.getClientIp(request);
             verificationService.createAndSendEmailVerification(user, clientIp);
             return ResponseEntity.ok(
                     new MessageResponse("Verification email sent successfully")
@@ -314,18 +314,50 @@ public class AuthController {
     public ResponseEntity<MessageResponse> verifyEmail(
             @RequestParam String token,
             HttpServletRequest request) {
-        
+
         // Rate limiting to prevent token brute-force
         if (!rateLimitService.allowRegister(request)) {
             return ResponseEntity.status(429)
                     .body(new MessageResponse("Too many verification attempts. Please try again later."));
         }
-        
+
         boolean success = verificationService.verifyEmail(token);
-        
+
         if (success) {
             return ResponseEntity.ok(
                     new MessageResponse("Email verified successfully")
+            );
+        } else {
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponse("Invalid or expired verification token"));
+        }
+    }
+
+    @Operation(
+        summary = "Confirm email change",
+        description = "Confirm an email address change using the verification token sent to the new email."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Email changed successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid or expired token"),
+        @ApiResponse(responseCode = "429", description = "Too many attempts")
+    })
+    @GetMapping("/confirm-email-change")
+    public ResponseEntity<MessageResponse> confirmEmailChange(
+            @RequestParam String token,
+            HttpServletRequest request) {
+
+        // Rate limiting to prevent token brute-force
+        if (!rateLimitService.allowRegister(request)) {
+            return ResponseEntity.status(429)
+                    .body(new MessageResponse("Too many verification attempts. Please try again later."));
+        }
+
+        boolean success = verificationService.confirmEmailChange(token);
+
+        if (success) {
+            return ResponseEntity.ok(
+                    new MessageResponse("Email changed successfully")
             );
         } else {
             return ResponseEntity.badRequest()
@@ -344,7 +376,7 @@ public class AuthController {
         }
 
         // Always return success to prevent email enumeration
-        String clientIp = VerificationService.getClientIp(httpRequest);
+        String clientIp = verificationService.getClientIp(httpRequest);
         verificationService.createAndSendPasswordReset(request.getEmail(), clientIp);
         return ResponseEntity.ok(
                 new MessageResponse("If the email exists, a password reset link has been sent")
