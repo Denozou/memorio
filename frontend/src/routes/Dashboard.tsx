@@ -417,46 +417,47 @@ function ExerciseCard({ title, desc, icon, color, route }: {
 
 // Activity Heatmap Component
 function ActivityHeatmap({ history, loading }: { history: HistoryItem[]; loading: boolean }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === 'pl' ? 'pl-PL' : 'en-US';
+
   const days = useMemo(() => {
     // Create a map of date strings to session counts
     const sessionsByDate = new Map<string, number>();
-    
+
     // Count sessions per day
     history.forEach(session => {
       const sessionDate = new Date(session.startedAt);
       const dateKey = `${sessionDate.getFullYear()}-${String(sessionDate.getMonth() + 1).padStart(2, '0')}-${String(sessionDate.getDate()).padStart(2, '0')}`;
       sessionsByDate.set(dateKey, (sessionsByDate.get(dateKey) || 0) + 1);
     });
-    
+
     // Generate last 30 days
     const result = [];
     const now = new Date();
-    
+
     for (let i = 0; i < 30; i++) {
       const date = new Date(now);
       date.setDate(now.getDate() - (29 - i));
       date.setHours(0, 0, 0, 0);
-      
+
       const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       const count = sessionsByDate.get(dateKey) || 0;
-      
+
       let intensity = 0;
       if (count > 0) intensity = 1;
       if (count > 2) intensity = 2;
       if (count > 4) intensity = 3;
-      
+
       result.push({
         dateKey,
         intensity,
         count,
-        label: date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+        label: date.toLocaleDateString(locale, { month: 'short', day: 'numeric' })
       });
     }
-    
-    console.log('Heatmap generated:', result.length, 'days');
+
     return result;
-  }, [history]);
+  }, [history, locale]);
 
   if (loading) return <div className="h-16 w-full bg-slate-50 dark:bg-slate-800 rounded-lg animate-pulse mt-4" />;
 
@@ -495,7 +496,9 @@ function ActivityHeatmap({ history, loading }: { history: HistoryItem[]; loading
 }
 
 function HistoryList({ items }: { items: HistoryItem[] }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === 'pl' ? 'pl-PL' : 'en-US';
+
   const getExerciseName = (type: string) => {
     const names: Record<string, string> = {
       WORD_LINKING: t('exercises.wordLinking'),
@@ -518,11 +521,11 @@ function HistoryList({ items }: { items: HistoryItem[] }) {
                 {getExerciseName(s.type)}
               </div>
               <div className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">
-                {formatDateTime(s.startedAt)}
+                {formatDateTime(s.startedAt, locale, t('dashboard.yesterday'))}
               </div>
             </div>
           </div>
-          
+
           <div className="text-right shrink-0 ml-2">
              <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-50">
                 {s.lastAccuracy !== null ? `${Math.round(s.lastAccuracy * 100)}%` : t('dashboard.notFinished')}
@@ -612,18 +615,18 @@ function TypeBadge({ type }: { type: HistoryItem["type"] }) {
   );
 }
 
-function formatDateTime(iso: string) {
+function formatDateTime(iso: string, locale: string = 'en-US', yesterdayText: string = 'Yesterday') {
   const d = new Date(iso);
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const sessionDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  
+
   const diffDays = Math.floor((today.getTime() - sessionDate.getTime()) / (1000 * 60 * 60 * 24));
-  
-  const time = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-  
+
+  const time = d.toLocaleTimeString(locale, {hour: '2-digit', minute:'2-digit'});
+
   if (diffDays === 0) return time; // Today - just show time
-  if (diffDays === 1) return `Yesterday ${time}`;
-  if (diffDays < 7) return `${d.toLocaleDateString([], {weekday: 'short'})} ${time}`;
-  return `${d.toLocaleDateString([], {month: 'short', day: 'numeric'})} ${time}`;
+  if (diffDays === 1) return `${yesterdayText} ${time}`;
+  if (diffDays < 7) return `${d.toLocaleDateString(locale, {weekday: 'short'})} ${time}`;
+  return `${d.toLocaleDateString(locale, {month: 'short', day: 'numeric'})} ${time}`;
 }

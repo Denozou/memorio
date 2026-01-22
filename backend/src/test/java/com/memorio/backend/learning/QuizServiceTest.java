@@ -174,7 +174,7 @@ class QuizServiceTest {
             assertTrue(result.passed());
             assertEquals(70, result.passingScore());
 
-            verify(adaptiveService).recordAttempt(eq(userId), eq("QUIZ"), anyString(), eq(true), eq(1), isNull());
+            verify(adaptiveService).recordAttempt(eq(userId), eq("QUIZ"), anyString(), eq(true), eq(1), isNull(), isNull());
         }
 
         @Test
@@ -198,7 +198,7 @@ class QuizServiceTest {
             assertEquals(50, result.percentage());
             assertFalse(result.passed());
 
-            verify(adaptiveService).recordAttempt(eq(userId), eq("QUIZ"), anyString(), eq(false), eq(1), isNull());
+            verify(adaptiveService).recordAttempt(eq(userId), eq("QUIZ"), anyString(), eq(false), eq(1), isNull(), isNull());
         }
 
         @Test

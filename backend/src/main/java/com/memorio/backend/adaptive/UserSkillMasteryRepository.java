@@ -15,6 +15,7 @@ public interface UserSkillMasteryRepository extends JpaRepository<UserSkillMaste
     List<UserSkillMastery> findByUserIdAndSkillType(UUID userId, String skillType);
 
     @Query("SELECT s FROM UserSkillMastery s WHERE s.userId = :userId " +
+            "AND s.skillType <> 'QUIZ' " +
             "AND s.nextReviewAt IS NOT NULL AND s.nextReviewAt <= CURRENT_TIMESTAMP " +
             "ORDER BY s.nextReviewAt ASC")
     List<UserSkillMastery> findSkillDueForReview(@Param("userId")UUID userId);

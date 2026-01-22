@@ -439,7 +439,8 @@ class ExerciseControllerTest {
             isNull(),
             eq(true),
             eq(5),
-            eq(sessionId)
+            eq(sessionId),
+            isNull()  // responseTimeMs
         );
     }
 }
