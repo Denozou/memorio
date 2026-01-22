@@ -17,29 +17,29 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
 
 // Lazy load all page components with retry logic for HMR resilience
-const LandingPage = lazyWithRetry(() => import("./routes/LandingPage"));
-const Login = lazyWithRetry(() => import("./routes/Login"));
-const SignUp = lazyWithRetry(() => import("./routes/SignUp"));
-const Dashboard = lazyWithRetry(() => import("./routes/Dashboard"));
-const Profile = lazyWithRetry(() => import("./routes/Profile"));
-const OAuth2Success = lazyWithRetry(() => import("./routes/OAuth2Success"));
-const VerifyEmail = lazyWithRetry(() => import("./routes/VerifyEmail"));
-const RequestPasswordReset = lazyWithRetry(() => import("./routes/RequestPasswordReset"));
-const ResetPassword = lazyWithRetry(() => import("./routes/ResetPassword"));
-const TwoFactorVerify = lazyWithRetry(() => import("./routes/TwoFactorVerify"));
-const TwoFactorSetup = lazyWithRetry(() => import("./routes/TwoFactorSetup"));
-const TwoFactorDisable = lazyWithRetry(() => import("./routes/TwoFactorDisable"));
-const ExerciseWordLinking = lazyWithRetry(() => import("./routes/ExerciseWordLinking"));
-const ExerciseNamesFaces = lazyWithRetry(() => import("./routes/ExerciseNamesFaces"));
-const ExerciseNumberPeg = lazyWithRetry(() => import("./routes/ExerciseNumberPeg"));
-const LearningHub = lazyWithRetry(() => import("./routes/LearningHub"));
-const ArticleDetail = lazyWithRetry(() => import("./routes/ArticleDetail"));
-const ArticleQuiz = lazyWithRetry(() => import("./routes/ArticleQuiz"));
-const AdminLearningPanel = lazyWithRetry(() => import("./routes/AdminLearningPanel"));
-const AdminWordUpload = lazyWithRetry(() => import("./routes/AdminWordUpload"));
-const AdminPeopleUpload = lazyWithRetry(() => import("./routes/AdminPeopleUpload"));
-const IsoForestLeaderboard = lazyWithRetry(() => import("./routes/IsoForestLeaderboard"));
-const Contact = lazyWithRetry(() => import("./routes/Contact"));
+const LandingPage = lazyWithRetry(() => import("./routes/LandingPage"), "LandingPage");
+const Login = lazyWithRetry(() => import("./routes/Login"), "Login");
+const SignUp = lazyWithRetry(() => import("./routes/SignUp"), "SignUp");
+const Dashboard = lazyWithRetry(() => import("./routes/Dashboard"), "Dashboard");
+const Profile = lazyWithRetry(() => import("./routes/Profile"), "Profile");
+const OAuth2Success = lazyWithRetry(() => import("./routes/OAuth2Success"), "OAuth2Success");
+const VerifyEmail = lazyWithRetry(() => import("./routes/VerifyEmail"), "VerifyEmail");
+const RequestPasswordReset = lazyWithRetry(() => import("./routes/RequestPasswordReset"), "RequestPasswordReset");
+const ResetPassword = lazyWithRetry(() => import("./routes/ResetPassword"), "ResetPassword");
+const TwoFactorVerify = lazyWithRetry(() => import("./routes/TwoFactorVerify"), "TwoFactorVerify");
+const TwoFactorSetup = lazyWithRetry(() => import("./routes/TwoFactorSetup"), "TwoFactorSetup");
+const TwoFactorDisable = lazyWithRetry(() => import("./routes/TwoFactorDisable"), "TwoFactorDisable");
+const ExerciseWordLinking = lazyWithRetry(() => import("./routes/ExerciseWordLinking"), "ExerciseWordLinking");
+const ExerciseNamesFaces = lazyWithRetry(() => import("./routes/ExerciseNamesFaces"), "ExerciseNamesFaces");
+const ExerciseNumberPeg = lazyWithRetry(() => import("./routes/ExerciseNumberPeg"), "ExerciseNumberPeg");
+const LearningHub = lazyWithRetry(() => import("./routes/LearningHub"), "LearningHub");
+const ArticleDetail = lazyWithRetry(() => import("./routes/ArticleDetail"), "ArticleDetail");
+const ArticleQuiz = lazyWithRetry(() => import("./routes/ArticleQuiz"), "ArticleQuiz");
+const AdminLearningPanel = lazyWithRetry(() => import("./routes/AdminLearningPanel"), "AdminLearningPanel");
+const AdminWordUpload = lazyWithRetry(() => import("./routes/AdminWordUpload"), "AdminWordUpload");
+const AdminPeopleUpload = lazyWithRetry(() => import("./routes/AdminPeopleUpload"), "AdminPeopleUpload");
+const IsoForestLeaderboard = lazyWithRetry(() => import("./routes/IsoForestLeaderboard"), "IsoForestLeaderboard");
+const Contact = lazyWithRetry(() => import("./routes/Contact"), "Contact");
 
 // Loading fallback component
 function PageLoader() {

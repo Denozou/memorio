@@ -54,7 +54,7 @@ const PROVIDER_NAMES: Record<string, string> = {
 };
 
 export default function Profile() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const nav = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { showTutorial } = useTutorial();
@@ -186,7 +186,9 @@ export default function Profile() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    // Use locale-aware date formatting based on current language
+    const locale = i18n.language === 'pl' ? 'pl-PL' : 'en-US';
+    return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -632,7 +634,7 @@ export default function Profile() {
 
             {/* Linked Accounts Card */}
             <div className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-lg">
-              <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
                   <TrendingUp className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                 </div>
@@ -640,6 +642,10 @@ export default function Profile() {
                   {t('profile.linkedAccounts')}
                 </h3>
               </div>
+
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+                {t('profile.linkedAccountsDesc', 'Connect social accounts for faster sign-in.')}
+              </p>
 
               {profile.linkedProviders.length > 0 ? (
                 <div className="space-y-3">
@@ -664,7 +670,7 @@ export default function Profile() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-slate-500 dark:text-slate-400 text-sm bg-slate-50 dark:bg-slate-800/50 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700">
+                <div className="text-center py-[2.8rem] text-slate-500 dark:text-slate-400 text-sm bg-slate-50 dark:bg-slate-800/50 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700">
                   <div className="text-3xl mb-2">🔗</div>
                   <p className="font-medium">{t('profile.noLinkedAccounts')}</p>
                 </div>

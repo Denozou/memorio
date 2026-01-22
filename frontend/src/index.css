@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* Base body background for dark mode */
+html, body {
+  background-color: #f8fafc; /* slate-50 */
+}
+
+.dark html, .dark body, html.dark, body.dark, .dark {
+  background-color: #0f172a; /* slate-900 */
+}
+
 /* Force white icons in stat cards */
 .stat-icon-white svg,
 .stat-icon-white svg * {

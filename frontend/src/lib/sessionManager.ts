@@ -14,6 +14,21 @@ class SessionManager {
   private backoffDelay: number = 0;
   private tokenExpiresAt: number | null = null;
 
+  private getRetryAfterMs(error: AxiosError): number | null {
+    const retryAfter = error.response?.headers?.['retry-after'];
+    if (!retryAfter) return null;
+
+    // Próba parsowania jako liczba sekund
+    const asNumber = Number(retryAfter);
+    if (!Number.isNaN(asNumber)) return asNumber * 1000;
+
+    // Próba parsowania jako data HTTP (np. "Wed, 21 Oct 2025 07:28:00 GMT")
+    const asDate = Date.parse(retryAfter);
+    if (!Number.isNaN(asDate)) return Math.max(asDate - Date.now(), 0);
+
+    return null;
+  }
+
   public async start() {
     // Check if user is authenticated with cookies
     const authenticated = await isAuthenticated();
@@ -103,8 +118,10 @@ class SessionManager {
         
         // Handle rate limiting with exponential backoff
         if (axiosError.response?.status === 429) {
-          this.backoffDelay = Math.min(this.backoffDelay * 2 || 30000, 300000); // 30s to 5min max
-          console.warn(`Rate limited. Backing off for ${this.backoffDelay / 1000}s`);
+          // Użyj nagłówka Retry-After jeśli dostępny, w przeciwnym razie wykładnicze wycofanie
+          const retryAfter = this.getRetryAfterMs(axiosError);
+          this.backoffDelay = retryAfter ?? Math.min(this.backoffDelay * 2 || 30000, 300000); // 30s do 5min max
+          console.warn(`Rate limited. Backing off for ${this.backoffDelay / 1000}s${retryAfter ? ' (from Retry-After header)' : ''}`);
           
           // Schedule retry with backoff
           this.scheduleTokenRefresh(this.backoffDelay);

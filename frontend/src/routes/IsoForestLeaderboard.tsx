@@ -404,7 +404,7 @@ export default function IsoForestLeaderboard() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 -mt-20 relative z-20">
+      <div className="max-w-4xl mx-auto px-4 -mt-20 relative z-20 pb-12">
         {loading && !leaderboardData ? (
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-12 flex flex-col items-center justify-center">
             <Loader2 className="w-12 h-12 text-emerald-600 dark:text-emerald-400 animate-spin mb-4" />
