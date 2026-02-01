@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { api } from "../lib/api";
 import { Link, useNavigate } from "react-router-dom";
-import { 
-  ArrowRight, Hash, CheckCircle2, AlertCircle, RotateCcw, 
+import {
+  ArrowRight, Hash, CheckCircle2, AlertCircle, RotateCcw,
   Trophy, Brain, Delete, Play, Pause, LogOut, Menu, X, Lightbulb
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../lib/queryClient";
 import ThemeToggle from "../components/ThemeToggle";
 import LanguageSelector from "../components/LanguageSelector";
 import ReviewNotificationBadge from "../components/ReviewNotificationBadge";
@@ -52,6 +54,7 @@ type SubmitResp = {
 export default function ExerciseNumberPeg() {
   const { t } = useTranslation();
   const nav = useNavigate();
+  const queryClient = useQueryClient();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { showTutorial } = useTutorial();
   const [loading, setLoading] = useState(false);
@@ -116,6 +119,9 @@ export default function ExerciseNumberPeg() {
       const { data } = await api.post<SubmitResp>("/exercises/submit", body);
       setScore(data);
       setPhase("summary");
+      // Invalidate dashboard queries to reflect new results
+      queryClient.invalidateQueries({ queryKey: queryKeys.exercises.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.progress.user() });
     } catch (e: any) {
       setError(e?.response?.data?.error ?? t('common.error'));
     } finally {
@@ -340,13 +346,14 @@ function IdleView({ loading, onStart, t }: { loading: boolean; onStart: () => vo
   );
 }
 
-function StudyPhase({ digits, hints, itemShowMs, gapMs, onComplete }: { 
+function StudyPhase({ digits, hints, itemShowMs, gapMs, onComplete }: {
   digits: number[];
   hints: string[];
   itemShowMs: number;
   gapMs: number;
   onComplete: () => void;
 }) {
+  const { t } = useTranslation();
   const [index, setIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [tick, setTick] = useState<"show" | "gap">("show");
@@ -386,7 +393,7 @@ function StudyPhase({ digits, hints, itemShowMs, gapMs, onComplete }: {
       
       {/* Sequence Progress */}
       <div className="w-full flex justify-between text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mb-2 font-mono">
-        <span>Digit {index + 1} of {digits.length}</span>
+        <span>{t('exercises.digitOf', { current: index + 1, total: digits.length })}</span>
         <span>{Math.round(progress)}%</span>
       </div>
       <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mb-8 sm:mb-12 overflow-hidden">
@@ -415,7 +422,7 @@ function StudyPhase({ digits, hints, itemShowMs, gapMs, onComplete }: {
               
               <div className="space-y-2">
                 <div className="text-[10px] sm:text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
-                  Peg Word
+                  {t('exercises.pegWord')}
                 </div>
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-700 dark:text-slate-50">
                   {currentItem.peg}
@@ -459,10 +466,11 @@ function StudyPhase({ digits, hints, itemShowMs, gapMs, onComplete }: {
   );
 }
 
-function RecallPhase({ digitCount, onComplete }: { 
+function RecallPhase({ digitCount, onComplete }: {
   digitCount: number;
   onComplete: (seq: string) => void;
 }) {
+  const { t } = useTranslation();
   const [input, setInput] = useState("");
   
   const handleNumClick = (num: number) => {
@@ -499,7 +507,7 @@ function RecallPhase({ digitCount, onComplete }: {
       
       {/* Display Screen */}
       <div className="bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 text-center shadow-lg relative">
-        <div className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-mono mb-3 uppercase tracking-wider">Sequence Output</div>
+        <div className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-mono mb-3 uppercase tracking-wider">{t('exercises.sequenceOutput')}</div>
         <div className="min-h-[48px] sm:min-h-[64px] flex items-center justify-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 pt-1">
           {/* Render placeholders for total length */}
           {Array.from({ length: digitCount }).map((_, i) => (
@@ -559,19 +567,20 @@ function RecallPhase({ digitCount, onComplete }: {
       </div>
       
       <p className="text-center text-xs text-slate-500 dark:text-slate-400">
-        Tip: You can use your keyboard numbers
+        {t('exercises.tipKeyboard')}
       </p>
     </div>
   );
 }
 
-function ResultsPhase({ targetDigits, targetHints, userSequence, score, onReset }: { 
+function ResultsPhase({ targetDigits, targetHints, userSequence, score, onReset }: {
   targetDigits: number[];
   targetHints: string[];
   userSequence: string;
   score: SubmitResp;
   onReset: () => void;
 }) {
+  const { t } = useTranslation();
   // Wordle-style diff logic with proper duplicate handling
   const targetDigitsStr = targetDigits.map(d => d.toString());
   const userDigitsArray = userSequence.split('');
@@ -614,9 +623,9 @@ function ResultsPhase({ targetDigits, targetHints, userSequence, score, onReset 
       <div className="text-center">
         <div className="inline-flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-6">
           <Trophy className="w-4 h-4 text-yellow-500" />
-          <span className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">Analysis Complete</span>
+          <span className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">{t('exercises.analysisComplete')}</span>
         </div>
-        
+
         {/* Dual Metrics Display */}
         <div className="flex items-center justify-center gap-6 sm:gap-8">
           {/* Recall Accuracy */}
@@ -625,26 +634,26 @@ function ResultsPhase({ targetDigits, targetHints, userSequence, score, onReset 
               {accuracy}%
             </div>
             <div className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">
-              Numbers Recalled
+              {t('exercises.numbersRecalled')}
             </div>
             <div className="text-xs text-slate-400 dark:text-slate-500">
-              {score.correct}/{targetDigits.length} correct
+              {t('exercises.correctCount', { correct: score.correct, total: targetDigits.length })}
             </div>
           </div>
 
           {/* Divider */}
           <div className="w-px h-20 sm:h-24 bg-slate-300 dark:bg-slate-700" />
-          
+
           {/* Order Accuracy */}
           <div className="flex-1 text-center">
             <div className="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-slate-50 mb-2">
               {orderAccuracy}%
             </div>
             <div className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">
-              Correct Position
+              {t('exercises.correctPosition')}
             </div>
             <div className="text-xs text-slate-400 dark:text-slate-500">
-              {score.orderCorrect}/{targetDigits.length} in order
+              {t('exercises.inOrderCount', { correct: score.orderCorrect, total: targetDigits.length })}
             </div>
           </div>
         </div>
@@ -655,7 +664,7 @@ function ResultsPhase({ targetDigits, targetHints, userSequence, score, onReset 
         
         {/* Label: Your Answer */}
         <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-center">
-          Your Answer
+          {t('exercises.yourAnswer')}
         </div>
         
         {/* User's Sequence Row */}
@@ -684,13 +693,13 @@ function ResultsPhase({ targetDigits, targetHints, userSequence, score, onReset 
         {/* Separator */}
         <div className="flex items-center gap-3 px-4">
           <div className="flex-1 h-px bg-slate-300 dark:bg-slate-700" />
-          <span className="text-xs text-slate-400 dark:text-slate-600">vs</span>
+          <span className="text-xs text-slate-400 dark:text-slate-600">{t('exercises.vs')}</span>
           <div className="flex-1 h-px bg-slate-300 dark:bg-slate-700" />
         </div>
 
         {/* Label: Correct Answer */}
         <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-center">
-          Correct Answer
+          {t('exercises.correctAnswerLabel')}
         </div>
 
         {/* Correct Sequence Row */}
@@ -710,15 +719,15 @@ function ResultsPhase({ targetDigits, targetHints, userSequence, score, onReset 
         <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-lg bg-blue-500 border-2 border-blue-600 shadow-lg shadow-blue-500/30" />
-            <span className="text-slate-600 dark:text-slate-400">Correct Position</span>
+            <span className="text-slate-600 dark:text-slate-400">{t('exercises.correctPosition')}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-lg bg-yellow-400 border-2 border-yellow-500" />
-            <span className="text-slate-600 dark:text-slate-400">Recalled (Wrong Position)</span>
+            <span className="text-slate-600 dark:text-slate-400">{t('exercises.recalledWrongPosition')}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-lg bg-red-500/10 border-2 border-red-400" />
-            <span className="text-slate-600 dark:text-slate-400">Not Recalled</span>
+            <span className="text-slate-600 dark:text-slate-400">{t('exercises.notRecalled')}</span>
           </div>
         </div>
       </div>
@@ -731,7 +740,9 @@ function ResultsPhase({ targetDigits, targetHints, userSequence, score, onReset 
           </div>
           {score.levelChange !== undefined && score.levelChange !== 0 && (
             <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-              Level {score.levelChange > 0 ? "increased" : "decreased"} to {score.newSkillLevel}
+              {score.levelChange > 0
+                ? t('exercises.levelIncreasedTo', { level: score.newSkillLevel })
+                : t('exercises.levelDecreasedTo', { level: score.newSkillLevel })}
             </div>
           )}
         </div>
@@ -739,15 +750,15 @@ function ResultsPhase({ targetDigits, targetHints, userSequence, score, onReset 
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 pt-4">
-        <button 
+        <button
           onClick={onReset}
           className="flex items-center justify-center gap-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 border border-slate-200 dark:border-slate-700 px-6 py-3 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm sm:text-base"
         >
-          <RotateCcw className="w-4 h-4" /> Try Again
+          <RotateCcw className="w-4 h-4" /> {t('exercises.tryAgain')}
         </button>
         <Link to="/dashboard">
           <button className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-500 transition-colors text-sm sm:text-base w-full sm:w-auto">
-            Back to Dashboard
+            {t('exercises.backToDashboard')}
             <ArrowRight className="w-4 h-4" />
           </button>
         </Link>
@@ -758,11 +769,12 @@ function ResultsPhase({ targetDigits, targetHints, userSequence, score, onReset 
 
 /* ===== HELPER COMPONENTS ===== */
 
-function Header({ phase, sessionId, skillLevel }: { 
-  phase: string; 
+function Header({ phase, sessionId, skillLevel }: {
+  phase: string;
   sessionId: string | null;
   skillLevel: number | null;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-slate-200 dark:border-slate-800">
       <div className="flex items-center gap-3 flex-1">
@@ -771,17 +783,17 @@ function Header({ phase, sessionId, skillLevel }: {
         </div>
         <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-            Number Pegs
+            {t('exercises.numberPegs')}
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 capitalize truncate">
-            {phase === "idle" && "Memory Peg System"}
-            {phase === "study" && "Phase 1: Association"}
-            {phase === "recall" && "Phase 2: Sequence Entry"}
-            {phase === "summary" && "Phase 3: Accuracy Check"}
+            {phase === "idle" && t('exercises.memoryPegSystem')}
+            {phase === "study" && t('exercises.phase1Association')}
+            {phase === "recall" && t('exercises.phase2SequenceEntry')}
+            {phase === "summary" && t('exercises.phase3AccuracyCheck')}
           </p>
         </div>
       </div>
-      
+
       <div className="flex items-center gap-2 sm:gap-3">
         {skillLevel && <DifficultyBadge level={skillLevel} />}
       </div>
@@ -790,6 +802,7 @@ function Header({ phase, sessionId, skillLevel }: {
 }
 
 function DifficultyBadge({ level }: { level: number }) {
+  const { t } = useTranslation();
   const getDifficultyColor = (level: number) => {
     if (level <= 3) return "bg-green-500";
     if (level <= 6) return "bg-amber-500";
@@ -797,9 +810,9 @@ function DifficultyBadge({ level }: { level: number }) {
   };
 
   const getDifficultyLabel = (level: number) => {
-    if (level <= 3) return "Easy";
-    if (level <= 6) return "Medium";
-    return "Hard";
+    if (level <= 3) return t('exercises.easy');
+    if (level <= 6) return t('exercises.medium');
+    return t('exercises.hard');
   };
 
   const colorClass = getDifficultyColor(level);
@@ -809,7 +822,7 @@ function DifficultyBadge({ level }: { level: number }) {
     <div className="inline-flex items-center gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
       <div className={`w-2 h-2 rounded-full ${colorClass}`} />
       <span className="font-semibold text-[10px] sm:text-xs text-slate-900 dark:text-slate-50">
-        Level {level} - {label}
+        {t('exercises.level')} {level} - {label}
       </span>
     </div>
   );

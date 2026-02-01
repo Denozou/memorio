@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { api, API_BASE_URL } from "../lib/api";
 import { Link, useNavigate } from "react-router-dom";
-import { 
-  LogOut, Menu, X, AlertCircle, ArrowRight, Brain, 
+import {
+  LogOut, Menu, X, AlertCircle, ArrowRight, Brain,
   Trophy, Check, RotateCcw, Target, Lightbulb
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../lib/queryClient";
 import ThemeToggle from "../components/ThemeToggle";
 import LanguageSelector from "../components/LanguageSelector";
 import ReviewNotificationBadge from "../components/ReviewNotificationBadge";
@@ -58,6 +60,7 @@ type SubmitResp = {
 export default function ExerciseNamesFaces() {
   const { t } = useTranslation();
   const nav = useNavigate();
+  const queryClient = useQueryClient();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { showTutorial } = useTutorial();
   const [loading, setLoading] = useState(false);
@@ -183,6 +186,9 @@ export default function ExerciseNamesFaces() {
       const { data } = await api.post<SubmitResp>("/exercises/submit", body);
       setScore(data);
       setPhase("summary");
+      // Invalidate dashboard queries to reflect new results
+      queryClient.invalidateQueries({ queryKey: queryKeys.exercises.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.progress.user() });
     } catch (e: any) {
       setError(e?.response?.data?.error ?? "Failed to submit answers");
     } finally {
@@ -435,21 +441,22 @@ function IdleView({ loading, onStart, t }: { loading: boolean; onStart: () => vo
   );
 }
 
-function StudyView({ 
-  faces, 
-  currentIndex, 
-  showingFace, 
-  progressPercent, 
+function StudyView({
+  faces,
+  currentIndex,
+  showingFace,
+  progressPercent,
   isLowTime,
-  onFinish 
-}: { 
-  faces: FaceData[]; 
-  currentIndex: number; 
+  onFinish
+}: {
+  faces: FaceData[];
+  currentIndex: number;
   showingFace: boolean;
   progressPercent: number;
   isLowTime: boolean;
   onFinish: () => void;
 }) {
+  const { t } = useTranslation();
   const currentFace = faces[currentIndex];
 
   return (
@@ -501,7 +508,7 @@ function StudyView({
               </h2>
               {isLowTime && (
                 <p className="text-red-500 dark:text-red-400 text-xs font-bold uppercase animate-pulse">
-                  Hurry Up!
+                  {t('exercises.hurryUp')}
                 </p>
               )}
             </div>
@@ -514,7 +521,7 @@ function StudyView({
       {/* Progress Strip */}
       <div className="space-y-2">
         <div className="flex justify-between text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-          <span>Progress</span>
+          <span>{t('exercises.progress')}</span>
           <span>{currentIndex + 1} / {faces.length}</span>
         </div>
         <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
@@ -557,23 +564,24 @@ function StudyView({
   );
 }
 
-function RecallView({ 
-  faces, 
-  answers, 
-  setAnswers, 
-  submitting, 
-  onSubmit 
-}: { 
-  faces: FaceData[]; 
-  answers: string[]; 
+function RecallView({
+  faces,
+  answers,
+  setAnswers,
+  submitting,
+  onSubmit
+}: {
+  faces: FaceData[];
+  answers: string[];
   setAnswers: (answers: string[]) => void;
   submitting: boolean;
   onSubmit: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4 sm:space-y-6 animate-in slide-in-from-bottom-4 duration-500">
       <p className="text-slate-600 dark:text-slate-300 text-sm">
-        Type the names you remember. Order matters for bonus points!
+        {t('exercises.typeNamesRemember')}
       </p>
 
       {/* Face grid with input fields */}
@@ -597,7 +605,7 @@ function RecallView({
                 copy[idx] = e.target.value;
                 setAnswers(copy);
               }}
-              placeholder={`Name #${idx + 1}`}
+              placeholder={t('exercises.nameNumber', { number: idx + 1 })}
               className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-slate-300/70 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base"
             />
           </div>
@@ -612,11 +620,11 @@ function RecallView({
         {submitting ? (
           <>
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            Submitting...
+            {t('exercises.submitting')}
           </>
         ) : (
           <>
-            Submit Answers
+            {t('exercises.submitAnswers')}
             <ArrowRight className="w-5 h-5" />
           </>
         )}
@@ -759,10 +767,10 @@ function SummaryView({
                   {!isCorrect && (
                     <div className="mt-1.5 pt-1.5 border-t border-red-500/20">
                       <div className="text-[9px] sm:text-[10px] text-red-500 dark:text-red-400 uppercase font-bold">
-                        You said:
+                        {t('exercises.youSaidLower')}
                       </div>
                       <div className="text-[10px] sm:text-xs text-red-600 dark:text-red-300 truncate">
-                        {userAnswer || "(No answer)"}
+                        {userAnswer || t('exercises.noAnswer')}
                       </div>
                     </div>
                   )}
@@ -776,17 +784,17 @@ function SummaryView({
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 pt-4">
         {score.missedWords.length > 0 && (
-          <button 
+          <button
             onClick={onReset}
             className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm sm:text-base"
           >
             <RotateCcw className="w-4 h-4" />
-            Retry ({score.missedWords.length} missed)
+            {t('exercises.retryMissed', { count: score.missedWords.length })}
           </button>
         )}
         <Link to="/dashboard">
           <button className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 border border-slate-200 dark:border-slate-700 font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm sm:text-base">
-            Back to Dashboard
+            {t('exercises.backToDashboard')}
             <ArrowRight className="w-4 h-4" />
           </button>
         </Link>
@@ -796,7 +804,7 @@ function SummaryView({
       {!!score.newBadges?.length && (
         <div className="p-4 sm:p-6 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
           <div className="font-bold mb-3 text-amber-900 dark:text-amber-100 text-sm sm:text-base">
-            🎉 New Badges Earned!
+            🎉 {score.newBadges.length === 1 ? t('exercises.newBadgeEarned') : t('exercises.newBadgesEarned')}
           </div>
           <div className="flex gap-2 sm:gap-3 flex-wrap">
             {score.newBadges.map((b) => (
@@ -812,6 +820,7 @@ function SummaryView({
 /* ===== HELPER COMPONENTS ===== */
 
 function DifficultyBadge({ level }: { level: number }) {
+  const { t } = useTranslation();
   const getDifficultyColor = (level: number) => {
     if (level <= 3) return "bg-green-500";
     if (level <= 6) return "bg-amber-500";
@@ -819,9 +828,9 @@ function DifficultyBadge({ level }: { level: number }) {
   };
 
   const getDifficultyLabel = (level: number) => {
-    if (level <= 3) return "Easy";
-    if (level <= 6) return "Medium";
-    return "Hard";
+    if (level <= 3) return t('exercises.easy');
+    if (level <= 6) return t('exercises.medium');
+    return t('exercises.hard');
   };
 
   const colorClass = getDifficultyColor(level);
@@ -831,7 +840,7 @@ function DifficultyBadge({ level }: { level: number }) {
     <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
       <div className={`w-2 h-2 rounded-full ${colorClass}`} />
       <span className="font-semibold text-xs text-slate-900 dark:text-slate-50">
-        Level {level} - {label}
+        {t('exercises.level')} {level} - {label}
       </span>
     </div>
   );

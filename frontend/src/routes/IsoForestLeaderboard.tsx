@@ -94,7 +94,7 @@ const UserRow = ({ user, onSelect, t }: {
               textAlign: 'center'
             }}
           >
-            Lvl {user.level}
+            {t('leaderboard.lvl')} {user.level}
           </div>
         </div>
         <div className="flex flex-col">

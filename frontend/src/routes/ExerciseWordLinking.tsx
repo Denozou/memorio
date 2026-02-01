@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { api } from "../lib/api";
 import { Link, useNavigate } from "react-router-dom";
-import { 
-  ArrowRight, Link as LinkIcon, AlertCircle, CheckCircle2, 
+import {
+  ArrowRight, Link as LinkIcon, AlertCircle, CheckCircle2,
   RotateCcw, Trophy, Brain, LogOut, Menu, X, Lightbulb
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../lib/queryClient";
 import ThemeToggle from "../components/ThemeToggle";
 import ReviewNotificationBadge from "../components/ReviewNotificationBadge";
 import LanguageSelector from "../components/LanguageSelector";
@@ -52,6 +54,7 @@ type SubmitResp = {
 export default function ExerciseWordLinking() {
   const { t } = useTranslation();
   const nav = useNavigate();
+  const queryClient = useQueryClient();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { showTutorial } = useTutorial();
   const [loading, setLoading] = useState(false);
@@ -131,6 +134,9 @@ export default function ExerciseWordLinking() {
       setPositionedAnswers(positionedAnswers);
       setDisplayAnswers(displayAnswers); // Store what user actually typed
       setPhase("summary");
+      // Invalidate dashboard queries to reflect new results
+      queryClient.invalidateQueries({ queryKey: queryKeys.exercises.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.progress.user() });
     } catch (e: any) {
       setError(e?.response?.data?.error ?? "Failed to submit answers");
     } finally {
@@ -174,17 +180,17 @@ export default function ExerciseWordLinking() {
             
             <div className="hidden md:flex items-center gap-6">
               <Link to="/dashboard" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50 inline-flex items-center">
-                Dashboard
+                {t('navigation.dashboard')}
                 <ReviewNotificationBadge />
               </Link>
               <Link to="/leaderboard" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
                 {t('common.leaderboard')}
               </Link>
               <Link to="/learning" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                Learning
+                {t('navigation.learning')}
               </Link>
               <Link to="/profile" className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50">
-                Profile
+                {t('navigation.profile')}
               </Link>
             </div>
 
@@ -202,7 +208,7 @@ export default function ExerciseWordLinking() {
                 className="px-4 py-2 rounded-xl border border-slate-300/70 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2"
               >
                 <LogOut className="w-4 h-4" />
-                Logout
+                {t('navigation.logout')}
               </button>
             </div>
 
@@ -222,17 +228,17 @@ export default function ExerciseWordLinking() {
             <div className="md:hidden py-3 border-t border-slate-200/70 dark:border-slate-800">
               <div className="flex flex-col gap-2">
                 <Link to="/dashboard" className="py-2 text-slate-600 dark:text-slate-300 inline-flex items-center" onClick={() => setMobileMenuOpen(false)}>
-                  Dashboard
+                  {t('navigation.dashboard')}
                   <ReviewNotificationBadge />
                 </Link>
                 <Link to="/leaderboard" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
                   {t('common.leaderboard')}
                 </Link>
                 <Link to="/learning" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
-                  Learning
+                  {t('navigation.learning')}
                 </Link>
                 <Link to="/profile" className="py-2 text-slate-600 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>
-                  Profile
+                  {t('navigation.profile')}
                 </Link>
                 <button
                   onClick={() => { setMobileMenuOpen(false); showTutorial(); }}
@@ -246,7 +252,7 @@ export default function ExerciseWordLinking() {
                   className="py-2 text-left text-slate-600 dark:text-slate-300 flex items-center gap-2"
                 >
                   <LogOut className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-                  Logout
+                  {t('navigation.logout')}
                 </button>
               </div>
             </div>
@@ -352,12 +358,13 @@ function IdleView({ loading, onStart, t }: { loading: boolean; onStart: () => vo
   );
 }
 
-function StudyPhase({ words, itemShowMs, gapMs, onComplete }: { 
-  words: string[]; 
+function StudyPhase({ words, itemShowMs, gapMs, onComplete }: {
+  words: string[];
   itemShowMs: number;
   gapMs: number;
   onComplete: () => void;
 }) {
+  const { t } = useTranslation();
   const [index, setIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [tick, setTick] = useState<"show" | "gap">("show");
@@ -422,7 +429,7 @@ function StudyPhase({ words, itemShowMs, gapMs, onComplete }: {
             {/* Current Word (Hero) */}
             <div className="z-10 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-xl text-center min-w-[280px] sm:min-w-[300px] transform transition-all duration-300">
               <div className="text-[10px] sm:text-xs text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest mb-2">
-                Word #{index + 1}
+                {t('exercises.wordNumber', { number: index + 1 })}
               </div>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-slate-50 tracking-tight">
                 {currentWord}
@@ -444,16 +451,17 @@ function StudyPhase({ words, itemShowMs, gapMs, onComplete }: {
       </div>
 
       <div className="mt-8 sm:mt-12 text-slate-500 dark:text-slate-400 text-xs sm:text-sm">
-        {tick === "show" ? "Visualizing link..." : "Next word..."}
+        {tick === "show" ? t('exercises.visualizingLink') : t('exercises.nextWord')}
       </div>
     </div>
   );
 }
 
-function RecallPhase({ wordCount, onComplete }: { 
+function RecallPhase({ wordCount, onComplete }: {
   wordCount: number;
   onComplete: (list: string[]) => void;
 }) {
+  const { t } = useTranslation();
   const [inputs, setInputs] = useState<string[]>([]);
   const [currentInput, setCurrentInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -482,7 +490,7 @@ function RecallPhase({ wordCount, onComplete }: {
         <div className="max-h-64 sm:max-h-80 overflow-y-auto p-3 sm:p-4 space-y-2 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700">
           {inputs.length === 0 && (
             <div className="text-center text-slate-500 dark:text-slate-400 py-8 italic text-sm">
-              Your chain is empty. Start typing below!
+              {t('exercises.chainEmpty')}
             </div>
           )}
           {inputs.map((word, i) => (
@@ -515,26 +523,26 @@ function RecallPhase({ wordCount, onComplete }: {
               type="text"
               value={currentInput}
               onChange={(e) => setCurrentInput(e.target.value)}
-              placeholder="Type next word & hit Enter..."
+              placeholder={t('exercises.typeNextWord')}
               className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg sm:rounded-xl py-3 sm:py-4 pl-10 sm:pl-12 pr-16 sm:pr-20 text-base sm:text-lg text-slate-900 dark:text-slate-50 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none placeholder:text-slate-400"
             />
-            <button 
+            <button
               type="submit"
               className="absolute right-2 top-2 bottom-2 bg-indigo-600 hover:bg-indigo-500 text-white px-3 sm:px-4 rounded-lg font-medium transition-colors text-sm"
             >
-              Add
+              {t('exercises.add')}
             </button>
           </form>
           
           <div className="flex justify-between items-center mt-3 sm:mt-4">
             <div className="text-xs text-slate-500 dark:text-slate-400">
-              {inputs.length} / {wordCount} words recalled
+              {t('exercises.wordsRecalled', { count: inputs.length, total: wordCount })}
             </div>
-            <button 
+            <button
               onClick={handleFinish}
               className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-50 flex items-center gap-1 font-medium"
             >
-              Finish Review <ArrowRight className="w-4 h-4" />
+              {t('exercises.finishReview')} <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -543,12 +551,13 @@ function RecallPhase({ wordCount, onComplete }: {
   );
 }
 
-function ResultsPhase({ targetList, userList, score, onReset }: { 
+function ResultsPhase({ targetList, userList, score, onReset }: {
   targetList: string[];
   userList: string[];
   score: SubmitResp;
   onReset: () => void;
 }) {
+  const { t } = useTranslation();
   const accuracy = Math.round(score.accuracy * 100);
   const orderAccuracy = Math.round(score.orderAccuracy * 100);
 
@@ -559,16 +568,16 @@ function ResultsPhase({ targetList, userList, score, onReset }: {
       <div className="text-center">
         <div className="inline-flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-4">
           <Trophy className="w-4 h-4 text-yellow-500" />
-          <span className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">Session Complete</span>
+          <span className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">{t('exercises.sessionComplete')}</span>
         </div>
         <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-50 mb-2">
-          {accuracy}% Chain Integrity
+          {t('exercises.chainIntegrity', { percent: accuracy })}
         </h2>
         <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
-          You recalled {score.correct} out of {targetList.length} words correctly.
+          {t('exercises.recalledCorrectly', { correct: score.correct, total: targetList.length })}
         </p>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-500 mt-1">
-          Order accuracy: {orderAccuracy}% • Points: <span className="text-green-600 dark:text-green-400 font-bold">+{score.pointsEarned}</span>
+          {t('exercises.orderAccuracyPercent', { percent: orderAccuracy })} • {t('exercises.points')}: <span className="text-green-600 dark:text-green-400 font-bold">+{score.pointsEarned}</span>
         </p>
       </div>
 
@@ -603,13 +612,13 @@ function ResultsPhase({ targetList, userList, score, onReset }: {
                 }
               `}>
                 <div className="min-w-0 flex-1">
-                  <div 
-                    className={isCorrect 
-                      ? "text-[10px] sm:text-xs font-bold uppercase mb-1 text-slate-500 dark:text-slate-400" 
+                  <div
+                    className={isCorrect
+                      ? "text-[10px] sm:text-xs font-bold uppercase mb-1 text-slate-500 dark:text-slate-400"
                       : "text-[10px] sm:text-xs font-bold uppercase mb-1"
                     }
                     style={!isCorrect ? { color: '#334155' } : undefined}>
-                    Target Word
+                    {t('exercises.targetWord')}
                   </div>
                   <div 
                     className={isCorrect 
@@ -624,10 +633,10 @@ function ResultsPhase({ targetList, userList, score, onReset }: {
                 {!isCorrect && (
                   <div className="text-left sm:text-right min-w-0">
                     <div className="text-[10px] sm:text-xs text-red-600 dark:text-red-400 font-bold uppercase mb-1">
-                      You Said
+                      {t('exercises.youSaid')}
                     </div>
                     <div className="text-sm sm:text-s font-medium text-red-700 dark:text-red-300 decoration-red-500/50 truncate">
-                      {isSkipped ? "(Skipped)" : userWord}
+                      {isSkipped ? t('exercises.skipped') : userWord}
                     </div>
                   </div>
                 )}
@@ -649,7 +658,7 @@ function ResultsPhase({ targetList, userList, score, onReset }: {
       {!!score.newBadges?.length && (
         <div className="p-4 sm:p-6 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
           <div className="font-bold mb-3 text-amber-900 dark:text-amber-100 text-sm sm:text-base">
-            🎉 New Badge Earned!
+            🎉 {score.newBadges.length === 1 ? t('exercises.newBadgeEarned') : t('exercises.newBadgesEarned')}
           </div>
           <div className="flex gap-2 sm:gap-3 flex-wrap">
             {score.newBadges.map((b) => (
@@ -661,15 +670,15 @@ function ResultsPhase({ targetList, userList, score, onReset }: {
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 pt-4">
-        <button 
+        <button
           onClick={onReset}
           className="flex items-center justify-center gap-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 border border-slate-200 dark:border-slate-700 px-6 py-3 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm sm:text-base"
         >
-          <RotateCcw className="w-4 h-4" /> Try Again
+          <RotateCcw className="w-4 h-4" /> {t('exercises.tryAgain')}
         </button>
         <Link to="/dashboard">
           <button className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-500 transition-colors text-sm sm:text-base w-full sm:w-auto">
-            Back to Dashboard
+            {t('exercises.backToDashboard')}
             <ArrowRight className="w-4 h-4" />
           </button>
         </Link>
@@ -680,11 +689,12 @@ function ResultsPhase({ targetList, userList, score, onReset }: {
 
 /* ===== HELPER COMPONENTS ===== */
 
-function Header({ phase, sessionId, skillLevel }: { 
-  phase: string; 
+function Header({ phase, sessionId, skillLevel }: {
+  phase: string;
   sessionId: string | null;
   skillLevel: number | null;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-slate-200 dark:border-slate-800">
       <div className="flex items-center gap-3 flex-1">
@@ -693,17 +703,17 @@ function Header({ phase, sessionId, skillLevel }: {
         </div>
         <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-            Word Linking
+            {t('exercises.wordLinking')}
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 capitalize truncate">
-            {phase === "idle" && "Memory Chain Challenge"}
-            {phase === "study" && "Phase 1: Visualization"}
-            {phase === "recall" && "Phase 2: Chain Construction"}
-            {phase === "summary" && "Phase 3: Analysis"}
+            {phase === "idle" && t('exercises.memoryChainChallenge')}
+            {phase === "study" && t('exercises.phase1Visualization')}
+            {phase === "recall" && t('exercises.phase2ChainConstruction')}
+            {phase === "summary" && t('exercises.phase3Analysis')}
           </p>
         </div>
       </div>
-      
+
       <div className="flex items-center gap-2 sm:gap-3">
         {skillLevel && <DifficultyBadge level={skillLevel} />}
       </div>
@@ -712,6 +722,7 @@ function Header({ phase, sessionId, skillLevel }: {
 }
 
 function DifficultyBadge({ level }: { level: number }) {
+  const { t } = useTranslation();
   const getDifficultyColor = (level: number) => {
     if (level <= 3) return "bg-green-500";
     if (level <= 6) return "bg-amber-500";
@@ -719,9 +730,9 @@ function DifficultyBadge({ level }: { level: number }) {
   };
 
   const getDifficultyLabel = (level: number) => {
-    if (level <= 3) return "Easy";
-    if (level <= 6) return "Medium";
-    return "Hard";
+    if (level <= 3) return t('exercises.easy');
+    if (level <= 6) return t('exercises.medium');
+    return t('exercises.hard');
   };
 
   const colorClass = getDifficultyColor(level);
@@ -731,7 +742,7 @@ function DifficultyBadge({ level }: { level: number }) {
     <div className="inline-flex items-center gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
       <div className={`w-2 h-2 rounded-full ${colorClass}`} />
       <span className="font-semibold text-[10px] sm:text-xs text-slate-900 dark:text-slate-50">
-        Level {level} - {label}
+        {t('exercises.level')} {level} - {label}
       </span>
     </div>
   );

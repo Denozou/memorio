@@ -246,6 +246,75 @@ export function useSubmitQuiz() {
 }
 
 // ============================================
+// Exercise Hooks
+// ============================================
+
+export interface StartExerciseRequest {
+  type: ExerciseType;
+}
+
+export interface StartExerciseResponse {
+  sessionId: string;
+  words?: string[];
+  items?: Array<{ name: string; imageUrl: string }>;
+  sequence?: number[];
+  pegWords?: Record<number, string>;
+}
+
+export interface SubmitExerciseRequest {
+  sessionId: string;
+  type: ExerciseType;
+  shownWords?: string[];
+  answers?: string[];
+  shownItems?: Array<{ name: string; imageUrl: string }>;
+  shownSequence?: number[];
+  responseTimeMs?: number;
+}
+
+export interface SubmitExerciseResponse {
+  correct: number;
+  total: number;
+  accuracy: number;
+  pointsEarned: number;
+  details?: Array<{
+    shown: string;
+    answered: string;
+    isCorrect: boolean;
+  }>;
+}
+
+/**
+ * Starts an exercise session
+ */
+export function useStartExercise() {
+  return useMutation({
+    mutationFn: async (request: StartExerciseRequest) => {
+      const { data } = await api.post<StartExerciseResponse>("/exercises/start", request);
+      return data;
+    },
+  });
+}
+
+/**
+ * Submits exercise results and invalidates dashboard queries
+ */
+export function useSubmitExercise() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (request: SubmitExerciseRequest) => {
+      const { data } = await api.post<SubmitExerciseResponse>("/exercises/submit", request);
+      return data;
+    },
+    onSuccess: () => {
+      // Invalidate all dashboard-related queries to reflect new results
+      queryClient.invalidateQueries({ queryKey: queryKeys.exercises.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.progress.user() });
+    },
+  });
+}
+
+// ============================================
 // Logout Hook
 // ============================================
 

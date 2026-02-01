@@ -1,8 +1,10 @@
 import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react';
+import { withTranslation } from 'react-i18next';
+import type { WithTranslation } from 'react-i18next';
 
-interface Props {
+interface Props extends WithTranslation {
   children: ReactNode;
   fallback?: ReactNode;
 }
@@ -124,10 +126,10 @@ class ErrorBoundary extends Component<Props, State> {
 
             {/* Error Message */}
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-              Something went wrong
+              {this.props.t('errors.somethingWentWrong')}
             </h1>
             <p className="text-slate-600 dark:text-slate-400 mb-6">
-              We're sorry, but something unexpected happened. Our team has been notified.
+              {this.props.t('errors.teamNotified')}
             </p>
 
             {/* Error ID for support */}
@@ -146,14 +148,14 @@ class ErrorBoundary extends Component<Props, State> {
                 className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
-                Try Again
+                {this.props.t('exercises.tryAgain')}
               </button>
               <button
                 onClick={this.handleGoHome}
                 className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-900 dark:text-white font-medium rounded-lg transition-colors"
               >
                 <Home className="w-4 h-4" />
-                Go Home
+                {this.props.t('common.goHome')}
               </button>
             </div>
 
@@ -162,7 +164,7 @@ class ErrorBoundary extends Component<Props, State> {
               <details className="mt-8 text-left">
                 <summary className="cursor-pointer text-sm font-medium text-slate-600 dark:text-slate-400 flex items-center gap-2">
                   <Bug className="w-4 h-4" />
-                  Developer Details
+                  {this.props.t('errors.developerDetails')}
                 </summary>
                 <div className="mt-4 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-auto max-h-64">
                   <p className="text-sm font-semibold text-red-600 dark:text-red-400 mb-2">
@@ -193,4 +195,4 @@ class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-export default ErrorBoundary;
+export default withTranslation()(ErrorBoundary);

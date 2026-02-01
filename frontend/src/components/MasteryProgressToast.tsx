@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { TrendingUp, CheckCircle, Target } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 type MasteryProgressToastProps = {
   skillType: string;
@@ -17,6 +18,7 @@ export default function MasteryProgressToast({
   onClose,
 }: MasteryProgressToastProps) {
   const [visible, setVisible] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (show) {
@@ -37,13 +39,13 @@ export default function MasteryProgressToast({
   const isMastered = newMastery >= 0.95;
 
   const formatSkillName = (type: string): string => {
-    const names: Record<string, string> = {
-      WORD_LINKING: "Word Linking",
-      NAMES_FACES: "Names & Faces",
-      NUMBER_PEG: "Number Peg",
-      QUIZ: "Quiz",
+    const keyMap: Record<string, string> = {
+      WORD_LINKING: 'exercises.wordLinking',
+      NAMES_FACES: 'exercises.namesFaces',
+      NUMBER_PEG: 'exercises.numberPeg',
+      QUIZ: 'learning.quiz',
     };
-    return names[type] || type;
+    return t(keyMap[type] || type);
   };
 
   return (
@@ -69,18 +71,18 @@ export default function MasteryProgressToast({
           </div>
           <div className="flex-1">
             <div className="font-semibold text-slate-900 dark:text-slate-50 mb-1">
-              {isMastered ? "🎉 Skill Mastered!" : "📈 Progress Update"}
+              {isMastered ? t('dashboard.skillMastered') : t('dashboard.progressUpdate')}
             </div>
             <div className="text-sm text-slate-600 dark:text-slate-300 mb-2">
               <span className="font-medium">{formatSkillName(skillType)}</span>
               {isMastered ? (
-                <span> has been mastered! Keep it up! 🚀</span>
+                <span> {t('dashboard.skillMastered').replace('🎉 ', '').toLowerCase()} 🚀</span>
               ) : (
                 <>
                   {" "}
-                  improved by{" "}
+                  +{" "}
                   <span className="font-semibold text-purple-600 dark:text-purple-400">
-                    +{improvement}%
+                    {improvement}%
                   </span>
                 </>
               )}

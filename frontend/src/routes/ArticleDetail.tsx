@@ -3,6 +3,8 @@ import { api } from "../lib/api";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Clock, BookOpen, CheckCircle, GraduationCap, LogOut, Menu, X, Layers, Brain } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../lib/queryClient";
 import ThemeToggle from "../components/ThemeToggle";
 import ReviewNotificationBadge from "../components/ReviewNotificationBadge";
 import ReactMarkdown from "react-markdown";
@@ -13,6 +15,7 @@ export default function ArticleDetail() {
   const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const nav = useNavigate();
+  const queryClient = useQueryClient();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [article, setArticle] = useState<ArticleDetailDto | null>(null);
@@ -49,6 +52,8 @@ export default function ArticleDetail() {
     try {
       await api.post(`/api/learning/articles/${article.id}/mark-read`);
       setArticle({ ...article, hasRead: true });
+      // Invalidate learning queries to reflect the change
+      queryClient.invalidateQueries({ queryKey: queryKeys.learning.all });
     } catch (e: any) {
       console.error("Failed to mark as read", e);
     } finally {
@@ -73,19 +78,19 @@ export default function ArticleDetail() {
   }[article.difficultyLevel] || "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300" : "";
 
   const difficultyLabel = article ? {
-    1: "Beginner",
-    2: "Intermediate",
-    3: "Advanced",
-  }[article.difficultyLevel] || "Unknown" : "";
+    1: t('learning.beginner'),
+    2: t('learning.intermediate'),
+    3: t('learning.advanced'),
+  }[article.difficultyLevel] || t('common.unknown') : "";
 
   // Helper to format category name
   function formatCategoryTitle(category: string): string {
-    const labels: Record<string, string> = {
-      METHOD_OF_LOCI: "Method of Loci",
-      STORY_METHOD: "Story Method",
-      PEG_SYSTEM: "Peg System",
+    const keyMap: Record<string, string> = {
+      METHOD_OF_LOCI: 'learning.methodOfLoci',
+      STORY_METHOD: 'learning.storyMethod',
+      PEG_SYSTEM: 'learning.pegSystem',
     };
-    return labels[category] || category;
+    return t(keyMap[category] || category);
   }
 
   return (
@@ -125,7 +130,7 @@ export default function ArticleDetail() {
                 className="px-4 py-2 rounded-xl border border-slate-300/70 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2"
               >
                 <LogOut className="w-4 h-4" />
-                Logout
+                {t('common.logout')}
               </button>
             </div>
 
@@ -180,12 +185,12 @@ export default function ArticleDetail() {
           className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50 mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Learning Hub
+          {t('learning.backToLearningHub')}
         </Link>
 
         {loading && (
           <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-            Loading article...
+            {t('learning.loadingArticle')}
           </div>
         )}
 
@@ -196,7 +201,7 @@ export default function ArticleDetail() {
               to="/learning"
               className="mt-4 inline-block text-sm text-red-700 dark:text-red-300 hover:underline"
             >
-              Return to Learning Hub
+              {t('learning.backToLearningHub')}
             </Link>
           </div>
         )}
@@ -302,7 +307,7 @@ export default function ArticleDetail() {
                   className="flex-1 px-6 py-3 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   <CheckCircle className="w-5 h-5" />
-                  {markingRead ? "Marking..." : "Mark as Read"}
+                  {markingRead ? t('common.loading') : t('learning.readArticle')}
                 </button>
               )}
               <Link
@@ -310,7 +315,7 @@ export default function ArticleDetail() {
                 className="flex-1 px-6 py-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-medium flex items-center justify-center gap-2 shadow"
               >
                 <GraduationCap className="w-5 h-5" />
-                {article.quizCompleted ? "Retake Quiz" : "Take Quiz"}
+                {article.quizCompleted ? t('learning.takeQuiz') : t('learning.takeQuiz')}
               </Link>
             </div>
 

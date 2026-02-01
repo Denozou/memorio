@@ -3,6 +3,8 @@ import { api } from "../lib/api";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, CheckCircle, XCircle, GraduationCap, LogOut, Menu, X, Trophy, RotateCcw, Brain } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../lib/queryClient";
 import ThemeToggle from "../components/ThemeToggle";
 import ReviewNotificationBadge from "../components/ReviewNotificationBadge";
 import type { QuizDto, QuizResultDto, SubmitQuizRequest } from "../types/learning";
@@ -11,6 +13,7 @@ export default function ArticleQuiz() {
   const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const nav = useNavigate();
+  const queryClient = useQueryClient();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [quiz, setQuiz] = useState<QuizDto | null>(null);
@@ -56,19 +59,24 @@ export default function ArticleQuiz() {
     // Check if all questions are answered
     const allAnswered = quiz.questions.every(q => selectedAnswers.has(q.id));
     if (!allAnswered) {
-      alert("Please answer all questions before submitting");
+      alert(t('learning.answerAllQuestions'));
       return;
     }
 
     setSubmitting(true);
     try {
+      // Ensure answers are in the same order as questions (backend expects this)
+      const orderedOptionIds = quiz.questions.map(q => selectedAnswers.get(q.id)!);
       const request: SubmitQuizRequest = {
         quizId: quiz.id,
-        selectedOptionIds: Array.from(selectedAnswers.values()),
+        selectedOptionIds: orderedOptionIds,
       };
 
       const { data } = await api.post<QuizResultDto>("/api/learning/quiz/submit", request);
       setResult(data);
+      // Invalidate learning and progress queries to reflect quiz completion
+      queryClient.invalidateQueries({ queryKey: queryKeys.learning.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.progress.user() });
     } catch (e: any) {
       alert(e?.response?.data?.error ?? "Failed to submit quiz");
     } finally {
@@ -130,7 +138,7 @@ export default function ArticleQuiz() {
                 className="px-4 py-2 rounded-xl border border-slate-300/70 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2"
               >
                 <LogOut className="w-4 h-4" />
-                Logout
+                {t('common.logout')}
               </button>
             </div>
 
@@ -182,12 +190,12 @@ export default function ArticleQuiz() {
           className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50 mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Article
+          {t('learning.backToArticle')}
         </Link>
 
         {loading && (
           <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-            Loading quiz...
+            {t('learning.loadingQuiz')}
           </div>
         )}
 
@@ -198,7 +206,7 @@ export default function ArticleQuiz() {
               to={`/learning/articles/${slug}`}
               className="mt-4 inline-block text-sm text-red-700 dark:text-red-300 hover:underline"
             >
-              Return to Article
+              {t('learning.returnToArticle')}
             </Link>
           </div>
         )}
@@ -216,7 +224,7 @@ export default function ArticleQuiz() {
                     {quiz.title}
                   </h1>
                   <p className="text-sm text-slate-600 dark:text-slate-300">
-                    {quiz.questions.length} questions • Passing score: {quiz.passingScore}%
+                    {t('learning.questionsCount', { count: quiz.questions.length })} • {t('learning.passingScoreInfo', { score: quiz.passingScore })}
                   </p>
                 </div>
               </div>
@@ -224,7 +232,7 @@ export default function ArticleQuiz() {
               {/* Progress Bar */}
               <div className="mt-4">
                 <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-300 mb-2">
-                  <span>Progress</span>
+                  <span>{t('learning.progress')}</span>
                   <span>{selectedAnswers.size} / {quiz.questions.length}</span>
                 </div>
                 <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -295,7 +303,7 @@ export default function ArticleQuiz() {
               disabled={submitting || selectedAnswers.size < quiz.questions.length}
               className="w-full px-6 py-4 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-semibold text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? "Submitting..." : "Submit Quiz"}
+              {submitting ? t('learning.submitting') : t('learning.submitQuiz')}
             </button>
           </>
         )}
@@ -316,7 +324,7 @@ export default function ArticleQuiz() {
               )}
 
               <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-50 mb-2">
-                {result.passed ? "Congratulations!" : "Keep Practicing!"}
+                {result.passed ? t('learning.congratulations') : t('learning.keepPracticing')}
               </h2>
               <p className="text-slate-600 dark:text-slate-300">{result.message}</p>
             </div>
@@ -327,19 +335,19 @@ export default function ArticleQuiz() {
                 <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-50">
                   {result.percentage}%
                 </div>
-                <div className="text-sm text-slate-600 dark:text-slate-300">Score</div>
+                <div className="text-sm text-slate-600 dark:text-slate-300">{t('learning.score')}</div>
               </div>
               <div className="text-center p-4 rounded-xl bg-slate-50 dark:bg-slate-800">
                 <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-50">
                   {result.correctAnswers}/{result.totalQuestions}
                 </div>
-                <div className="text-sm text-slate-600 dark:text-slate-300">Correct</div>
+                <div className="text-sm text-slate-600 dark:text-slate-300">{t('learning.correct')}</div>
               </div>
               <div className="text-center p-4 rounded-xl bg-slate-50 dark:bg-slate-800">
                 <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-50">
                   {result.passingScore}%
                 </div>
-                <div className="text-sm text-slate-600 dark:text-slate-300">Required</div>
+                <div className="text-sm text-slate-600 dark:text-slate-300">{t('learning.required')}</div>
               </div>
             </div>
 
@@ -350,13 +358,13 @@ export default function ArticleQuiz() {
                 className="flex-1 px-6 py-3 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium flex items-center justify-center gap-2"
               >
                 <RotateCcw className="w-5 h-5" />
-                Retake Quiz
+                {t('learning.retakeQuiz')}
               </button>
               <Link
                 to={`/learning/articles/${slug}`}
                 className="flex-1 px-6 py-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-medium flex items-center justify-center gap-2 shadow"
               >
-                Back to Article
+                {t('learning.backToArticle')}
               </Link>
             </div>
           </div>

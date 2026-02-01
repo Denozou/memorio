@@ -22,10 +22,17 @@ interface LanguageProviderProps {
 
 // Check if current page is public (doesn't require auth)
 function isPublicPage(): boolean {
-  const publicPaths = ['/login', '/signup', '/auth/verify-email', '/auth/forgot-password', '/auth/reset-password', '/auth/2fa/verify', '/landing', '/', '/contact'];
-  return publicPaths.some(path =>
-    window.location.pathname === path || window.location.pathname.startsWith(path)
-  );
+  const pathname = window.location.pathname;
+
+  // Exact match paths
+  const exactMatchPaths = ['/', '/login', '/signup', '/landing', '/contact'];
+  if (exactMatchPaths.includes(pathname)) {
+    return true;
+  }
+
+  // Prefix match paths (for nested routes like /auth/verify-email/token)
+  const prefixPaths = ['/auth/verify-email', '/auth/forgot-password', '/auth/reset-password', '/auth/2fa/verify'];
+  return prefixPaths.some(path => pathname.startsWith(path));
 }
 
 export function LanguageProvider({ children }: LanguageProviderProps) {
@@ -97,10 +104,17 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     if (!isPublicPage()) {
       try {
         await updateProfileMutation.mutateAsync({ preferredLanguage: lang });
-        // Invalidate user profile cache to reflect the change
-        queryClient.invalidateQueries({ queryKey: queryKeys.user.profile() });
-      } catch {
-        console.log('User may not be logged in, language saved locally only');
+        // Invalidate and refetch all language-dependent queries
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: queryKeys.user.profile() }),
+          // Invalidate all learning queries (articles are language-filtered on backend)
+          queryClient.invalidateQueries({ queryKey: queryKeys.learning.all }),
+        ]);
+        // Force refetch of learning articles immediately
+        await queryClient.refetchQueries({ queryKey: queryKeys.learning.articles() });
+      } catch (error) {
+        console.error('Failed to update language preference on server:', error);
+        // Still works locally, but log the actual error for debugging
       }
     }
   }, [i18n, updateProfileMutation, queryClient]);
